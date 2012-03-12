@@ -1,0 +1,2 @@
+rw verbose init=/init console=tty0 vga=normal androidboot.hardware=samsungxe700t androidboot.bootmedia=usb vmalloc=256M
+
