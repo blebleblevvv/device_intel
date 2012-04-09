@@ -59,6 +59,16 @@ on post-fs-data
     # Insert USB NIC driver
     insmod /system/lib/modules/asix.ko
 
+    # Insert Audio drivers
+    insmod /system/lib/modules/soundcore.ko
+    insmod /system/lib/modules/snd.ko
+    insmod /system/lib/modules/snd-page-alloc.ko
+    insmod /system/lib/modules/snd-timer.ko
+    insmod /system/lib/modules/snd-pcm.ko
+    insmod /system/lib/modules/snd-hda-codec.ko
+    insmod /system/lib/modules/snd-hda-codec-realtek.ko
+    insmod /system/lib/modules/snd-hda-intel.ko
+
     #flag vold that post-fs-data is finished
     setprop vold.post_fs_data_done 1
 
