@@ -7,6 +7,11 @@
 
 echo 1 > /sys/power/wake_lock
 
+if ![ -f /sys/class/net/eth0 ]
+then
+    return 0;
+fi
+
 # Bring up Ethernet (over USB) interface, for testing/debugging.
 case `getprop ro.build.type` in
 eng)
