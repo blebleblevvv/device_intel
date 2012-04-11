@@ -9,7 +9,7 @@ LOCAL_MODULE_TAGS := optional
 include $(BUILD_KEY_CHAR_MAP)
 
 .PHONY: samsungxe700t
-samsungxe700t: installer_img 
+samsungxe700t: installer_img otapackage
 
 #include $(LOCAL_PATH)/recovery/Android.mk
 

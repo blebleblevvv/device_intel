@@ -67,10 +67,16 @@ TARGET_USE_SYSLINUX := true
 TARGET_SYSLINUX_FILES = device/intel/pc_std/intellogo.png \
 		$(SYSLINUX_BASE)/vesamenu.c32 \
 		$(SYSLINUX_BASE)/android.c32
+INSTALLED_RADIOIMAGE_TARGET := $(PRODUCT_OUT)/bootloader
 
-TARGET_USE_DROIDBOOT := false
+ifeq ($(TARGET_STAGE_DROIDBOOT),true)
+TARGET_SYSLINUX_CONFIG := device/intel/pc_std/syslinux-fastboot.cfg
+TARGET_DISKINSTALLER_CONFIG := device/intel/pc_std/installer-fastboot.conf
+INSTALLED_RADIOIMAGE_TARGET += $(PRODUCT_OUT)/droidboot.img
+else
 TARGET_SYSLINUX_CONFIG := device/intel/pc_std/syslinux.cfg
 TARGET_DISKINSTALLER_CONFIG := device/intel/pc_std/installer.conf
+endif
 
 # Product specific overlay - uncomment this if/when an overlay
 # or part of an overlay needs to apply to this target only
@@ -91,3 +97,6 @@ BOARD_USES_LIBPSS := false
 
 BOARD_MODEM_HAVE_DATA_DEVICE := false
 BOARD_USES_OPTION_MODEM_AUDIO := false
+
+TARGET_RELEASETOOLS_EXTENSIONS := device/intel/pc_std/releasetools.py
+

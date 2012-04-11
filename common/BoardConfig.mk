@@ -46,7 +46,7 @@ TARGET_KERNEL_TARBALL = $(TOP)/device/intel/prebuilt/kernel.$(TARGET_BOARD_PLATF
 # (system/extras/ext4_utils/make_ext4fs_main.c).  For now it is needed, but
 # should consider eliminating the need for it later through the use of a
 # sensible default value.
-BOARD_BOOTIMAGE_PARTITION_SIZE := 15M
+BOARD_BOOTIMAGE_PARTITION_SIZE := 10M
 
 # Attention: Use care when assigning this value; droidboot uses resize2fs which
 # is currently afflicted with bug 12919.  The resize will fail with certain

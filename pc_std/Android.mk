@@ -9,7 +9,7 @@ LOCAL_MODULE_TAGS := optional
 include $(BUILD_KEY_CHAR_MAP)
 
 .PHONY: pc_std
-pc_std: installer_img 
+pc_std: installer_img otapackage
 
 #include $(LOCAL_PATH)/recovery/Android.mk
 
