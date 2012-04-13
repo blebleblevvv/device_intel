@@ -3,7 +3,7 @@
 set -e
 
 if [ -z "$1" ]; then
-    PACKAGE="$OUT/*-ota-*.zip"
+    PACKAGE="$OUT/ota-dev.zip"
 else
     PACKAGE="$1"
 fi
