@@ -13,8 +13,8 @@ then
 fi
 
 # Bring up Ethernet (over USB) interface, for testing/debugging.
-case `getprop ro.build.type` in
-eng)
+case `getprop ro.debuggable` in
+1)
     # if kernel command line has a parameter like ip=<ip>:<netmask> then use that
     # as static eth0 setting
     # else use dhcp
