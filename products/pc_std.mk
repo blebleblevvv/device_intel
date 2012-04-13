@@ -16,3 +16,9 @@ PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/wpa_supplicant.conf:system/etc/wifi/wpa_supplicant.conf \
 	$(LOCAL_PATH)/Vendor_0408_Product_3001.idc:system/usr/idc/Vendor_0408_Product_3001.idc
 
+# for bugmailer
+PRODUCT_PACKAGES += send_bug
+PRODUCT_COPY_FILES += \
+	system/extras/bugmailer/bugmailer.sh:system/bin/bugmailer.sh \
+	system/extras/bugmailer/send_bug:system/bin/send_bug
+

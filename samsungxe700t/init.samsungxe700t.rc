@@ -104,3 +104,14 @@ on property:wlan.driver.status=ok
 service sdcard /system/bin/sdcard /data/media 1023 1023
     class late_start
 
+# bugreport is triggered by the VOLUME-DOWN and VOLUME-UP keys.
+# bugmailer.sh tool will invoke bugreport and prompt email composer
+# if not in user build. Dumpstate output will be compressed.
+# Since dumpstate takes a little while, play sounds at start and end of
+# the process.
+service bugreport /system/bin/bugmailer.sh -b /system/media/audio/ui/Dock.ogg -e /system/media/audio/ui/Undock.ogg
+    class main
+    disabled
+    oneshot
+    keycodes 115 114
+
