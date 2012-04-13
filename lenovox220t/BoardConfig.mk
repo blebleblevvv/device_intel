@@ -16,8 +16,6 @@ BOARD_KERNEL_CMDLINE := $(shell cat $(BOARD_KERNEL_CMDLINE_FILE))
 # Kernel command line for installer. USB is hardcoded. This variable is used as
 # part of the arguments for external/genext2fs/mkbootimg_ext2.sh.
 TARGET_INSTALLER_BOOTMEDIA = usb
-BOARD_INSTALLER_CMDLINE_FILE := device/intel/lenovox220t/cmdline-installer
-BOARD_INSTALLER_CMDLINE := $(shell cat $(BOARD_INSTALLER_CMDLINE_FILE))
 
 # Must be set to enable WPA supplicant build. WEXT is the driver for generic
 # linux wireless extensions. NL80211 supercedes it.

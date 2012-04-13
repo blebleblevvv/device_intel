@@ -45,8 +45,6 @@ BOARD_KERNEL_CMDLINE := $(shell cat $(BOARD_KERNEL_CMDLINE_FILE))
 # Kernel command line for installer. USB is hardcoded. This variable is used as
 # part of the arguments for external/genext2fs/mkbootimg_ext2.sh.
 TARGET_INSTALLER_BOOTMEDIA = usb
-BOARD_INSTALLER_CMDLINE_FILE := device/intel/pc_std/cmdline-installer
-BOARD_INSTALLER_CMDLINE := $(shell cat $(BOARD_INSTALLER_CMDLINE_FILE))
 
 # This variable is used by hardware/alsa_sound/Android.mk.
 BOARD_USES_ALSA_AUDIO := true
