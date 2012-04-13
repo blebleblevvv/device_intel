@@ -21,3 +21,6 @@
 # function: add_lunch_combo generic-eng
 
 PATH=$PATH:$(gettop)/device/intel/support
+
+# Remove sync_img function from old shell state (set by ivb_dev)
+unset -f sync_img

@@ -1,0 +1,90 @@
+#!/bin/bash
+
+set -e
+
+FLASH_KERNEL=
+FLASH_DROIDBOOT=
+FLASH_RECOVERY=
+FLASH_SYSTEM=
+FLASH_BOOTLOADER=
+REBOOT=
+
+
+function usage {
+    echo "Usage: $0 <options>"
+    echo " -h This help"
+    echo " -d Flash droidboot"
+    echo " -k Flash Android kernel"
+    echo " -s Update system"
+    echo " -y Flash recovery kernel"
+    echo " -b Flash bootloader"
+    echo " -r Reboot when finished"
+}
+
+while getopts dykrhsb name; do
+    case $name in
+        d)  FLASH_DROIDBOOT=1;;
+        y)  FLASH_RECOVERY=1;;
+        k)  FLASH_KERNEL=1;;
+        s)  FLASH_SYSTEM=1;;
+        b)  FLASH_BOOTLOADER=1;;
+        r)  REBOOT=1;;
+        h)  usage; exit 0;;
+        ?)  usage; exit 1;;
+    esac
+done
+
+echo "Waiting for device..."
+adb wait-for-device
+echo "Setting root permissions..."
+adb root
+sleep 1
+adb wait-for-device
+
+# $1 path to the image
+# $2 target partition
+# (Should this script figure partition from disk_layout.conf?)
+function flashimage {
+    if [ ! -e $1 ]; then
+        echo "$1 file missing"
+        return 1
+    fi
+    adb push $1 /data
+    BN=`basename $1`
+    adb shell "cat /data/$BN > $2"
+    adb shell "rm /data/$BN"
+    return 0
+}
+
+if [ -n "$FLASH_SYSTEM" ]; then
+    echo "Update system..."
+    adb remount
+    adb sync || exit 1
+fi
+
+if [ -n "$FLASH_KERNEL" ]; then
+    echo "Flashing Android kernel image..."
+    flashimage $ANDROID_PRODUCT_OUT/boot.img /dev/block/sda2
+fi
+
+if [ -n "$FLASH_RECOVERY" ]; then
+    echo "Flashing recovery kernel image..."
+    flashimage $ANDROID_PRODUCT_OUT/recovery.img /dev/block/sda3
+fi
+
+if [ -n "$FLASH_DROIDBOOT" ]; then
+    echo "Flashing Droidboot kernel image..."
+    flashimage $ANDROID_PRODUCT_OUT/droidboot.img /dev/block/sda5
+fi
+
+if [ -n "$FLASH_BOOTLOADER" ]; then
+    echo "Flashing bootloader image..."
+    flashimage $ANDROID_PRODUCT_OUT/bootloader /dev/block/sda1
+fi
+
+if [ -n "$REBOOT" ]; then
+    echo "Rebooting device..."
+    adb reboot
+fi
+
+exit 0
