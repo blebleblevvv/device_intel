@@ -8,9 +8,11 @@ TARGET_ARCH_VARIANT := x86
 #Not ready to flip this switch yet
 #USE_OPENGL_RENDERER := true
 
+# Used for creating/retrieving board-specific prebuilt images
+TARGET_BOARD_PLATFORM := pc_std
+
 # Used in ./frameworks/base/services/surfaceflinger/Android.mk
 # to set LOCAL_CFLAGS += -DNO_RGBX_8888.
-# TARGET_BOARD_PLATFORM := mrst
 LOCAL_CFLAGS += -DNO_RGBX_8888
 
 BOARD_GPU_DRIVERS := i965
