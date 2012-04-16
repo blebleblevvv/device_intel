@@ -48,11 +48,6 @@ on post-fs-data
 #    insmod /system/lib/modules/hso.ko
 #    start ril-daemon
 
-    # Insert graphics drivers
-    insmod /system/lib/modules/drm.ko debug=0xe
-    insmod /system/lib/modules/drm_kms_helper.ko
-    insmod /system/lib/modules/i915.ko modeset=1 
-
     # Insert Wacom touch driver
     insmod /system/lib/modules/wacom.ko
 
