@@ -1,5 +1,5 @@
 # Superclass
-$(call inherit-product, device/intel/products/pc_std.mk)
+$(call inherit-product, device/intel/pc_std/pc_std.mk)
 
 PRODUCT_NAME := lenovox220t
 PRODUCT_DEVICE := lenovox220t
@@ -14,4 +14,4 @@ PRODUCT_COPY_FILES += \
 
 # Additional configurations needed for the platform.
 # Mostly binary files (e.g. firmware)
-$(call inherit-product-if-exists, vendor/intel/products/lenovox220t.mk)
+$(call inherit-product-if-exists, vendor/intel/lenovox220t/lenovox220t.mk)

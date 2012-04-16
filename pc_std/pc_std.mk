@@ -1,12 +1,26 @@
 # Superclass
-$(call inherit-product, device/intel/products/pc_std_common.mk)
-
-PRODUCT_NAME := pc_std
-PRODUCT_DEVICE := pc_std
+$(call inherit-product, device/intel/common/generic.mk)
 
 LOCAL_PATH := device/intel/pc_std
 
+#
+# gralloc & mesa lib
+#
+PRODUCT_PACKAGES += \
+    libGLES_mesa    \
+    gralloc.$(TARGET_PRODUCT) \
+
+#
+# tinyalsa utils
+#
+PRODUCT_PACKAGES += \
+	tinymix \
+	tinyplay \
+	tinycap \
+
+# PC std common files
 PRODUCT_COPY_FILES += \
+	$(LOCAL_PATH)/asound.conf:system/etc/asound.conf \
 	$(LOCAL_PATH)/android.conf:system/etc/dhcpcd/android.conf \
 	$(LOCAL_PATH)/init.pc_std.rc:root/init.pc_std.rc \
 	$(LOCAL_PATH)/init.pc_std.sh:system/etc/init.pc_std.sh \
@@ -21,4 +35,8 @@ PRODUCT_PACKAGES += send_bug
 PRODUCT_COPY_FILES += \
 	system/extras/bugmailer/bugmailer.sh:system/bin/bugmailer.sh \
 	system/extras/bugmailer/send_bug:system/bin/send_bug
+
+# audio support
+PRODUCT_PACKAGES += \
+	audio.primary.$(TARGET_PRODUCT) \
 
