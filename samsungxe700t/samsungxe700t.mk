@@ -4,6 +4,10 @@ $(call inherit-product, device/intel/pc_std/pc_std.mk)
 PRODUCT_NAME := samsungxe700t
 PRODUCT_DEVICE := samsungxe700t
 
+# For device identification to apps
+PRODUCT_MANUFACTURER := Samsung
+PRODUCT_MODEL := XE700T
+
 LOCAL_PATH := device/intel/samsungxe700t
 
 PRODUCT_COPY_FILES += \

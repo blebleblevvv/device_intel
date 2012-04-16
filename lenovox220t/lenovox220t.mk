@@ -4,6 +4,10 @@ $(call inherit-product, device/intel/pc_std/pc_std.mk)
 PRODUCT_NAME := lenovox220t
 PRODUCT_DEVICE := lenovox220t
 
+# For device identification to apps
+PRODUCT_MANUFACTURER := Lenovo
+PRODUCT_MODEL := X220T
+
 LOCAL_PATH := device/intel/lenovox220t
 
 PRODUCT_COPY_FILES += \
