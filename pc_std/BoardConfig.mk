@@ -18,9 +18,6 @@ BOARD_LIBPCIACCESS_HWDATA := external/hwids
 
 TARGET_NO_BOOTLOADER := false
 
-# The board name as known by Android SDK
-TARGET_BOOTLOADER_BOARD_NAME := pc_std
-
 # Kernel source and config file that the build system will use for kernel
 # build:
 TARGET_KERNEL_SOURCE := kernel/intel
@@ -33,14 +30,6 @@ TARGET_KERNEL_CONFIG := $(TARGET_KERNEL_CONFIG_DIR)i386_pc_std_android_defconfig
 ifeq ($(BOARD_BOOTMEDIA),)
   BOARD_BOOTMEDIA := harddisk
 endif
-
-# Composes a kernel command line which will be used by build/core/Makefile when
-# setting up the boot environment.  androidboot.{bootmedia,hardware} are used
-# to search for init.*.rc files during init.
-# Note that "subarch" numbers are derived from the kernel include file
-# arch/x86/include/asm/bootparam.h
-BOARD_KERNEL_CMDLINE_FILE := device/intel/pc_std/cmdline
-BOARD_KERNEL_CMDLINE := $(shell cat $(BOARD_KERNEL_CMDLINE_FILE))
 
 # Kernel command line for installer. USB is hardcoded. This variable is used as
 # part of the arguments for external/genext2fs/mkbootimg_ext2.sh.

@@ -22,8 +22,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/asound.conf:system/etc/asound.conf \
 	$(LOCAL_PATH)/android.conf:system/etc/dhcpcd/android.conf \
-	$(LOCAL_PATH)/init.pc_std.rc:root/init.pc_std.rc \
-	$(LOCAL_PATH)/init.pc_std.sh:system/etc/init.pc_std.sh \
 	$(LOCAL_PATH)/egl_mesa.cfg:system/lib/egl/egl.cfg \
 	device/intel/common/init.harddisk.rc:root/init.harddisk.rc \
 	$(LOCAL_PATH)/vold.fstab:system/etc/vold.fstab \
