@@ -7,28 +7,40 @@ FLASH_DROIDBOOT=
 FLASH_RECOVERY=
 FLASH_SYSTEM=
 FLASH_BOOTLOADER=
-REBOOT=
-
+NO_REBOOT=
 
 function usage {
-    echo "Usage: $0 <options>"
-    echo " -h This help"
+    echo "Usage: `basename $0` <options>"
+    echo " -a Equivalent to -bdksy"
+    echo " -b Flash bootloader"
     echo " -d Flash droidboot"
     echo " -k Flash Android kernel"
     echo " -s Update system"
     echo " -y Flash recovery kernel"
-    echo " -b Flash bootloader"
-    echo " -r Reboot when finished"
+    echo
+    echo " -r Don't reboot when finished"
+    echo " -h This message"
 }
 
-while getopts dykrhsb name; do
+if [ $# -eq 0 ]; then
+    usage;
+    exit 1;
+fi
+
+while getopts abdksyrh name; do
     case $name in
+        a)  FLASH_BOOTLOADER=1
+            FLASH_DROIDBOOT=1
+            FLASH_KERNEL=1
+            FLASH_SYSTEM=1
+            FLASH_RECOVERY=1
+            ;;
+        b)  FLASH_BOOTLOADER=1;;
         d)  FLASH_DROIDBOOT=1;;
-        y)  FLASH_RECOVERY=1;;
         k)  FLASH_KERNEL=1;;
         s)  FLASH_SYSTEM=1;;
-        b)  FLASH_BOOTLOADER=1;;
-        r)  REBOOT=1;;
+        y)  FLASH_RECOVERY=1;;
+        r)  NO_REBOOT=0;;
         h)  usage; exit 0;;
         ?)  usage; exit 1;;
     esac
@@ -82,9 +94,9 @@ if [ -n "$FLASH_BOOTLOADER" ]; then
     flashimage $ANDROID_PRODUCT_OUT/bootloader /dev/block/sda1
 fi
 
-if [ -n "$REBOOT" ]; then
+if [ -z "$NO_REBOOT" ]; then
     echo "Rebooting device..."
-    adb reboot
+    timeout 4 adb reboot || true
 fi
 
 exit 0
