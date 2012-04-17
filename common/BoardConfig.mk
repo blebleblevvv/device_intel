@@ -14,11 +14,8 @@ TARGET_KERNEL_CONFIG := $(TARGET_OUT_INTERMEDIATES)/kernel.config
 # time this file is parsed, so it might be expanded to a null value.
 TARGET_PREBUILT_KERNEL_DIR = $(TARGET_KERNEL_SOURCE)-prebuilt/$(TARGET_PREBUILT_TAG)/kernel/$(TARGET_PRODUCT)-$(TARGET_BUILD_VARIANT)
 
-# Necessary to prevent sparse flag (-s) from being passed to make_ext4fs. With
-# sparse image, system partition did not show up on SDCARD after writing
-# live.img, and the resulting images are not mountable on workstation or the
-# device.
-# XXX FIXME Why is this not working? Does our kernel need a flag turned on?
+# Necessary to prevent sparse flag (-s) from being passed to make_ext4fs.
+# Droidboot and Diskinstaller do not support writing sparse EXT images yet.
 TARGET_USERIMAGES_SPARSE_EXT_DISABLED := true
 
 # Explicitly required by build/core/config.mk:
