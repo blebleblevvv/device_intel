@@ -38,3 +38,10 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
 	audio.primary.$(TARGET_PRODUCT) \
 
+# a2dp support
+PRODUCT_PACKAGES += \
+         audio.a2dp.default \
+
+# bluetooth config
+PRODUCT_PACKAGES += \
+         hciconfig \

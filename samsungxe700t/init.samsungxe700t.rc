@@ -44,6 +44,9 @@ on post-fs-data
     chown wifi wifi /system/etc/wifi/wpa_supplicant.conf
     mkdir /data/system/wpa_supplicant 0770 wifi wifi
 
+   # To store BT paired info
+    mkdir /data/misc/hcid 0770 bluetooth bluetooth
+
     # bring up Option modem hso interface and set permission
 #    insmod /system/lib/modules/hso.ko
 #    start ril-daemon
@@ -71,7 +74,11 @@ on post-fs-data
     setprop vold.post_fs_data_done 1
 
 on boot
-
+    chmod 0660 /sys/class/rfkill/rfkill0/state
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/type
+    chown root bluetooth /dev/rfkill
+    chmod 0660 /dev/rfkill
 
 # for eth0
 service std_pc-setup /system/bin/sh /system/etc/init.samsungxe700t.sh
@@ -113,3 +120,47 @@ service bugreport /system/bin/bugmailer.sh -b /system/media/audio/ui/Dock.ogg -e
     oneshot
     keycodes 115 114
 
+service hciattach /system/xbin/hciconfig hci0 up
+    user root
+    group bluetooth net_bt_admin misc
+    disabled
+    oneshot
+
+service hfag /system/bin/sdptool add --channel=10 HFAG
+    user bluetooth
+    group bluetooth net_bt_admin
+    disabled
+    oneshot
+
+service hsag /system/bin/sdptool add --channel=11 HSAG
+    user bluetooth
+    group bluetooth net_bt_admin
+    disabled
+    oneshot
+
+service opush /system/bin/sdptool add --channel=12 OPUSH
+    user bluetooth
+    group bluetooth net_bt_admin
+    disabled
+    oneshot
+
+service pbap /system/bin/sdptool add --channel=19 PBAP
+    user bluetooth
+    group bluetooth net_bt_admin
+    disabled
+    oneshot
+
+service dhcpcd_bnep0 /system/bin/dhcpcd -ABKL -f /system/etc/dhcpcd/android-bt.conf
+    class main
+    disabled
+    oneshot
+
+service dhcpcd_bnep0 /system/bin/dhcpcd -ABKL -f /system/etc/dhcpcd/android-bt.conf
+    class main
+    disabled
+    oneshot
+
+service iprenew_bnep0 /system/bin/dhcpcd -n
+    class main
+    disabled
+    oneshot

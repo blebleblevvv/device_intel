@@ -50,7 +50,7 @@ USE_CAMERA_STUB := true
 
 # Self explanatory. Used by hcidump, glib, bluez, netd, audioflinger, alsa,
 # etc.
-BOARD_HAVE_BLUETOOTH=false
+BOARD_HAVE_BLUETOOTH=true
 
 TARGET_USE_SYSLINUX := true
 TARGET_SYSLINUX_FILES = device/intel/pc_std/intellogo.png \
