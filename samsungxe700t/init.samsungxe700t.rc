@@ -51,6 +51,9 @@ on post-fs-data
     # Insert the hid-multitouch driver
     insmod /system/lib/modules/hid-multitouch.ko
 
+    # Insert Wacom driver for stylus
+    insmod /system/lib/modules/wacom.ko
+
     # Insert USB NIC driver
     insmod /system/lib/modules/asix.ko
 
