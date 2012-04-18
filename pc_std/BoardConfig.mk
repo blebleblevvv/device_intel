@@ -67,10 +67,6 @@ TARGET_SYSLINUX_CONFIG := device/intel/pc_std/syslinux.cfg
 TARGET_DISKINSTALLER_CONFIG := device/intel/pc_std/installer.conf
 endif
 
-# Product specific overlay - uncomment this if/when an overlay
-# or part of an overlay needs to apply to this target only
-PRODUCT_PACKAGE_OVERLAYS := device/intel/pc_std/overlay
-
 # Causes bootable/diskinstaller/config.mk to be included which enables the
 # installer_img build target.  For more information on the installer, see
 # http://otc-android.intel.com/wiki/index.php/Installer
