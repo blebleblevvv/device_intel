@@ -45,3 +45,7 @@ PRODUCT_PACKAGES += \
 # bluetooth config
 PRODUCT_PACKAGES += \
          hciconfig \
+
+# backlight control
+PRODUCT_PACKAGES += \
+        lights.pc_std \

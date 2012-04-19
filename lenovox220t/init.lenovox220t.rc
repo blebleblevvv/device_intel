@@ -17,7 +17,7 @@ on init
 #    setprop ro.gps.data.serial.interface ttyHS1
 #    setprop ro.gps.control.serial.interface ttyHS2
 
-#    chown system system /sys/class/backlight/acpi_video2/brightness
+    chown system system /sys/class/backlight/intel_backlight/brightness
 
     setprop service.adb.tcp.port 5555
 
