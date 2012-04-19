@@ -21,6 +21,7 @@
 #include "audio_hal.h"
 
 #define SPEAKER_PLAYBACK_VOLUME     "Speaker Playback Volume"
+#define SURROUND_PLAYBACK_VOLUME    "Surround Playback Volume"
 #define SPEAKER_PLAYBACK_SWITCH     "Speaker Playback Switch"
 #define HEADPHONE_PLAYBACK_VOLUME   "Headphone Playback Volume"
 #define HEADPHONE_PLAYBACK_SWITCH   "Headphone Playback Switch"
@@ -115,7 +116,9 @@ bool intel_hda_setup_mixer()
     if (!mixer_inst)
         return false;
 
-    mixer_ctls.speaker_volume  = mixer_get_ctl_by_name(mixer_inst, SPEAKER_PLAYBACK_VOLUME);
+    mixer_ctls.speaker_volume  = mixer_get_ctl_by_name(mixer_inst, SURROUND_PLAYBACK_VOLUME);
+    if (!mixer_ctls.speaker_volume)
+        mixer_ctls.speaker_volume  = mixer_get_ctl_by_name(mixer_inst, SPEAKER_PLAYBACK_VOLUME);
     mixer_ctls.speaker_enable  = mixer_get_ctl_by_name(mixer_inst, SPEAKER_PLAYBACK_SWITCH);
     mixer_ctls.headphone_enable  = mixer_get_ctl_by_name(mixer_inst, HEADPHONE_PLAYBACK_SWITCH);
     mixer_ctls.headphone_volume  = mixer_get_ctl_by_name(mixer_inst, HEADPHONE_PLAYBACK_VOLUME);
