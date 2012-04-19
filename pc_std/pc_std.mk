@@ -49,3 +49,13 @@ PRODUCT_PACKAGES += \
 # backlight control
 PRODUCT_PACKAGES += \
         lights.pc_std \
+
+# Start eth0 on boot (for debugging)
+ifneq ($(TARGET_BUILD_VARIANT),user)
+PRODUCT_PROPERTY_OVERRIDES += \
+	net.eth0.startonboot=1 \
+	net.eth0.ip=192.168.42.1 \
+	net.eth0.netmask=255.255.255.0
+
+PRODUCT_COPY_FILES += $(LOCAL_PATH)/init.net.eth0.sh:system/etc/init.net.eth0.sh
+endif

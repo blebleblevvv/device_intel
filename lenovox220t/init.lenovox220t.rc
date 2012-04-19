@@ -74,7 +74,7 @@ on boot
     chown root bluetooth /dev/rfkill
     chmod 0660 /dev/rfkill
 
-# for eth0
+# additional initialization
 service std_pc-setup /system/bin/sh /system/etc/init.lenovox220t.sh
     class core
     oneshot
@@ -158,3 +158,12 @@ service iprenew_bnep0 /system/bin/dhcpcd -n
     class main
     disabled
     oneshot
+
+# for eth0
+service net_eth0-start /system/bin/sh /system/etc/init.net.eth0.sh
+    class core
+    disabled
+    oneshot
+
+on property:net.eth0.startonboot=1
+    start net_eth0-start
