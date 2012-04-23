@@ -38,6 +38,7 @@
 
 struct intel_hda_audio_device {
     struct audio_hw_device device;
+    bool mic_mute;
 };
 
 // Function prototypes
@@ -75,6 +76,7 @@ int intel_hda_open_input_stream(struct audio_hw_device *dev, uint32_t devices,
 
 void intel_hda_close_input_stream(struct audio_hw_device *dev,
                                    struct audio_stream_in *in);
+int intel_hda_set_input_mode(bool on);
 
 // Mixer devices
 bool intel_hda_setup_mixer();

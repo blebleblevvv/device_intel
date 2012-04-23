@@ -33,6 +33,9 @@
 #define MASTER_PLAYBACK_VOLUME      "Master Playback Volume"
 #define MASTER_PLAYBACK_SWITCH      "Master Playback Switch"
 
+#define MAX_CAPTURE_VOLUME           100
+#define DEFAULT_MIC_BOOST_VOLUME     1
+
 struct mixer_control
 {
 // output control
@@ -40,7 +43,11 @@ struct mixer_control
     struct mixer_ctl *speaker_volume;
     struct mixer_ctl *headphone_enable;
     struct mixer_ctl *headphone_volume;
- // input controls to be implemented
+// input controls
+    struct mixer_ctl *capture_switch;
+    struct mixer_ctl *capture_volume;
+    struct mixer_ctl *mic_boost_volume;
+
     float voice_volume;
     float master_volume;
 };
@@ -110,6 +117,41 @@ int intel_hda_set_master_volume(struct audio_hw_device *dev, float volume)
     return 0;
 }
 
+int intel_hda_set_input_mode(bool on)
+{
+    int num_values, i;
+    _ENTER();
+    LOGD("Set input mode %d",on);
+    if (!mixer_ctls.capture_switch || !mixer_ctls.capture_volume) {
+        LOGE("mixer_ctls.capture_switch/capture_volume: Invalid");
+        return -ENOSYS;
+    }
+    num_values = mixer_ctl_get_num_values(mixer_ctls.capture_switch);
+    for (i = 0; i < num_values; i++) {
+        if (mixer_ctl_set_value(mixer_ctls.capture_switch, i, on?1:0)) {
+            LOGE( "intel_hda_set_input_mode: invalid value\n");
+            return -ENOSYS;
+        }
+    }
+    num_values = mixer_ctl_get_num_values(mixer_ctls.capture_volume);
+    for (i = 0; i < num_values; i++) {
+        if (mixer_ctl_set_value(mixer_ctls.capture_volume, i, on?MAX_CAPTURE_VOLUME:0)) {
+            LOGE( "intel_hda_set_input_mode: invalid value\n");
+            return -ENOSYS;
+        }
+    }
+
+    num_values = mixer_ctl_get_num_values(mixer_ctls.mic_boost_volume);
+    for (i = 0; i < num_values; i++) {
+        if (mixer_ctl_set_value(mixer_ctls.mic_boost_volume, i, on?DEFAULT_MIC_BOOST_VOLUME:0)) {
+            LOGE( "intel_hda_set_input_mode: invalid value\n");
+            return -ENOSYS;
+        }
+    }
+    _EXIT();
+    return 0;
+}
+
 bool intel_hda_setup_mixer()
 {
     mixer_inst = mixer_open(0);
@@ -123,5 +165,10 @@ bool intel_hda_setup_mixer()
     mixer_ctls.headphone_enable  = mixer_get_ctl_by_name(mixer_inst, HEADPHONE_PLAYBACK_SWITCH);
     mixer_ctls.headphone_volume  = mixer_get_ctl_by_name(mixer_inst, HEADPHONE_PLAYBACK_VOLUME);
     mixer_ctls.voice_volume = mixer_ctls.master_volume = 1.0f;
+
+    mixer_ctls.capture_switch  = mixer_get_ctl_by_name(mixer_inst, CAPTURE_SWITCH);
+    mixer_ctls.capture_volume  = mixer_get_ctl_by_name(mixer_inst, CAPTURE_VOLUME);
+    mixer_ctls.mic_boost_volume  = mixer_get_ctl_by_name(mixer_inst, INTRL_MIC_VOLUME);
+
     return true;
 }
