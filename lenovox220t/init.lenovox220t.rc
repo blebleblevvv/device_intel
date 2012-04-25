@@ -149,11 +149,6 @@ service dhcpcd_bnep0 /system/bin/dhcpcd -ABKL -f /system/etc/dhcpcd/android-bt.c
     disabled
     oneshot
 
-service dhcpcd_bnep0 /system/bin/dhcpcd -ABKL -f /system/etc/dhcpcd/android-bt.conf
-    class main
-    disabled
-    oneshot
-
 service iprenew_bnep0 /system/bin/dhcpcd -n
     class main
     disabled
