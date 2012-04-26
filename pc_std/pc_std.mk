@@ -9,6 +9,7 @@ LOCAL_PATH := device/intel/pc_std
 PRODUCT_PACKAGES += \
     libGLES_mesa    \
     gralloc.$(TARGET_PRODUCT) \
+    camera.pc_std \
 
 #
 # tinyalsa utils

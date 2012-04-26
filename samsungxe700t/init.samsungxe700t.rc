@@ -73,6 +73,10 @@ on post-fs-data
     insmod /system/lib/modules/snd-hda-codec-realtek.ko
     insmod /system/lib/modules/snd-hda-intel.ko
 
+    #Insert camera modules
+    insmod /system/lib/modules/videodev.ko
+    insmod /system/lib/modules/uvcvideo.ko
+
     #flag vold that post-fs-data is finished
     setprop vold.post_fs_data_done 1
 
