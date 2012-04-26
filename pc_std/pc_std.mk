@@ -63,3 +63,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 PRODUCT_COPY_FILES += $(LOCAL_PATH)/init.net.eth0.sh:system/etc/init.net.eth0.sh
 endif
+
+# For OTA Update
+PRODUCT_PACKAGES += \
+	Ota \
+	OtaDownloader \
+
