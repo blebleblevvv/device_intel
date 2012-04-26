@@ -127,8 +127,11 @@ static int intel_hda_open(const hw_module_t* module, const char* name,
     adev->device.close_input_stream = intel_hda_close_input_stream;
     adev->device.dump = intel_hda_dump;
 
-    if (!intel_hda_setup_mixer())
+    if (!intel_hda_setup_mixer()) {
+        free(adev);
+        _EXIT();
         return -ENXIO;
+    }
 
     *device = &adev->device.common;
     _EXIT();
