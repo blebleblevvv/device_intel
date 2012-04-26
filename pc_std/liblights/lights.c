@@ -50,10 +50,11 @@ static int get_max_brightness()
 
     ret = read(fd, &tmp_s[0], sizeof(tmp_s));
     if (ret < 0)
-        return value;
+        goto fail;
 
     value = atoi(&tmp_s[0]);
 
+fail:
     close(fd);
 
     return value;
