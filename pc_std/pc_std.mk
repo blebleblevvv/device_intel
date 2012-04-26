@@ -50,6 +50,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
         lights.pc_std \
 
+# hwcomposer
+PRODUCT_PACKAGES += \
+        hwcomposer.default
+
 # Start eth0 on boot (for debugging)
 ifneq ($(TARGET_BUILD_VARIANT),user)
 PRODUCT_PROPERTY_OVERRIDES += \
