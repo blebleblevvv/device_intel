@@ -99,12 +99,21 @@ static int intel_hda_open(const hw_module_t* module, const char* name,
 
     _ENTER();
 
-    if (strcmp(name, AUDIO_HARDWARE_INTERFACE) != 0)
-            return -EINVAL;
+    if (strcmp(name, AUDIO_HARDWARE_INTERFACE) != 0) {
+        ret = -EINVAL;
+        goto fail;
+    }
+
+    if (!intel_hda_setup_mixer()) {
+        ret = -ENXIO;
+        goto fail;
+    }
 
     adev = calloc(1, sizeof(struct intel_hda_audio_device));
-    if (!adev)
-            return -ENOMEM;
+    if (!adev) {
+        ret = -ENOMEM;
+        goto fail;
+    }
 
     adev->device.common.tag = HARDWARE_DEVICE_TAG;
     adev->device.common.version = 0;
@@ -127,15 +136,12 @@ static int intel_hda_open(const hw_module_t* module, const char* name,
     adev->device.close_input_stream = intel_hda_close_input_stream;
     adev->device.dump = intel_hda_dump;
 
-    if (!intel_hda_setup_mixer()) {
-        free(adev);
-        _EXIT();
-        return -ENXIO;
-    }
-
     *device = &adev->device.common;
+    ret = 0;
+
+fail:
     _EXIT();
-    return 0;
+    return ret;
 }
 
 static struct hw_module_methods_t hal_module_methods = {

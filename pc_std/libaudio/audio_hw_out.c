@@ -142,19 +142,23 @@ static ssize_t out_write(struct audio_stream_out *stream, const void* buffer,
 {
     struct intel_hda_stream_out *out = (struct intel_hda_stream_out *)stream;
     int ret;
+
     _ENTER();
 
     if (out->standby) {
         start_pcm_stream(out);
         out->standby = false;
-        }
+    }
     if (bytes > pcm_get_buffer_size(out->pcm)) {
         LOGE("out_write: Unexpected Size");
-        return -EINVAL;
+        ret = -EINVAL;
+        goto fail;
     }
     ret = pcm_write(out->pcm, (void*)buffer, bytes);
+
+fail:
     _EXIT();
-    return bytes;
+    return ret;
 }
 
 static int out_get_render_position(const struct audio_stream_out *stream,
@@ -206,8 +210,10 @@ int intel_hda_open_output_stream(struct audio_hw_device *dev,
     _ENTER();
 
     out = (struct intel_hda_stream_out *)calloc(1, sizeof(struct intel_hda_stream_out));
-    if (!out)
-        return -ENOMEM;
+    if (!out) {
+        ret = -ENOMEM;
+        goto fail;
+    }
 
     out->stream.common.get_sample_rate = out_get_sample_rate;
     out->stream.common.set_sample_rate = out_set_sample_rate;
@@ -233,9 +239,11 @@ int intel_hda_open_output_stream(struct audio_hw_device *dev,
     *sample_rate = out_get_sample_rate(&out->stream.common);
     *stream_out = &out->stream;
 
-    _EXIT();
+    ret = 0;
 
-    return 0;
+fail:
+    _EXIT();
+    return ret;
 }
 
 void intel_hda_close_output_stream(struct audio_hw_device *dev,

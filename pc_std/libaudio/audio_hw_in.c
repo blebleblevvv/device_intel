@@ -146,16 +146,23 @@ static int in_set_gain(struct audio_stream_in *stream, float gain)
 
 static bool start_pcm_in_stream(struct intel_hda_stream_in *in)
 {
+    bool ret;
+
     _ENTER();
     intel_hda_set_input_mode(true);
     in->config.rate = in->requested_rate;
     in->pcm =  pcm_open(0, 0, PCM_IN, &in->config);
     if (!in->pcm || !pcm_is_ready(in->pcm)) {
-        return false;
+        ret = false;
+        goto fail;
     }
     intel_hda_set_input_mode(true);
+
+    ret = true;
+
+fail:
     _EXIT();
-    return true;
+    return ret;
 }
 
 static ssize_t in_read(struct audio_stream_in *stream, void* buffer,
@@ -165,21 +172,32 @@ static ssize_t in_read(struct audio_stream_in *stream, void* buffer,
     int ret;
 
     _ENTER();
+
     if (in->standby) {
         start_pcm_in_stream(in);
         in->standby = false;
-        }
-    if (bytes < pcm_get_buffer_size(in->pcm)) {
-        LOGE("in_write: Unexpected Size");
-        return -EINVAL;
     }
-    ret = pcm_read(in->pcm, (void*)buffer, bytes);
+
+    if (bytes < pcm_get_buffer_size(in->pcm)) {
+        LOGE("in_read: Unexpected Size");
+        ret = -EINVAL;
+        goto fail;
+    }
+
+    ret = pcm_read(in->pcm, buffer, bytes);
     if (ret < 0)
-	return ret;
+        goto fail;
+
+    // Need to zero fill buffer if mic is muted.
+    // This ensures apps read silence when mic is muted.
     if (in->dev->mic_mute)
         memset(buffer, 0, bytes);
+
+    ret = bytes;
+
+fail:
     _EXIT();
-    return bytes;
+    return ret;
 }
 
 static uint32_t in_get_input_frames_lost(struct audio_stream_in *stream)
@@ -246,8 +264,11 @@ int intel_hda_open_input_stream(struct audio_hw_device *dev, uint32_t devices,
     _ENTER();
 
     in = (struct intel_hda_stream_in *)calloc(1, sizeof(struct intel_hda_stream_in));
-    if (!in)
-        return -ENOMEM;
+    if (!in) {
+        ret = -ENOMEM;
+        goto fail;
+    }
+
     in->stream.common.get_sample_rate = in_get_sample_rate;
     in->stream.common.set_sample_rate = in_set_sample_rate;
     in->stream.common.get_buffer_size = in_get_buffer_size;
@@ -269,8 +290,12 @@ int intel_hda_open_input_stream(struct audio_hw_device *dev, uint32_t devices,
     in->config = pcm_config_input_def;
     *stream_in = &in->stream;
     in->dev = dev;
+
+    ret = 0;
+
+fail:
     _EXIT();
-    return 0;
+    return ret;
 }
 
 void intel_hda_close_input_stream(struct audio_hw_device *dev,
