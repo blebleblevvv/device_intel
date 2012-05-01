@@ -18,16 +18,21 @@
 #include <pthread.h>
 #include <stdint.h>
 #include <sys/time.h>
-
+#include <audio_utils/resampler.h>
 #include "audio_hal.h"
 
 struct intel_hda_stream_in {
     struct audio_stream_in stream;
     struct pcm_config config;
     struct pcm *pcm;
+    struct resampler_itfe *resampler;
+    struct resampler_buffer_provider buf_provider;
     bool standby;
     uint32_t requested_rate;
     struct intel_hda_audio_device *dev;
+    int32_t read_status;
+    size_t frames_in;
+    int16_t *buffer;
 };
 
 #define DEFAULT_IN_PERIOD_SIZE    1024
@@ -41,6 +46,12 @@ struct pcm_config pcm_config_input_def = {
     .period_count = DEFAULT_IN_PERIOD_COUNT,
     .format = PCM_FORMAT_S16_LE,
 };
+
+static int get_next_buffer(struct resampler_buffer_provider *buffer_provider,
+                                   struct resampler_buffer* buffer);
+static void release_buffer(struct resampler_buffer_provider *buffer_provider,
+                                  struct resampler_buffer* buffer);
+static ssize_t read_frames(struct intel_hda_stream_in *in, void *buffer, ssize_t frames);
 
 /** audio_stream_in implementation **/
 static uint32_t in_get_sample_rate(const struct audio_stream *stream)
@@ -64,24 +75,27 @@ static int in_set_sample_rate(struct audio_stream *stream, uint32_t rate)
 static size_t in_get_buffer_size(const struct audio_stream *stream)
 {
     struct intel_hda_stream_in *in = (struct intel_hda_stream_in *)stream;
+    size_t size;
     _ENTER();
+    size = intel_hda_get_input_buffer_size((struct audio_hw_device *)in->dev,
+            in->requested_rate,
+            AUDIO_FORMAT_PCM_16_BIT,in->config.channels);
     _EXIT();
-    if (in->pcm)
-        return pcm_get_buffer_size(in->pcm);
-    else
-        return DEFAULT_IN_PERIOD_SIZE*DEFAULT_IN_PERIOD_COUNT;
+    return size;
 }
 
 static uint32_t in_get_channels(const struct audio_stream *stream)
 {
     struct intel_hda_stream_in *in = (struct intel_hda_stream_in *)stream;
+    uint32_t channels;
     _ENTER();
-    _EXIT();
     if (in->config.channels == 1) {
-        return AUDIO_CHANNEL_IN_MONO;
+        channels = AUDIO_CHANNEL_IN_MONO;
     } else {
-        return AUDIO_CHANNEL_IN_STEREO;
+        channels = AUDIO_CHANNEL_IN_STEREO;
     }
+    _EXIT();
+    return channels;
 }
 
 static int in_get_format(const struct audio_stream *stream)
@@ -150,13 +164,18 @@ static bool start_pcm_in_stream(struct intel_hda_stream_in *in)
 
     _ENTER();
     intel_hda_set_input_mode(true);
-    in->config.rate = in->requested_rate;
     in->pcm =  pcm_open(0, 0, PCM_IN, &in->config);
     if (!in->pcm || !pcm_is_ready(in->pcm)) {
         ret = false;
         goto fail;
     }
     intel_hda_set_input_mode(true);
+
+    /* if no supported sample rate is available, use the resampler */
+    if (in->resampler) {
+        in->resampler->reset(in->resampler);
+        in->frames_in = 0;
+    }
 
     ret = true;
 
@@ -169,6 +188,7 @@ static ssize_t in_read(struct audio_stream_in *stream, void* buffer,
                        size_t bytes)
 {
     struct intel_hda_stream_in *in = (struct intel_hda_stream_in *)stream;
+    size_t frames_rq = bytes / audio_stream_frame_size(&stream->common);
     int ret;
 
     _ENTER();
@@ -184,7 +204,13 @@ static ssize_t in_read(struct audio_stream_in *stream, void* buffer,
         goto fail;
     }
 
-    ret = pcm_read(in->pcm, buffer, bytes);
+    if (in->resampler != NULL)
+    {
+        ret = read_frames(in,buffer,frames_rq);
+    } else {
+        ret = pcm_read(in->pcm, (void*)buffer, bytes);
+    }
+
     if (ret < 0)
         goto fail;
 
@@ -246,9 +272,11 @@ size_t intel_hda_get_input_buffer_size(const struct audio_hw_device *dev,
                                          uint32_t sample_rate, int format,
                                          int channel_count)
 {
+    size_t size;
     _ENTER();
+    size = DEFAULT_IN_PERIOD_SIZE;
     _EXIT();
-    return DEFAULT_IN_PERIOD_SIZE*DEFAULT_IN_PERIOD_COUNT;
+    return size*channel_count*sizeof(int16_t);
 }
 
 int intel_hda_open_input_stream(struct audio_hw_device *dev, uint32_t devices,
@@ -259,7 +287,7 @@ int intel_hda_open_input_stream(struct audio_hw_device *dev, uint32_t devices,
 {
     struct intel_hda_audio_device *ladev = (struct intel_hda_audio_device *)dev;
     struct intel_hda_stream_in *in;
-    int ret;
+    int ret = 0;
 
     _ENTER();
 
@@ -284,14 +312,36 @@ int intel_hda_open_input_stream(struct audio_hw_device *dev, uint32_t devices,
     in->stream.set_gain = in_set_gain;
     in->stream.read = in_read;
     in->stream.get_input_frames_lost = in_get_input_frames_lost;
-    LOGD("Requested sample rate %d\n", *sample_rate);
     in->requested_rate = *sample_rate;
     in->standby = false;
     in->config = pcm_config_input_def;
     *stream_in = &in->stream;
-    in->dev = dev;
+    in->dev = (struct intel_hda_audio_device *)dev;
+    LOGD("Requested sample rate %d default rate %d\n", in->requested_rate,
+            in->config.rate);
 
-    ret = 0;
+
+    if (in->requested_rate != in->config.rate) {
+        in->buf_provider.get_next_buffer = get_next_buffer;
+        in->buf_provider.release_buffer = release_buffer;
+
+        in->buffer = malloc(in->config.period_size *
+                audio_stream_frame_size(&in->stream.common));
+        if (!in->buffer) {
+            ret = -ENOMEM;
+            goto fail;
+        }
+        ret = create_resampler(in->config.rate,
+                in->requested_rate,
+                in->config.channels,
+                RESAMPLER_QUALITY_DEFAULT,
+                &in->buf_provider,
+                &in->resampler);
+        if (ret != 0) {
+            LOGE("Unable to create resampler [%d]", ret);
+            ret = -EINVAL;
+        }
+    }
 
 fail:
     _EXIT();
@@ -299,9 +349,124 @@ fail:
 }
 
 void intel_hda_close_input_stream(struct audio_hw_device *dev,
-                                   struct audio_stream_in *in)
+                                   struct audio_stream_in *stream)
 {
+    struct intel_hda_stream_in *in = (struct intel_hda_stream_in *)stream;
     _ENTER();
+    if (in->resampler) {
+        free(in->buffer);
+        release_resampler(in->resampler);
+    }
     free(in);
     _EXIT();
+}
+
+static int get_next_buffer(struct resampler_buffer_provider *buffer_provider,
+                                   struct resampler_buffer* buffer)
+{
+    struct intel_hda_stream_in *in;
+    int ret = 0;
+    _ENTER();
+    if (buffer_provider == NULL || buffer == NULL){
+        ret = -EINVAL;
+        goto fail;
+    }
+
+    in = (struct intel_hda_stream_in *)((char *)buffer_provider -
+            offsetof(struct intel_hda_stream_in, buf_provider));
+
+    if (in->pcm == NULL) {
+        buffer->raw = NULL;
+        buffer->frame_count = 0;
+        in->read_status = -ENODEV;
+        ret = -ENODEV;
+        goto fail;
+    }
+
+    if (in->frames_in == 0) {
+        in->read_status = pcm_read(in->pcm,
+                (void*)in->buffer,
+                in->config.period_size *
+                audio_stream_frame_size(&in->stream.common));
+        ret = in->read_status;
+        if (in->read_status != 0) {
+            LOGE("get_next_buffer() pcm_read error %d", in->read_status);
+            buffer->raw = NULL;
+            buffer->frame_count = 0;
+            goto fail;
+        }
+        in->frames_in = in->config.period_size;
+    }
+
+    buffer->frame_count = (buffer->frame_count > in->frames_in) ?
+                                in->frames_in : buffer->frame_count;
+    buffer->i16 = in->buffer + (in->config.period_size - in->frames_in) *
+                                                in->config.channels;
+fail:
+    _EXIT();
+    return ret;
+
+}
+
+static void release_buffer(struct resampler_buffer_provider *buffer_provider,
+        struct resampler_buffer* buffer)
+{
+    struct intel_hda_stream_in *in;
+    _ENTER();
+
+    if (buffer_provider == NULL || buffer == NULL)
+        goto fail;
+
+    in = (struct intel_hda_stream_in *)((char *)buffer_provider -
+            offsetof(struct intel_hda_stream_in, buf_provider));
+
+    in->frames_in -= buffer->frame_count;
+
+fail:
+    _EXIT();
+    return;
+}
+
+/* read_frames() reads frames from kernel driver, down samples to capture rate
+ * if necessary and output the number of frames requested to the buffer specified */
+static ssize_t read_frames(struct intel_hda_stream_in *in, void *buffer, ssize_t frames)
+{
+    ssize_t frames_wr = 0;
+    ssize_t ret = 0;
+    _ENTER();
+    while (frames_wr < frames) {
+        size_t frames_rd = frames - frames_wr;
+        if (in->resampler != NULL) {
+            in->resampler->resample_from_provider(in->resampler,
+                    (int16_t *)((char *)buffer +
+                            frames_wr * audio_stream_frame_size(&in->stream.common)),
+                    &frames_rd);
+        } else {
+            struct resampler_buffer buf = {
+                    { raw : NULL, },
+                    frame_count : frames_rd,
+            };
+            get_next_buffer(&in->buf_provider, &buf);
+            if (buf.raw != NULL) {
+                memcpy((char *)buffer +
+                        frames_wr * audio_stream_frame_size(&in->stream.common),
+                        buf.raw,
+                        buf.frame_count * audio_stream_frame_size(&in->stream.common));
+                frames_rd = buf.frame_count;
+            }
+            release_buffer(&in->buf_provider, &buf);
+        }
+        /* in->read_status is updated by getNextBuffer() also called by
+         * in->resampler->resample_from_provider() */
+        if (in->read_status != 0) {
+            ret = in->read_status;
+            goto fail;
+        }
+
+        frames_wr += frames_rd;
+    }
+    ret = frames_wr;
+fail:
+    _EXIT();
+    return ret;
 }
