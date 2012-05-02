@@ -478,3 +478,9 @@ service dumpstate /system/bin/dumpstate -s
     socket dumpstate stream 0660 shell log
     disabled
     oneshot
+
+#enable Houdini for executable
+service enable_houdini /system/bin/enable_houdini
+    class main
+    oneshot
+
