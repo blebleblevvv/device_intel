@@ -6,7 +6,7 @@ on early-init
     # for backwards compatibility
     symlink /mnt/sdcard /sdcard
 
-    export MESA_EXTENSION_OVERRIDE +GL_OES_EGL_image_external
+    export MESA_EXTENSION_OVERRIDE "+GL_OES_EGL_image_external -GL_ARB_framebuffer_object" 
 
 on init
 #    chown root radio /dev/ttyGTM*
