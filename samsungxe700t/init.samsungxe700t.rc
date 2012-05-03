@@ -6,7 +6,10 @@ on early-init
     # for backwards compatibility
     symlink /mnt/sdcard /sdcard
 
+    # Mesa environment variables
     export MESA_EXTENSION_OVERRIDE "+GL_OES_EGL_image_external -GL_ARB_framebuffer_object" 
+    # Force on S3TC hardware decompression support in Mesa
+    export force_s3tc_enable true
 
 on init
 #    chown root radio /dev/ttyGTM*
