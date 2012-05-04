@@ -1,13 +1,5 @@
 # This overrides settings in the products/generic/system.prop file
 
-# ro.sf.lcd.density does not describe the actual LCD density
-# in DPIs but a "virtual" density. The values this property can take
-# are 120, 160, 240 and, in later Android versions, 320. This is to ease
-# developers job so they don't have to support too many resolutions.
-# Because GrennRidge has a 155DPI LCD panel, 160 was chosen.
-ro.sf.lcd_density = 160
-panel.physicalWidthmm = 223
-panel.physicalHeightmm = 125
-
-# set opengles version to 0x20000
-ro.opengles.version = 131072
+# volume up while booting Android reboots into Recovery console
+# using implementation in frameworks/base
+ro.recoverymagic = true
