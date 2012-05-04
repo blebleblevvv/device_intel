@@ -23,10 +23,13 @@ TARGET_INSTALLER_BOOTMEDIA = usb
 BOARD_WPA_SUPPLICANT_DRIVER=NL80211
 WPA_SUPPLICANT_VERSION:=VER_0_8_X
 
+# set the wifi_driver_basename variable
+include device/intel/pc_std/select_wifi_driver.mk
+
 # Tells Android HAL how to load WIFI driver.
 # See hardware/libhardware_legacy/wifi/{Android.mk,wifi.c}
-WIFI_DRIVER_MODULE_PATH := /system/lib/modules/iwlagn.ko
-WIFI_DRIVER_MODULE_NAME := iwlagn
+WIFI_DRIVER_MODULE_PATH := /system/lib/modules/$(wifi_driver_basename).ko
+WIFI_DRIVER_MODULE_NAME := $(wifi_driver_basename)
 WIFI_DRIVER_MODULE_ARG := 
 BOARD_HAVE_WIFI := true
 ADDITIONAL_DEFAULT_PROPERTIES += wifi.interface=wlan0
