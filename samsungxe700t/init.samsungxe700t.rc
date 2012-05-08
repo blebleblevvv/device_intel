@@ -1,120 +1,13 @@
-on early-init
-    export EXTERNAL_STORAGE /mnt/sdcard
-    mkdir /mnt/sdcard 0000 system system
-    mkdir /mnt/sdcard2 0000 system system
-
-    # for backwards compatibility
-    symlink /mnt/sdcard /sdcard
-
-    # Mesa environment variables
-    export MESA_EXTENSION_OVERRIDE "+GL_OES_EGL_image_external -GL_ARB_framebuffer_object" 
-    # Force on S3TC hardware decompression support in Mesa
-    export force_s3tc_enable true
-
-on init
-#    chown root radio /dev/ttyGTM*
-#    chmod 0660 /dev/ttyGTM*
-#    setprop gsm.firmware.upload ok
-
-    # Option GPS setup: set properties
-#    setprop ro.gps.data.serial.interface ttyHS1
-#    setprop ro.gps.control.serial.interface ttyHS2
-
-    chown system system /sys/class/backlight/intel_backlight/brightness
-
-    setprop service.adb.tcp.port 5555
-
-    # make mount point for usb thumb drives
-    mkdir /mnt/usbcard 0000 system system
-
-on post-fs
-    mkdir /data/media 0775 media_rw media_rw
-    chown media_rw media_rw /data/media
-
-    # mkdir /data/system/ 0770 system system
-    # chmod 0664 /sys/class/backlight/psb-bl/max_brightness
-    # chmod 0664 /sys/class/backlight/psb-bl/brightness
-    # chmod 0664 /sys/class/backlight/psb-bl/actual_brightness
+import init.pc_std.rc
 
 on post-fs-data
-    
-    # give system access to wpa_supplicant.conf for backup and restore
-    mkdir /data/system/ 0770 system system
-    mkdir /data/misc/wifi 0770 wifi wifi
-    mkdir /data/misc/wifi/sockets 0770 wifi wifi
-    mkdir /data/misc/dhcp 0770 dhcp wifi
-    chmod 0660 /system/etc/wifi/wpa_supplicant.conf
-    chown wifi wifi /system/etc/wifi/wpa_supplicant.conf
-    mkdir /data/system/wpa_supplicant 0770 wifi wifi
-
-   # To store BT paired info
-    mkdir /data/misc/hcid 0770 bluetooth bluetooth
-
-    # bring up Option modem hso interface and set permission
-#    insmod /system/lib/modules/hso.ko
-#    start ril-daemon
-
-    # Insert the hid-multitouch driver
-    insmod /system/lib/modules/hid-multitouch.ko
-
-    # Insert Wacom driver for stylus
-    insmod /system/lib/modules/wacom.ko
-
-    # Insert USB NIC driver
-    insmod /system/lib/modules/asix.ko
-
-    # Insert Audio drivers
-    insmod /system/lib/modules/soundcore.ko
-    insmod /system/lib/modules/snd.ko
-    insmod /system/lib/modules/snd-page-alloc.ko
-    insmod /system/lib/modules/snd-timer.ko
-    insmod /system/lib/modules/snd-pcm.ko
-    insmod /system/lib/modules/snd-hda-codec.ko
-    insmod /system/lib/modules/snd-hda-codec-realtek.ko
-    insmod /system/lib/modules/snd-hda-intel.ko
-
-    #Insert camera modules
-    insmod /system/lib/modules/videodev.ko
-    insmod /system/lib/modules/uvcvideo.ko
-
     #flag vold that post-fs-data is finished
     setprop vold.post_fs_data_done 1
 
-on boot
-    chmod 0660 /sys/class/rfkill/rfkill0/state
-    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
-    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/type
-    chown root bluetooth /dev/rfkill
-    chmod 0660 /dev/rfkill
-
 # additional initialization
-service std_pc-setup /system/bin/sh /system/etc/init.samsungxe700t.sh
+service device-setup /system/bin/sh /system/etc/init.samsungxe700t.sh
     class core
     oneshot
-
-# for wifi
-service wpa_supplicant /system/bin/wpa_supplicant -Dnl80211
-    group wifi
-    disabled
-    oneshot
-
-service dhcpcd_wlan0 /system/bin/dhcpcd -d -BK -f /system/etc/dhcpcd/android.conf
-    group wifi root system net_admin net_raw
-    disabled
-    oneshot
-
-
-on property:init.svc.wpa_supplicant=stopped
-    stop dhcpcd
-
-on property:wlan.driver.status=ok
-    ifup wlan0
-
-# create virtual SD card at /mnt/sdcard, based on the /data/media directory
-# daemon will drop to user/group system/media_rw after initializing
-# underlying files in /data/media will be created with user and group media_rw (1023)
-service sdcard /system/bin/sdcard /data/media 1023 1023
-    class late_start
 
 # bugreport is triggered by the VOLUME-DOWN and VOLUME-UP keys.
 # bugmailer.sh tool will invoke bugreport and prompt email composer
@@ -126,52 +19,3 @@ service bugreport /system/bin/bugmailer.sh -b /system/media/audio/ui/Dock.ogg -e
     disabled
     oneshot
     keycodes 115 114
-
-service hciattach /system/xbin/hciconfig hci0 up
-    user root
-    group bluetooth net_bt_admin misc
-    disabled
-    oneshot
-
-service hfag /system/bin/sdptool add --channel=10 HFAG
-    user bluetooth
-    group bluetooth net_bt_admin
-    disabled
-    oneshot
-
-service hsag /system/bin/sdptool add --channel=11 HSAG
-    user bluetooth
-    group bluetooth net_bt_admin
-    disabled
-    oneshot
-
-service opush /system/bin/sdptool add --channel=12 OPUSH
-    user bluetooth
-    group bluetooth net_bt_admin
-    disabled
-    oneshot
-
-service pbap /system/bin/sdptool add --channel=19 PBAP
-    user bluetooth
-    group bluetooth net_bt_admin
-    disabled
-    oneshot
-
-service dhcpcd_bnep0 /system/bin/dhcpcd -ABKL -f /system/etc/dhcpcd/android-bt.conf
-    class main
-    disabled
-    oneshot
-
-service iprenew_bnep0 /system/bin/dhcpcd -n
-    class main
-    disabled
-    oneshot
-
-# for eth0
-service net_eth0-start /system/bin/sh /system/etc/init.net.eth0.sh
-    class core
-    disabled
-    oneshot
-
-on property:net.eth0.startonboot=1
-    start net_eth0-start

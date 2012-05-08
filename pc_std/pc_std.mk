@@ -27,7 +27,9 @@ PRODUCT_COPY_FILES += \
 	device/intel/common/init.harddisk.rc:root/init.harddisk.rc \
 	$(LOCAL_PATH)/vold.fstab:system/etc/vold.fstab \
 	$(LOCAL_PATH)/wpa_supplicant.conf:system/etc/wifi/wpa_supplicant.conf \
-	$(LOCAL_PATH)/Vendor_0408_Product_3001.idc:system/usr/idc/Vendor_0408_Product_3001.idc
+	$(LOCAL_PATH)/Vendor_0408_Product_3001.idc:system/usr/idc/Vendor_0408_Product_3001.idc \
+	$(LOCAL_PATH)/init.pc_std.rc:root/init.pc_std.rc \
+	$(LOCAL_PATH)/init.pc_std.sh:system/etc/init.pc_std.sh \
 
 # for bugmailer
 PRODUCT_PACKAGES += send_bug

@@ -5,4 +5,6 @@
 # Sleeps are ok... but don't put anything in this file that
 # could possibly go into init.<platform>.rc
 
+echo 1 > /sys/power/wake_lock
+
 exit 0
