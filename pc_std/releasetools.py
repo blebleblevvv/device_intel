@@ -28,7 +28,7 @@ def update_raw_image_verify(info, in_img, out_img, node, inc):
             return
         else:
             print "%s images differ, will patch" % (in_img,)
-        d = common.Difference(src, tgt)
+        d = common.Difference(tgt, src)
         _, _, d = d.ComputePatch()
         print "%s      target: %d  source: %d  diff: %d" % (
             out_img, tgt.size, src.size, len(d))
