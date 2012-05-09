@@ -39,3 +39,26 @@ ADDITIONAL_DEFAULT_PROPERTIES += wifi.interface=wlan0
 # PRODUCT_PACKAGE_OVERLAYS := device/intel/samsungxe700t/overlay
 
 TARGET_RECOVERY_UI_LIB := libminimal_recovery_ui
+
+# setup additional build prop for product
+
+# camera props
+# camera.n: n is camera ID to android
+# camera.devname: device name of node, e.g. /dev/video0
+# number: number of cameras on board. If you claim more than two
+#         cameras, Adroid (ICS) will limit it to 2 in run time.
+# facing: [front/back]
+# orientation: [0/90/180/270]
+# If any field is missed or fed with an invalid value, NONE of
+# cameras will be reported to Android.
+
+ADDITIONAL_BUILD_PROPERTIES += \
+	ro.camera.number=2 \
+	ro.camera.0.devname=/dev/video0 \
+	ro.camera.0.facing=front \
+	ro.camera.0.orientation=0 \
+	ro.camera.1.devname=/dev/video1 \
+	ro.camera.1.facing=back \
+	ro.camera.1.orientation=0 \
+
+# end of mk file
