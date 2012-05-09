@@ -7,6 +7,7 @@ service net_eth0-start /system/bin/sh /system/etc/init.net.eth0.sh
 on post-fs-data
     # Insert USB NIC driver
     insmod /system/lib/modules/asix.ko
+    insmod /system/lib/modules/mcs7830.ko
     setprop net.eth0.ip 192.168.42.1
     setprop net.eth0.netmask 255.255.255.0
     start net_eth0-start

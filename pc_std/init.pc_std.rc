@@ -67,6 +67,7 @@ on post-fs-data
 
     # Insert USB NIC driver
     insmod /system/lib/modules/asix.ko
+    insmod /system/lib/modules/mcs7830.ko
 
     # Insert Audio drivers
     insmod /system/lib/modules/soundcore.ko
