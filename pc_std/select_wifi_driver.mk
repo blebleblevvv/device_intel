@@ -67,7 +67,7 @@ ifneq ($(CALLED_FROM_SETUP),true)
 endif
 
 ifeq ($(look_for_it_in),kernel_src)
-  ifneq ($(shell grep 'config  *IWLWIFI' $(TARGET_KERNEL_SOURCE)/drivers/net/wireless/iwlwifi/Kconfig),)
+  ifneq ($(shell grep 'config  *IWLWIFI *$$' $(TARGET_KERNEL_SOURCE)/drivers/net/wireless/iwlwifi/Kconfig),)
     wifi_driver_basename := iwlwifi
   else
     wifi_driver_basename := iwlagn
