@@ -41,6 +41,8 @@ struct mixer_control
 // output control
     struct mixer_ctl *speaker_enable;
     struct mixer_ctl *speaker_volume;
+    struct mixer_ctl *master_speaker_enable;
+    struct mixer_ctl *master_speaker_volume;
     struct mixer_ctl *headphone_enable;
     struct mixer_ctl *headphone_volume;
 // input controls
@@ -76,6 +78,22 @@ static int set_output_mixer_volume()
         for (i = 0; i < num_values; i++) {
         if (mixer_ctl_set_value(mixer_ctls.speaker_volume, i, speaker_max_value*mixer_ctls.voice_volume)) {
             LOGE( "intel_hda_set_voice_volume: invalid value\n");
+            ret = -ENOSYS;
+            goto fail;
+        }
+    }
+    num_values = mixer_ctl_get_num_values(mixer_ctls.master_speaker_volume);
+    for (i = 0; i < num_values; i++) {
+        if (mixer_ctl_set_value(mixer_ctls.master_speaker_volume, i, speaker_max_value*mixer_ctls.voice_volume)) {
+            LOGE( "intel_hda_set_voice_volume: invalid value\n");
+            ret = -ENOSYS;
+            goto fail;
+        }
+    }
+    num_values = mixer_ctl_get_num_values(mixer_ctls.master_speaker_enable);
+    for (i = 0; i < num_values; i++) {
+        if (mixer_ctl_set_value(mixer_ctls.master_speaker_enable, i, 1)) {
+            LOGE( "intel_hda_set_input_mode: invalid value\n");
             ret = -ENOSYS;
             goto fail;
         }
@@ -181,6 +199,8 @@ bool intel_hda_setup_mixer()
     if (!mixer_ctls.speaker_volume)
         mixer_ctls.speaker_volume  = mixer_get_ctl_by_name(mixer_inst, SPEAKER_PLAYBACK_VOLUME);
     mixer_ctls.speaker_enable  = mixer_get_ctl_by_name(mixer_inst, SPEAKER_PLAYBACK_SWITCH);
+    mixer_ctls.master_speaker_volume  = mixer_get_ctl_by_name(mixer_inst, MASTER_PLAYBACK_VOLUME);
+    mixer_ctls.master_speaker_enable  = mixer_get_ctl_by_name(mixer_inst, MASTER_PLAYBACK_SWITCH);
     mixer_ctls.headphone_enable  = mixer_get_ctl_by_name(mixer_inst, HEADPHONE_PLAYBACK_SWITCH);
     mixer_ctls.headphone_volume  = mixer_get_ctl_by_name(mixer_inst, HEADPHONE_PLAYBACK_VOLUME);
     mixer_ctls.voice_volume = mixer_ctls.master_volume = 1.0f;
