@@ -66,6 +66,11 @@ TARGET_SYSLINUX_CONFIG := device/intel/pc_std/syslinux.cfg
 TARGET_DISKINSTALLER_CONFIG := device/intel/pc_std/installer.conf
 endif
 
+DROIDBOOT_COPY_SYSTEM_FILES = lib/modules/asix.ko etc/init.net.eth0.sh
+DROIDBOOT_HARDWARE_INITRC = device/intel/pc_std/init.droidboot.rc
+DROIDBOOT_SCRATCH_SIZE = 1500
+TARGET_DROIDBOOT_LIBS := libdbadbd
+
 # Causes bootable/diskinstaller/config.mk to be included which enables the
 # installer_img build target.  For more information on the installer, see
 # http://otc-android.intel.com/wiki/index.php/Installer

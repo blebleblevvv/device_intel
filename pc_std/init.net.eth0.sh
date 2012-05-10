@@ -29,7 +29,7 @@ case `getprop ro.debuggable` in
         addr=`getprop net.eth0.ip`
         netmask=`getprop net.eth0.netmask`
 
-        if [ -z "$addr" ]; then
+        if [ -z "$addr" -o -f /mnt/sdcard/use_dhcp ]; then
             use_static=N
         fi
 
