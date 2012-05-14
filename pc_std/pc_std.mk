@@ -97,3 +97,9 @@ ifneq ($(PANEL_IGNORE_LID),)
 	PRODUCT_PROPERTY_OVERRIDES += \
 		init.panel_ignore_lid=$(PANEL_IGNORE_LID)
 endif
+
+# sensor support
+PRODUCT_PACKAGES += \
+	sensors.$(TARGET_PRODUCT) \
+
+# end of file
