@@ -80,10 +80,6 @@ on post-fs-data
     insmod /system/lib/modules/snd-hda-codec-realtek.ko
     insmod /system/lib/modules/snd-hda-intel.ko
 
-    # Insert camera modules
-    insmod /system/lib/modules/videodev.ko
-    insmod /system/lib/modules/uvcvideo.ko
-
 on boot
     chmod 0660 /sys/class/rfkill/rfkill0/state
     chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
