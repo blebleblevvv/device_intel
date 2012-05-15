@@ -1,4 +1,4 @@
-# Copyright (C) 2008 The Android Open Source Project
+# Copyright (C) 2012 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,15 +15,14 @@
 # HAL module implemenation, not prelinked, and stored in
 # hw/<SENSORS_HARDWARE_MODULE_ID>.<ro.product.board>.so
 
-ifeq ($(TARGET_BOARD_PLATFORM),pc_std)
-ifeq ($(BOARD_USE_PLATFORM_SENSOR_LIB),true)
+ifeq ($(TARGET_DEVICE),lenovox220t)
 
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
 # Common files.
-common_src_path := ../../common/libsensors
+common_src_path  := ../../common/libsensors
 common_src_files := $(common_src_path)/sensors.cpp \
 		    $(common_src_path)/SensorBase.cpp \
 		    $(common_src_path)/SensorInputDev.cpp \
@@ -31,7 +30,7 @@ common_src_files := $(common_src_path)/sensors.cpp \
 		    $(common_src_path)/Helpers.cpp \
 
 # Board specific sensors.
-sensor_src_files := \
+sensor_src_files := HDAPS_AccelSensor.cpp \
 
 include external/stlport/libstlport.mk
 LOCAL_C_INCLUDES += $(LOCAL_PATH) device/intel/common/libsensors
@@ -46,5 +45,4 @@ LOCAL_SRC_FILES := $(common_src_files) $(sensor_src_files) BoardConfig.cpp
 
 include $(BUILD_SHARED_LIBRARY)
 
-endif # BOARD_USE_PLATFORM_SENSOR_LIB == true
-endif # TARGET_BOARD_PLATFORM == pc_std
+endif

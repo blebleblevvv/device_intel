@@ -1,6 +1,13 @@
 import init.pc_std.rc
 
 on post-fs-data
+    # modules for Lenovo's HDAPS
+    # then slow down the sampling rate of accelerometer
+    # then swap X,Y and invert them
+    exec /system/bin/modprobe -d /system hdaps
+    write /sys/devices/platform/hdaps/sampling_rate 20
+    write /sys/devices/platform/hdaps/invert 5
+
     #flag vold that post-fs-data is finished
     setprop vold.post_fs_data_done 1
 
