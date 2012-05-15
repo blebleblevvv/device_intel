@@ -7,4 +7,7 @@
 
 echo 1 > /sys/power/wake_lock
 
+lid=`getprop init.panel_ignore_lid`
+[ "$lid" != "" ] && echo $lid > /sys/module/i915/parameters/panel_ignore_lid
+
 exit 0

@@ -85,3 +85,7 @@ PRODUCT_PACKAGES += \
 	Ota \
 	OtaDownloader \
 
+ifneq ($(PANEL_IGNORE_LID),)
+	PRODUCT_PROPERTY_OVERRIDES += \
+		init.panel_ignore_lid=$(PANEL_IGNORE_LID)
+endif
