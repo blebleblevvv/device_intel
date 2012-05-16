@@ -38,10 +38,10 @@ case `getprop ro.debuggable` in
             ifconfig eth0 $addr netmask $netmask up
             ;;
         N)
-            # Bring up eth0 using netcfg with dhcp.
-            # If the ethernet cable is not plugged in, this could hang for a long time.
-            # So do it in a background shell.
-            netcfg eth0 dhcp &
+            # Bring up eth0 using dhcpcd as DHCP client in background with
+            # debug log. This allows the shell to exit and configures
+            # ethernet interface whenever ethernet cable is plugged in.
+            /system/bin/dhcpcd -bd eth0
             ;;
         esac # use_static
 
