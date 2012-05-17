@@ -124,12 +124,12 @@ fi
 
 if [ -n "$FLASH_CACHE" ]; then
     echo "Erasing cache partition..."
-    echo fastboot $FASTBOOT_EXTRA_ARGS erase cache
+    fastboot $FASTBOOT_EXTRA_ARGS erase cache
 fi
 
 if [ -n "$FLASH_BOOTLOADER" ]; then
     echo "Flashing bootloader partition..."
-    echo fastboot $FASTBOOT_EXTRA_ARGS flash bootloader $ANDROID_PRODUCT_OUT/bootloader.img
+    fastboot $FASTBOOT_EXTRA_ARGS flash bootloader $ANDROID_PRODUCT_OUT/bootloader
 fi
 
 if [ -n "$FLASH_SYSTEM" ]; then
