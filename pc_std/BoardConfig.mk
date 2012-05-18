@@ -19,12 +19,16 @@ BOARD_LIBPCIACCESS_HWDATA := external/hwids
 
 TARGET_NO_BOOTLOADER := false
 
+ifeq ($(TARGET_KERNEL_ARCH),)
+TARGET_KERNEL_ARCH := i386
+endif
+
 # Kernel source and config file that the build system will use for kernel
 # build:
 TARGET_KERNEL_SOURCE := kernel/intel
 # if TARGET_KERNEL_CONFIG_DIR is empty config is taken from hardware/intel/linux
 TARGET_KERNEL_CONFIG_DIR :=
-TARGET_KERNEL_CONFIG := $(TARGET_KERNEL_CONFIG_DIR)i386_pc_std_android_defconfig
+TARGET_KERNEL_CONFIG := $(TARGET_KERNEL_CONFIG_DIR)$(TARGET_KERNEL_ARCH)_pc_std_android_defconfig
 
 # Android boot system will look for init.{BOARD,BOOTMEDIA}.rc
 # (see below kernel cmdline and system/core/init/init.c)
