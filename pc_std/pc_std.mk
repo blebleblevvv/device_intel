@@ -3,6 +3,7 @@ $(call inherit-product, device/intel/common/generic.mk)
 
 LOCAL_PATH := device/intel/pc_std
 
+
 #
 # gralloc & mesa lib
 #
@@ -10,6 +11,14 @@ PRODUCT_PACKAGES += \
     libGLES_mesa    \
     gralloc.$(TARGET_PRODUCT) \
     camera.pc_std \
+
+# Configre UI to use EGL/GLES mesa by default
+# The variable allows to configure another EGL/GLES driver
+USE_MESA_EGL_CONFIG?=yes
+ifeq ($(USE_MESA_EGL_CONFIG),yes)
+PRODUCT_COPY_FILES += \
+	$(LOCAL_PATH)/egl_mesa.cfg:system/lib/egl/egl.cfg
+endif
 
 #
 # tinyalsa utils
@@ -23,7 +32,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/asound.conf:system/etc/asound.conf \
 	$(LOCAL_PATH)/android.conf:system/etc/dhcpcd/android.conf \
-	$(LOCAL_PATH)/egl_mesa.cfg:system/lib/egl/egl.cfg \
 	device/intel/common/init.harddisk.rc:root/init.harddisk.rc \
 	$(LOCAL_PATH)/vold.fstab:system/etc/vold.fstab \
 	$(LOCAL_PATH)/wpa_supplicant.conf:system/etc/wifi/wpa_supplicant.conf \
