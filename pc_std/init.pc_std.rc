@@ -75,6 +75,7 @@ on post-fs-data
     insmod /system/lib/modules/snd-page-alloc.ko
     insmod /system/lib/modules/snd-timer.ko
     insmod /system/lib/modules/snd-pcm.ko
+    insmod /system/lib/modules/snd-hwdep.ko
     insmod /system/lib/modules/snd-hda-codec.ko
     insmod /system/lib/modules/snd-hda-codec-analog.ko
     insmod /system/lib/modules/snd-hda-codec-realtek.ko
