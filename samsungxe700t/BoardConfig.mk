@@ -2,6 +2,8 @@
 
 include device/intel/pc_std/BoardConfig.mk
 
+TARGET_ARCH_VARIANT := sandybridge
+
 # The board name as known by Android SDK
 TARGET_BOOTLOADER_BOARD_NAME := samsungxe700t
 
