@@ -4,6 +4,13 @@ on post-fs-data
     #flag vold that post-fs-data is finished
     setprop vold.post_fs_data_done 1
 
+    # Insert camera modules
+    insmod /system/lib/modules/videodev.ko
+    insmod /system/lib/modules/videobuf2-core.ko
+    insmod /system/lib/modules/videobuf2-memops.ko
+    insmod /system/lib/modules/videobuf2-vmalloc.ko
+    insmod /system/lib/modules/uvcvideo.ko
+
 # additional initialization
 service device-setup /system/bin/sh /system/etc/init.lenovox220t.sh
     class core
