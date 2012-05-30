@@ -29,6 +29,7 @@ common_src_files := $(common_src_path)/sensors.cpp \
 		    $(common_src_path)/SensorInputDev.cpp \
 		    $(common_src_path)/InputEventReader.cpp \
 		    $(common_src_path)/Helpers.cpp \
+		    $(common_src_path)/SensorIIODev.cpp \
 
 # Board specific sensors.
 sensor_src_files := \
