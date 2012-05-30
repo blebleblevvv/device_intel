@@ -24,6 +24,7 @@
 /* Maps senor id's to the sensor list */
 enum {
     accel           = 0,
+    gyro,
     numSensorDrivers,
     numFds,
 };
