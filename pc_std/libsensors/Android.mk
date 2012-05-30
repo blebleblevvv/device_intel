@@ -32,7 +32,7 @@ common_src_files := $(common_src_path)/sensors.cpp \
 		    $(common_src_path)/SensorIIODev.cpp \
 
 # Board specific sensors.
-sensor_src_files := \
+sensor_src_files := $(common_src_path)/HidSensor_Accel3D.cpp \
 
 include external/stlport/libstlport.mk
 LOCAL_C_INCLUDES += $(LOCAL_PATH) device/intel/common/libsensors

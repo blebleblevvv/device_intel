@@ -22,8 +22,10 @@
 
 #include "BoardConfig.h"
 #include "SensorConfig.h"
+#include "HidSensor_Accel3D.h"
 
 static const struct sensor_t sSensorList[] = {
+    AccelSensor::sSensorInfo_accel3D,
 };
 
 const struct sensor_t* BoardConfig::sensorList()
@@ -38,13 +40,14 @@ int BoardConfig::sensorListSize()
 
 void BoardConfig::initSensors(SensorBase* sensors[])
 {
+    sensors[accel] = new AccelSensor();
 }
 
 int BoardConfig::handleToDriver(int handle)
 {
     switch (handle) {
     case ID_A:
-        return -EINVAL;
+        return accel;
     case ID_M:
         return -EINVAL;
     case ID_PR:
