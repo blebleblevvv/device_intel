@@ -25,6 +25,7 @@
 enum {
     accel           = 0,
     gyro,
+    compass,
     numSensorDrivers,
     numFds,
 };
