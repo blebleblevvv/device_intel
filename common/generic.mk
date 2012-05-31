@@ -70,6 +70,7 @@ PRODUCT_PACKAGES += \
         alsa.default \
         AT_Translated_Set_2_keyboard.kcm \
         libcamera \
+        modprobe \
         libglslcompiler
 
 # The Google SetupWizard will require a sim card in order to provision the device
