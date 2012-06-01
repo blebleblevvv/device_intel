@@ -1,1 +1,1 @@
-init=/init pci=noearly console=tty0 vga=current loglevel=5 androidboot.bootmedia=harddisk androidboot.hardware=lenovox220t bootloader_label.partno=6 bootloader_label.offset=4 i915.modeset=1
+init=/init pci=noearly console=tty0 vga=current loglevel=5 androidboot.bootmedia=harddisk androidboot.hardware=lenovox220t bootloader_label.partno=6 bootloader_label.offset=4 i915.modeset=1 drm.vblankoffdelay=1
