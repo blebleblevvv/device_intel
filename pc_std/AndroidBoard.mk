@@ -14,7 +14,7 @@ endif
 
 # 'allimages' to build everything that can be built
 .PHONY: allimages
-allimages: installer_img ota-dev dbimages
+allimages: installer_img ota-dev dbimages liveimg
 
 # Historical: make $(TARGET_PRODUCT) builds everything
 .PHONY: $(TARGET_PRODUCT)

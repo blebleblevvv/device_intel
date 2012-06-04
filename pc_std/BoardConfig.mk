@@ -80,6 +80,9 @@ TARGET_DROIDBOOT_LIBS := libdbadbd
 # http://otc-android.intel.com/wiki/index.php/Installer
 TARGET_USE_DISKINSTALLER := true
 
+# Allow creation of iago live USB/CD images
+TARGET_USE_IAGO := true
+
 # Defines a partitioning scheme for the installer:
 TARGET_DISK_LAYOUT_CONFIG := device/intel/pc_std/disk_layout.conf
 
