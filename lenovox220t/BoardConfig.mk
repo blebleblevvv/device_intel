@@ -37,8 +37,11 @@ WIFI_DRIVER_MODULE_NAME := $(wifi_driver_basename)
 #
 # plcp_check=N  Works around excessive PLCP health-check failures
 #               that cause continuous resetting of RF
+# 11n_disable=1 Works around excessive tx retransmits while 11n
+#               is enabled, symptom: name-resolve failure
 IWLWIFI_PARMLIST := \
 	plcp_check=N \
+	11n_disable=1 \
 
 WIFI_DRIVER_MODULE_ARG := "$(strip $(IWLWIFI_PARMLIST))"
 BOARD_HAVE_WIFI := true
