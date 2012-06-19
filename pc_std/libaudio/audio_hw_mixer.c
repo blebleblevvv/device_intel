@@ -76,7 +76,7 @@ static int set_output_mixer_volume()
     }
     num_values = mixer_ctl_get_num_values(mixer_ctls.speaker_volume);
         for (i = 0; i < num_values; i++) {
-        if (mixer_ctl_set_value(mixer_ctls.speaker_volume, i, speaker_max_value*mixer_ctls.voice_volume)) {
+        if (mixer_ctl_set_value(mixer_ctls.speaker_volume, i, speaker_max_value)) {
             LOGE( "intel_hda_set_voice_volume: invalid value\n");
             ret = -ENOSYS;
             goto fail;
@@ -107,7 +107,7 @@ static int set_output_mixer_volume()
     }
     num_values = mixer_ctl_get_num_values(mixer_ctls.headphone_volume);
         for (i = 0; i < num_values; i++) {
-        if (mixer_ctl_set_value(mixer_ctls.headphone_volume, i, headset_max_value*mixer_ctls.voice_volume)) {
+        if (mixer_ctl_set_value(mixer_ctls.headphone_volume, i, headset_max_value)) {
             LOGE( "intel_hda_set_voice_volume: invalid value\n");
             ret = -ENOSYS;
             goto fail;
