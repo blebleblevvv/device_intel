@@ -1,1 +1,6 @@
-../pc_std/system.prop
+# This overrides settings in the products/generic/system.prop file
+
+# volume up while booting Android reboots into Recovery console
+# using implementation in frameworks/base
+ro.recoverymagic = true
+ro.hardKeyboardOverride = true
