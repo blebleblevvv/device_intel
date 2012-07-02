@@ -1,0 +1,3 @@
+# for bluetooth rfkill nodes
+/sys/devices/*/bluetooth/hci0/rfkill* state 0660 bluetooth bluetooth
+/sys/devices/*/bluetooth/hci0/rfkill* type  0440 bluetooth bluetooth

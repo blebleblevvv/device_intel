@@ -17,6 +17,7 @@ PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/Wacom_ISDv4_E6_Pen.idc:system/usr/idc/Wacom_ISDv4_E6_Pen.idc \
 	device/intel/common/intel_initlogo_1366x768.rle:root/initlogo.rle \
 	frameworks/base/data/etc/android.hardware.sensor.accelerometer.xml:system/etc/permissions/android.hardware.sensor.accelerometer.xml \
+	$(LOCAL_PATH)/ueventd.lenovox220t.rc:root/ueventd.lenovox220t.rc \
 
 # tp_smapi is needed for accelerometer through HDAPS
 EXTERNAL_KERNEL_MODULES += external/tp_smapi

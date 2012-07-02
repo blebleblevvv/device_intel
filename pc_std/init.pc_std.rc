@@ -150,10 +150,3 @@ service net_eth0-start /system/bin/sh /system/etc/init.net.eth0.sh
 
 on property:net.eth0.startonboot=1
     start net_eth0-start
-
-on device-added-/dev/rfkill
-    # permissions for on-board bluetooth
-    wait /sys/class/bluetooth/hci0/rfkill0/state
-    chmod 0660 /sys/class/bluetooth/hci0/rfkill0/state
-    chown bluetooth bluetooth /sys/class/bluetooth/hci0/rfkill0/state
-    chown bluetooth bluetooth /sys/class/bluetooth/hci0/rfkill0/type
