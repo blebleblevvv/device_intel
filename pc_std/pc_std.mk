@@ -65,6 +65,9 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
         hwcomposer.default
 
+# Ethernet
+PRODUCT_PACKAGES += init.net.eth0.sh
+
 # Start eth0 on boot (for debugging)
 ifneq ($(TARGET_BUILD_VARIANT),user)
 
@@ -84,8 +87,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
 endif
 # Otherwise net.eth0.ip is not set to enable dhcp
 endif
-
-PRODUCT_COPY_FILES += $(LOCAL_PATH)/init.net.eth0.sh:system/etc/init.net.eth0.sh
 endif
 
 # For OTA Update

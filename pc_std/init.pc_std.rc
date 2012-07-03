@@ -65,10 +65,6 @@ on post-fs-data
     # Insert Wacom driver for stylus
     exec /system/bin/modprobe -d /system wacom
 
-    # Insert USB NIC driver
-    exec /system/bin/modprobe -d /system asix
-    exec /system/bin/modprobe -d /system mcs7830
-
     # Insert Audio drivers
     exec /system/bin/modprobe -d /system snd-hda-codec-analog
     exec /system/bin/modprobe -d /system snd-hda-codec-realtek
