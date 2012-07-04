@@ -30,7 +30,7 @@ include device/intel/pc_std/select_wifi_driver.mk
 
 # Tells Android HAL how to load WIFI driver.
 # See hardware/libhardware_legacy/wifi/{Android.mk,wifi.c}
-WIFI_DRIVER_MODULE_PATH := /system/lib/modules/$(wifi_driver_basename).ko
+WIFI_DRIVER_PROBE_PATH := /system/lib/modules/
 WIFI_DRIVER_MODULE_NAME := $(wifi_driver_basename)
 # Workarounds for excessive errors that interfere with proper wifi
 # operation in the IWLWIFI driver:
