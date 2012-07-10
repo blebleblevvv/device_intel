@@ -44,7 +44,7 @@ static int get_max_brightness()
     int value = BRIGHTNESS_DEFAULT_MAX;
     fd = open( BACKLIGHT_MAX_FILE, O_RDONLY);
     if (fd < 0) {
-            LOGE("faild to open %s, errno = %d\n", BACKLIGHT_MAX_FILE, errno);
+            ALOGE("faild to open %s, errno = %d\n", BACKLIGHT_MAX_FILE, errno);
             return value;
     }
 
@@ -71,7 +71,7 @@ static int set_light_backlight(struct light_device_t* dev,
     int max_brightness = get_max_brightness();
 
     if (max_brightness <= BRIGHTNESS_MIN_VISIBLE) {
-      LOGE("Invalid maximum backlight output %d <= min visible %d\n",
+      ALOGE("Invalid maximum backlight output %d <= min visible %d\n",
 	   max_brightness, BRIGHTNESS_MIN_VISIBLE);
       return -EINVAL;
     }
@@ -90,7 +90,7 @@ static int set_light_backlight(struct light_device_t* dev,
 
     fd = open(BACKLIGHT_FILE, O_RDWR);
     if (fd < 0) {
-        LOGE("unable to open %s: %s\n", BACKLIGHT_FILE, strerror(errno));
+        ALOGE("unable to open %s: %s\n", BACKLIGHT_FILE, strerror(errno));
         return -errno;
     }
     to_write = sprintf(buf, "%d\n", brightness);
