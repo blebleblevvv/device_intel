@@ -150,7 +150,7 @@ static ssize_t out_write(struct audio_stream_out *stream, const void* buffer,
         out->standby = false;
     }
     if (bytes > pcm_get_buffer_size(out->pcm)) {
-        LOGE("out_write: Unexpected Size");
+        ALOGE("out_write: Unexpected Size");
         ret = -EINVAL;
         goto fail;
     }

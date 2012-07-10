@@ -33,8 +33,8 @@
 #undef LOG_TAG
 #define LOG_TAG "audio_hw_intel_hda"
 
-#define _ENTER() LOGV(">>%s", __FUNCTION__)
-#define _EXIT() LOGV("<<%s", __FUNCTION__)
+#define _ENTER() ALOGV(">>%s", __FUNCTION__)
+#define _EXIT() ALOGV("<<%s", __FUNCTION__)
 
 struct intel_hda_audio_device {
     struct audio_hw_device device;

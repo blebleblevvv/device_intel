@@ -66,7 +66,7 @@ static int in_set_sample_rate(struct audio_stream *stream, uint32_t rate)
 {
     struct intel_hda_stream_in *in = (struct intel_hda_stream_in *)stream;
     _ENTER();
-    LOGD("in_set_sample_rate %d\n", rate);
+    ALOGD("in_set_sample_rate %d\n", rate);
     in->requested_rate = rate;
     _EXIT();
     return 0;
@@ -108,7 +108,7 @@ static int in_get_format(const struct audio_stream *stream)
 static int in_set_format(struct audio_stream *stream, int format)
 {
     _ENTER();
-     LOGD ("in_set_format:%d", format);
+     ALOGD ("in_set_format:%d", format);
     _EXIT();
     return 0;
 }
@@ -153,7 +153,7 @@ static char * in_get_parameters(const struct audio_stream *stream,
 static int in_set_gain(struct audio_stream_in *stream, float gain)
 {
     _ENTER();
-    LOGD ("in_set_gain:%f", gain);
+    ALOGD ("in_set_gain:%f", gain);
     _EXIT();
     return 0;
 }
@@ -199,7 +199,7 @@ static ssize_t in_read(struct audio_stream_in *stream, void* buffer,
     }
 
     if (bytes < pcm_get_buffer_size(in->pcm)) {
-        LOGE("in_read: Unexpected Size");
+        ALOGE("in_read: Unexpected Size");
         ret = -EINVAL;
         goto fail;
     }
@@ -317,7 +317,7 @@ int intel_hda_open_input_stream(struct audio_hw_device *dev, uint32_t devices,
     in->config = pcm_config_input_def;
     *stream_in = &in->stream;
     in->dev = (struct intel_hda_audio_device *)dev;
-    LOGD("Requested sample rate %d default rate %d\n", in->requested_rate,
+    ALOGD("Requested sample rate %d default rate %d\n", in->requested_rate,
             in->config.rate);
 
 
@@ -338,7 +338,7 @@ int intel_hda_open_input_stream(struct audio_hw_device *dev, uint32_t devices,
                 &in->buf_provider,
                 &in->resampler);
         if (ret != 0) {
-            LOGE("Unable to create resampler [%d]", ret);
+            ALOGE("Unable to create resampler [%d]", ret);
             ret = -EINVAL;
         }
     }
@@ -390,7 +390,7 @@ static int get_next_buffer(struct resampler_buffer_provider *buffer_provider,
                 audio_stream_frame_size(&in->stream.common));
         ret = in->read_status;
         if (in->read_status != 0) {
-            LOGE("get_next_buffer() pcm_read error %d", in->read_status);
+            ALOGE("get_next_buffer() pcm_read error %d", in->read_status);
             buffer->raw = NULL;
             buffer->frame_count = 0;
             goto fail;
