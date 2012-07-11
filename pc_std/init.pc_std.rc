@@ -82,7 +82,7 @@ on post-fs-data
     #   end prerequisites
     insmod /system/lib/modules/snd-hda-codec-analog.ko
     insmod /system/lib/modules/snd-hda-codec-realtek.ko
-    insmod /system/lib/modlues/snd-hda-intel.ko
+    insmod /system/lib/modules/snd-hda-intel.ko
 
 on boot
     chown root bluetooth /dev/rfkill
