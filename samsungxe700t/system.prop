@@ -4,3 +4,4 @@
 # using implementation in frameworks/base
 ro.recoverymagic = true
 ro.hardKeyboardOverride = true
+ro.sf.lcd_density = 160
