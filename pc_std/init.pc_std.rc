@@ -60,15 +60,24 @@ on post-fs-data
 #    start ril-daemon
 
     # Insert the hid-multitouch driver
-    exec /system/bin/modprobe -d /system hid-multitouch
+    insmod /system/lib/modules/hid-multitouch.ko
 
     # Insert Wacom driver for stylus
-    exec /system/bin/modprobe -d /system wacom
+    insmod /system/lib/modules/wacom.ko
 
+    # prerequisite dependencides for snd-hda-codec-analog
     # Insert Audio drivers
-    exec /system/bin/modprobe -d /system snd-hda-codec-analog
-    exec /system/bin/modprobe -d /system snd-hda-codec-realtek
-    exec /system/bin/modprobe -d /system snd-hda-intel
+    #   prerequisite dependencies for snd-hda-codec-analog
+    insmod /system/lib/modules/soundcore.ko
+    insmod /system/lib/modules/snd.ko
+    insmod /system/lib/modules/snd-page-alloc.ko
+    insmod /system/lib/modules/snd-timer.ko
+    insmod /system/lib/modules/snd-pcm.ko
+    insmod /system/lib/modules/snd-hda-codec.ko
+    #   end prerequisites
+    insmod /system/lib/modules/snd-hda-codec-analog.ko
+    insmod /system/lib/modules/snd-hda-codec-realtek.ko
+    insmod /system/lib/modlues/snd-hda-intel.ko
 
 on boot
     chown root bluetooth /dev/rfkill
