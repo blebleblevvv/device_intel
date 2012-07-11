@@ -71,7 +71,9 @@ PRODUCT_PACKAGES += \
         AT_Translated_Set_2_keyboard.kcm \
         libcamera \
         modprobe \
-        libglslcompiler
+        libglslcompiler \
+        fs_mgr \
+        libfs_mgr \
 
 # The Google SetupWizard will require a sim card in order to provision the device
 # unless we override that behavior with this property.  See
