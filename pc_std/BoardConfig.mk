@@ -5,7 +5,7 @@ include device/intel/common/BoardConfig.mk
 # Set default TARGET_ARCH_VARIANT
 TARGET_ARCH_VARIANT := x86
 
-USE_OPENGL_RENDERER := true
+#USE_OPENGL_RENDERER := true
 
 # Used for creating/retrieving board-specific prebuilt images
 TARGET_BOARD_PLATFORM := pc_std
