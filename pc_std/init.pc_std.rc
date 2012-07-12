@@ -94,7 +94,7 @@ service pc_std-setup /system/bin/sh /system/etc/init.pc_std.sh
     oneshot
 
 # for wifi
-service wpa_supplicant /system/bin/wpa_supplicant -Dnl80211
+service wpa_supplicant /system/bin/wpa_supplicant -Dnl80211 -iwlan0 -c/data/misc/wifi/wpa_supplicant.conf
     group wifi
     disabled
     oneshot
