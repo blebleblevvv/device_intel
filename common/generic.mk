@@ -132,6 +132,14 @@ PRODUCT_MANUFACTURER := intel
 
 PRODUCT_CHARACTERISTICS := tablet
 
+# The entry for android.hardware.wifi.direct has been removed from the list
+# below because at this time the P2P functionality it represents depends on a
+# BroadCom "dhd" device and driver.  We don't have this.  The P2P supplicant
+# crashes as a result.
+#
+#        frameworks/native/data/etc/android.hardware.wifi.direct.xml:system/etc/permissions/android.hardware.wifi.direct.xml \
+#
+# Removing this allows the wpa_supplicant to run, which we want
 PRODUCT_COPY_FILES += \
         device/intel/common/apns-conf.xml:system/etc/apns-conf.xml \
         device/intel/common/asound.conf:system/etc/asound.conf \
@@ -145,7 +153,6 @@ PRODUCT_COPY_FILES += \
         frameworks/native/data/etc/android.hardware.camera.xml:system/etc/permissions/android.hardware.camera.xml \
         frameworks/native/data/etc/android.hardware.camera.flash-autofocus.xml:system/etc/permissions/android.hardware.camera.flash-autofocus.xml \
         frameworks/native/data/etc/android.hardware.wifi.xml:system/etc/permissions/android.hardware.wifi.xml \
-        frameworks/native/data/etc/android.hardware.wifi.direct.xml:system/etc/permissions/android.hardware.wifi.direct.xml \
         frameworks/native/data/etc/android.hardware.nfc.xml:system/etc/permissions/android.hardware.nfc.xml \
         frameworks/native/data/etc/android.hardware.location.gps.xml:system/etc/permissions/android.hardware.location.gps.xml \
         frameworks/native/data/etc/android.hardware.sensor.light.xml:system/etc/permissions/android.hardware.sensor.light.xml \
