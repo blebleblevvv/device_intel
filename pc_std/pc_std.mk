@@ -1,6 +1,16 @@
 # Superclass
 $(call inherit-product, device/intel/common/generic.mk)
 
+# The Superclass may include PRODUCT_COPY_FILES directives that this subclass
+# may want to override.  For PRODUCT_COPY_FILES directives the Android Build
+# System ignores subsequent copies that lead to the same destination.  So for
+# subclass PRODUCT_COPY_FILES to override properly, the right thing to do is to
+# prepend them instead of appending them as usual.  This is done using the
+# pattern:
+#
+# OVERRIDE_COPIES := <the list>
+# PRODUCT_COPY_FILES := $(OVERRIDE_COPIES) $(PRODUCT_COPY_FILES)
+
 LOCAL_PATH := device/intel/pc_std
 
 
@@ -16,8 +26,10 @@ PRODUCT_PACKAGES += \
 # The variable allows to configure another EGL/GLES driver
 USE_MESA_EGL_CONFIG?=yes
 ifeq ($(USE_MESA_EGL_CONFIG),yes)
-PRODUCT_COPY_FILES += \
-	$(LOCAL_PATH)/egl_mesa.cfg:system/lib/egl/egl.cfg
+OVERRIDE_COPIES := \
+	$(LOCAL_PATH)/egl_mesa.cfg:system/lib/egl/egl.cfg \
+
+PRODUCT_COPY_FILES := $(OVERRIDE_COPIES) $(PRODUCT_COPY_FILES)
 endif
 
 #
@@ -29,7 +41,7 @@ PRODUCT_PACKAGES += \
 	tinycap \
 
 # PC std common files
-PRODUCT_COPY_FILES += \
+OVERRIDE_COPIES := \
 	$(LOCAL_PATH)/asound.conf:system/etc/asound.conf \
 	$(LOCAL_PATH)/android.conf:system/etc/dhcpcd/android.conf \
 	$(LOCAL_PATH)/vold.fstab:system/etc/vold.fstab \
@@ -39,11 +51,14 @@ PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/init.pc_std.sh:system/etc/init.pc_std.sh \
 	device/intel/common/fstab.common:root/fstab.common \
 
+PRODUCT_COPY_FILES := $(OVERRIDE_COPIES) $(PRODUCT_COPY_FILES)
 # for bugmailer
 PRODUCT_PACKAGES += send_bug
-PRODUCT_COPY_FILES += \
+OVERRIDE_COPIES := \
 	system/extras/bugmailer/bugmailer.sh:system/bin/bugmailer.sh \
-	system/extras/bugmailer/send_bug:system/bin/send_bug
+	system/extras/bugmailer/send_bug:system/bin/send_bug \
+
+PRODUCT_COPY_FILES := $(OVERRIDE_COPIES) $(PRODUCT_COPY_FILES)
 
 # audio support
 PRODUCT_PACKAGES += \
