@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Default for Settings.Secure.POLL_BATTERY_LEVEL
-         to turn on battery polling-->
-    <integer name="poll_battery_level">1</integer>
-</resources>
