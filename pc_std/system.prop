@@ -3,3 +3,4 @@
 # volume up while booting Android reboots into Recovery console
 # using implementation in frameworks/base
 ro.recoverymagic = true
+ro.sf.lcd_density = 160
