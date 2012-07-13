@@ -129,19 +129,12 @@ int intel_hda_set_output_mode()
 
 int intel_hda_set_voice_volume(struct audio_hw_device *dev, float volume)
 {
-    _ENTER();
-    mixer_ctls.voice_volume = volume;
-    _EXIT();
-    return 0;
+    return -ENOSYS;
 }
 
 int intel_hda_set_master_volume(struct audio_hw_device *dev, float volume)
 {
-    _ENTER();
-    mixer_ctls.master_volume = volume;
-    _EXIT();
-
-    return 0;
+    return -ENOSYS;
 }
 
 int intel_hda_set_input_mode(bool on)

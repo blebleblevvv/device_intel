@@ -45,10 +45,13 @@ struct intel_hda_audio_device {
 
 // Output device
 int intel_hda_set_mode(struct audio_hw_device *dev, int mode);
-int intel_hda_open_output_stream(struct audio_hw_device *dev,
-                                   uint32_t devices, int *format,
-                                   uint32_t *channels, uint32_t *sample_rate,
+static int intel_hda_open_output_stream(struct audio_hw_device *dev,
+                                   audio_io_handle_t handle,
+                                   audio_devices_t devices,
+                                   audio_output_flags_t flags,
+                                   struct audio_config *config,
                                    struct audio_stream_out **stream_out);
+
 void intel_hda_close_output_stream(struct audio_hw_device *dev,
                                      struct audio_stream_out *stream);
 
@@ -57,21 +60,12 @@ int intel_hda_set_mode(struct audio_hw_device *dev, int mode);
 int intel_hda_set_mic_mute(struct audio_hw_device *dev, bool state);
 int intel_hda_get_mic_mute(const struct audio_hw_device *dev, bool *state);
 size_t intel_hda_get_input_buffer_size(const struct audio_hw_device *dev,
-                                         uint32_t sample_rate, int format,
-                                         int channel_count);
-int intel_hda_open_input_stream(struct audio_hw_device *dev, uint32_t devices,
-                                  int *format, uint32_t *channels,
-                                  uint32_t *sample_rate,
-                                  audio_in_acoustics_t acoustics,
-                                  struct audio_stream_in **stream_in);
+                                         const struct audio_config *config);
 
-void intel_hda_close_input_stream(struct audio_hw_device *dev,
-                                   struct audio_stream_in *in);
-
-int intel_hda_open_input_stream(struct audio_hw_device *dev, uint32_t devices,
-                                  int *format, uint32_t *channels,
-                                  uint32_t *sample_rate,
-                                  audio_in_acoustics_t acoustics,
+int intel_hda_open_input_stream(struct audio_hw_device *dev,
+                                  audio_io_handle_t handle,
+                                  audio_devices_t devices,
+                                  struct audio_config *config,
                                   struct audio_stream_in **stream_in);
 
 void intel_hda_close_input_stream(struct audio_hw_device *dev,

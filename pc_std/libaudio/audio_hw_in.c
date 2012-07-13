@@ -77,11 +77,15 @@ static size_t in_get_buffer_size(const struct audio_stream *stream)
     struct intel_hda_stream_in *in = (struct intel_hda_stream_in *)stream;
     size_t size;
     _ENTER();
-    size = intel_hda_get_input_buffer_size((struct audio_hw_device *)in->dev,
-            in->requested_rate,
-            AUDIO_FORMAT_PCM_16_BIT,in->config.channels);
+
+     /* Account for resampling & return the closest multiple of 16 frames.
+     Audio fliger expects in multiple of 16 frames */
+    size = (in->config.period_size * in_get_sample_rate(stream)) /
+            in->config.rate;
+    size = ((size + 15) / 16) * 16;
+
     _EXIT();
-    return size;
+    return size * audio_stream_frame_size((struct audio_stream *)stream);
 }
 
 static uint32_t in_get_channels(const struct audio_stream *stream)
@@ -98,14 +102,14 @@ static uint32_t in_get_channels(const struct audio_stream *stream)
     return channels;
 }
 
-static int in_get_format(const struct audio_stream *stream)
+static audio_format_t in_get_format(const struct audio_stream *stream)
 {
     _ENTER();
     _EXIT();
     return AUDIO_FORMAT_PCM_16_BIT;
 }
 
-static int in_set_format(struct audio_stream *stream, int format)
+static int in_set_format(struct audio_stream *stream, audio_format_t format)
 {
     _ENTER();
      ALOGD ("in_set_format:%d", format);
@@ -269,20 +273,19 @@ int intel_hda_get_mic_mute(const struct audio_hw_device *dev, bool *state)
 }
 
 size_t intel_hda_get_input_buffer_size(const struct audio_hw_device *dev,
-                                         uint32_t sample_rate, int format,
-                                         int channel_count)
+                                         const struct audio_config *config)
 {
     size_t size;
     _ENTER();
     size = DEFAULT_IN_PERIOD_SIZE;
     _EXIT();
-    return size*channel_count*sizeof(int16_t);
+    return size*config->channel_mask*sizeof(int16_t);
 }
 
-int intel_hda_open_input_stream(struct audio_hw_device *dev, uint32_t devices,
-                                  int *format, uint32_t *channels,
-                                  uint32_t *sample_rate,
-                                  audio_in_acoustics_t acoustics,
+int intel_hda_open_input_stream(struct audio_hw_device *dev,
+                                  audio_io_handle_t handle,
+                                  audio_devices_t devices,
+                                  struct audio_config *config,
                                   struct audio_stream_in **stream_in)
 {
     struct intel_hda_audio_device *ladev = (struct intel_hda_audio_device *)dev;
@@ -312,7 +315,7 @@ int intel_hda_open_input_stream(struct audio_hw_device *dev, uint32_t devices,
     in->stream.set_gain = in_set_gain;
     in->stream.read = in_read;
     in->stream.get_input_frames_lost = in_get_input_frames_lost;
-    in->requested_rate = *sample_rate;
+    in->requested_rate = config->sample_rate;
     in->standby = false;
     in->config = pcm_config_input_def;
     *stream_in = &in->stream;
