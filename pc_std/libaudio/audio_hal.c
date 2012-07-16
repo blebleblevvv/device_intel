@@ -116,7 +116,7 @@ static int intel_hda_open(const hw_module_t* module, const char* name,
     }
 
     adev->device.common.tag = HARDWARE_DEVICE_TAG;
-    adev->device.common.version = 0;
+    adev->device.common.version =  AUDIO_DEVICE_API_VERSION_1_0;
     adev->device.common.module = (struct hw_module_t *) module;
     adev->device.common.close = intel_hda_close;
 
@@ -151,8 +151,8 @@ static struct hw_module_methods_t hal_module_methods = {
 struct audio_module HAL_MODULE_INFO_SYM = {
     .common = {
         .tag = HARDWARE_MODULE_TAG,
-        .version_major = 1,
-        .version_minor = 0,
+        .version_major = AUDIO_MODULE_API_VERSION_0_1,
+        .version_minor = HARDWARE_HAL_API_VERSION,
         .id = AUDIO_HARDWARE_MODULE_ID,
         .name = "Intel HDA HW HAL",
         .author = "Intel Corp.",
