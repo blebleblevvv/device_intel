@@ -50,6 +50,7 @@ OVERRIDE_COPIES := \
 	$(LOCAL_PATH)/init.pc_std.rc:root/init.pc_std.rc \
 	$(LOCAL_PATH)/init.pc_std.sh:system/etc/init.pc_std.sh \
 	device/intel/common/fstab.common:root/fstab.common \
+	$(LOCAL_PATH)/modules.blacklist:system/etc/modules.blacklist \
 
 PRODUCT_COPY_FILES := $(OVERRIDE_COPIES) $(PRODUCT_COPY_FILES)
 # for bugmailer
