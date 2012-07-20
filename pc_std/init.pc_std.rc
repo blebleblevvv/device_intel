@@ -12,6 +12,15 @@ on early-init
     # Force on S3TC hardware decompression support in Mesa
     export force_s3tc_enable true
 
+    # Mesa debugging options - see http://www.mesa3d.org/envvars.html for more details
+    #export MESA_DEBUG 1
+    #export LIBGL_DEBUG 1
+    #export EGL_LOG_LEVEL debug
+
+    # Since mesa spits its messages out to stderr, need to tell android to route stdio to logcat
+    # Leave this on by default so any Mesa errors appear in logcat
+    setprop log.redirect-stdio true
+
 on init
 #    chown root radio /dev/ttyGTM*
 #    chmod 0660 /dev/ttyGTM*
