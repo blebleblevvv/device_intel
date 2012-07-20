@@ -146,6 +146,7 @@ PRODUCT_COPY_FILES += \
         device/intel/common/init.rc:init.rc \
         device/intel/common/init.rc:root/init.rc \
         device/intel/common/media_profiles.xml:system/etc/media_profiles.xml \
+        device/intel/common/media_codecs.xml:system/etc/media_codecs.xml \
         device/intel/common/wpa_supplicant.conf:system/etc/wifi/wpa_supplicant.conf \
         device/intel/common/bootanimation.zip:system/media/bootanimation.zip \
         frameworks/native/data/etc/tablet_core_hardware.xml:system/etc/permissions/tablet_core_hardware.xml \
