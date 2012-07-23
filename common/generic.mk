@@ -145,6 +145,7 @@ PRODUCT_COPY_FILES += \
         device/intel/common/asound.conf:system/etc/asound.conf \
         device/intel/common/init.rc:init.rc \
         device/intel/common/init.rc:root/init.rc \
+        device/intel/common/audio_policy.conf:system/vendor/etc/audio_policy.conf \
         device/intel/common/media_profiles.xml:system/etc/media_profiles.xml \
         device/intel/common/media_codecs.xml:system/etc/media_codecs.xml \
         device/intel/common/wpa_supplicant.conf:system/etc/wifi/wpa_supplicant.conf \
