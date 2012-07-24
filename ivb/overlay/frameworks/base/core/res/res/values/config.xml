@@ -1,0 +1,4 @@
+
+<resources>
+    <integer name="config_lidOpenRotation">0</integer>
+</resources>
