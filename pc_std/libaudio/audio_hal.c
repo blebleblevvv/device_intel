@@ -104,11 +104,6 @@ static int intel_hda_open(const hw_module_t* module, const char* name,
         goto fail;
     }
 
-    if (!intel_hda_setup_mixer()) {
-        ret = -ENXIO;
-        goto fail;
-    }
-
     adev = calloc(1, sizeof(struct intel_hda_audio_device));
     if (!adev) {
         ret = -ENOMEM;
