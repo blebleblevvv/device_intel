@@ -202,12 +202,6 @@ static ssize_t in_read(struct audio_stream_in *stream, void* buffer,
         in->standby = false;
     }
 
-    if (bytes < pcm_get_buffer_size(in->pcm)) {
-        ALOGE("in_read: Unexpected Size");
-        ret = -EINVAL;
-        goto fail;
-    }
-
     if (in->resampler != NULL)
     {
         ret = read_frames(in,buffer,frames_rq);
