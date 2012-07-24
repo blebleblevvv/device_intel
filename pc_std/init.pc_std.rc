@@ -17,9 +17,11 @@ on early-init
     #export LIBGL_DEBUG 1
     #export EGL_LOG_LEVEL debug
 
-    # Since mesa spits its messages out to stderr, need to tell android to route stdio to logcat
-    # Leave this on by default so any Mesa errors appear in logcat
-    setprop log.redirect-stdio true
+    # Since mesa spits its messages out to stderr, need to tell android
+    # to route stdio to logcat. This is disabled because turning it on
+    # causes stdio from 'am instrument' to be redirected to logcat
+    # instead of going to adb.
+    #setprop log.redirect-stdio true
 
 on init
 #    chown root radio /dev/ttyGTM*
