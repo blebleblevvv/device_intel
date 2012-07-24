@@ -55,7 +55,7 @@ struct mixer_control
 };
 static struct mixer *mixer_inst;
 static struct mixer_control mixer_ctls;
-
+static bool mixer_initialized;
 
 static int set_output_mixer_volume()
 {
@@ -66,6 +66,14 @@ static int set_output_mixer_volume()
     int ret;
 
     _ENTER();
+
+    if (!mixer_initialized) {
+        ret = intel_hda_setup_mixer();
+        if (!ret) {
+            ALOGE("intel_hda_setup_mixer: failed");
+            goto fail;
+        }
+    }
 
     speaker_max_value = mixer_ctl_get_range_max(mixer_ctls.speaker_volume);
     ALOGD("Set Volume max %d current %f", speaker_max_value, mixer_ctls.voice_volume);
@@ -123,8 +131,7 @@ fail:
 
 int intel_hda_set_output_mode()
 {
-    set_output_mixer_volume();
-    return 0;
+    return set_output_mixer_volume();
 }
 
 int intel_hda_set_voice_volume(struct audio_hw_device *dev, float volume)
@@ -142,6 +149,14 @@ int intel_hda_set_input_mode(bool on)
     int num_values, i, ret;
 
     _ENTER();
+
+    if (!mixer_initialized) {
+        ret = intel_hda_setup_mixer();
+        if (!ret) {
+            ALOGE("intel_hda_setup_mixer: failed");
+            goto fail;
+        }
+    }
 
     ALOGD("Set input mode %d",on);
     if (!mixer_ctls.capture_switch || !mixer_ctls.capture_volume) {
@@ -201,6 +216,6 @@ bool intel_hda_setup_mixer()
     mixer_ctls.capture_switch  = mixer_get_ctl_by_name(mixer_inst, CAPTURE_SWITCH);
     mixer_ctls.capture_volume  = mixer_get_ctl_by_name(mixer_inst, CAPTURE_VOLUME);
     mixer_ctls.mic_boost_volume  = mixer_get_ctl_by_name(mixer_inst, INTRL_MIC_VOLUME);
-
+    mixer_initialized = true;
     return true;
 }
