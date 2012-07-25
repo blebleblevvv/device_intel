@@ -30,16 +30,6 @@ TARGET_KERNEL_SOURCE := kernel/intel
 TARGET_KERNEL_CONFIG_DIR :=
 TARGET_KERNEL_CONFIG := $(TARGET_KERNEL_CONFIG_DIR)$(TARGET_KERNEL_ARCH)_pc_std_android_defconfig
 
-# Android boot system will look for init.{BOARD,BOOTMEDIA}.rc
-# (see below kernel cmdline and system/core/init/init.c)
-ifeq ($(BOARD_BOOTMEDIA),)
-  BOARD_BOOTMEDIA := harddisk
-endif
-
-# Kernel command line for installer. USB is hardcoded. This variable is used as
-# part of the arguments for external/genext2fs/mkbootimg_ext2.sh.
-TARGET_INSTALLER_BOOTMEDIA = usb
-
 # This variable is used by hardware/alsa_sound/Android.mk.
 BOARD_USES_ALSA_AUDIO := true
 # Enable alsa utils compilation like aplay for Android

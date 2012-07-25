@@ -26,10 +26,6 @@ TARGET_CPU_ABI := x86
 # this prelink business yet.
 TARGET_PRELINK_MODULE := false
 
-# Prevents system/core/rootdir/Android.mk from copying a default init.rc to the
-# image:
-TARGET_PROVIDES_INIT_RC := true
-
 # Self-explanatory:
 TARGET_USERIMAGES_USE_EXT4 := true
 
