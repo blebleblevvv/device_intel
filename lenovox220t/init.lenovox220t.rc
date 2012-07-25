@@ -4,7 +4,11 @@ on post-fs-data
     # modules for Lenovo's HDAPS
     # then slow down the sampling rate of accelerometer
     # then swap X,Y and invert them
-    exec /system/bin/modprobe -d /system hdaps
+
+    # install hdaps module
+    insmod /system/lib/modules/thinkpad_ec.ko
+    insmod /system/lib/modules/hdaps.ko
+
     write /sys/devices/platform/hdaps/sampling_rate 20
     write /sys/devices/platform/hdaps/invert 5
 

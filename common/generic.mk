@@ -70,7 +70,6 @@ PRODUCT_PACKAGES += \
         alsa.default \
         AT_Translated_Set_2_keyboard.kcm \
         libcamera \
-        modprobe \
         libglslcompiler \
         fs_mgr \
         libfs_mgr \
