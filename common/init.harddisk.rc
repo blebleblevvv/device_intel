@@ -1,7 +1,0 @@
-on fs
-    # Mount /system rw first to give the filesystem a chance to save a checkpoint
-    mount ext4 /dev/block/sda7 /system wait
-    mount ext4 /dev/block/sda7 /system ro remount
-    mount ext4 /dev/block/sda9 /data wait nosuid nodev
-    mount ext4 /dev/block/sda8 /cache wait nosuid nodev
-

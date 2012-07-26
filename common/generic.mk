@@ -142,8 +142,6 @@ PRODUCT_CHARACTERISTICS := tablet
 PRODUCT_COPY_FILES += \
         device/intel/common/apns-conf.xml:system/etc/apns-conf.xml \
         device/intel/common/asound.conf:system/etc/asound.conf \
-        device/intel/common/init.rc:init.rc \
-        device/intel/common/init.rc:root/init.rc \
         device/intel/common/audio_policy.conf:system/vendor/etc/audio_policy.conf \
         device/intel/common/media_profiles.xml:system/etc/media_profiles.xml \
         device/intel/common/media_codecs.xml:system/etc/media_codecs.xml \
