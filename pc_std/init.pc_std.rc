@@ -61,9 +61,6 @@ on post-fs-data
     # To store BT paired info
     mkdir /data/misc/hcid 0770 bluetooth bluetooth
 
-    # Insert the hid-multitouch driver
-    insmod /system/lib/modules/hid-multitouch.ko
-
     # prerequisite dependencides for snd-hda-codec-analog
     # Insert Audio drivers
     #   prerequisite dependencies for snd-hda-codec-analog
