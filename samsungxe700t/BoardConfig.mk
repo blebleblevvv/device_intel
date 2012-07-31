@@ -25,7 +25,6 @@ include device/intel/pc_std/select_wifi_driver.mk
 # See hardware/libhardware_legacy/wifi/{Android.mk,wifi.c}
 WIFI_DRIVER_PROBE_PATH := /system/lib/modules/
 WIFI_DRIVER_MODULE_NAME := $(wifi_driver_basename)
-WIFI_DRIVER_MODULE_PATH := /system/lib/modules/$(wifi_driver_basename).ko
 # Workarounds for excessive errors that interfere with proper wifi
 # operation in the IWLWIFI driver:
 #
