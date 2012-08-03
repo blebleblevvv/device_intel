@@ -14,6 +14,7 @@ PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/init.ivb.rc:root/init.ivb.rc \
 	$(LOCAL_PATH)/init.ivb.sh:system/etc/init.ivb.sh \
 	$(LOCAL_PATH)/ueventd.ivb.rc:root/ueventd.ivb.rc \
+	$(LOCAL_PATH)/Atmel_Atmel_maXTouch_Digitizer.idc:system/usr/idc/Atmel_Atmel_maXTouch_Digitizer.idc \
 
 PRODUCT_COPY_FILES := $(OVERRIDE_COPIES) $(PRODUCT_COPY_FILES)
 
