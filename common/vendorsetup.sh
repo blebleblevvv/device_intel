@@ -86,7 +86,7 @@ function gdbclient_eth()
        echo >>"$OUT_ROOT/gdbclient.cmds" ""
 
        if [ "$(get_build_var TARGET_ARCH)" = "x86" ]; then
-           GDB=i686-android-linux-gdb
+           GDB=i686-linux-android-gdb
        else
            GDB=arm-linux-androideabi-gdb
        fi
