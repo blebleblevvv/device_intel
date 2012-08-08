@@ -61,9 +61,6 @@ on post-fs-data
     # To store BT paired info
     mkdir /data/misc/hcid 0770 bluetooth bluetooth
 
-    probemod snd-hda-codec-analog
-    probemod snd-hda-codec-realtek
-
 on boot
     chown root bluetooth /dev/rfkill
     chmod 0660 /dev/rfkill
