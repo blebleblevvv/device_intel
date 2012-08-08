@@ -13,6 +13,9 @@ FLASH_SYSTEM=
 FLASH_BOOTLOADER=
 FLASH_CACHE=
 FASTBOOT_EXTRA_ARGS=
+CUSTOM_PRODUCT_OUT=
+FLASHING_IMAGE=
+FORCE=
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -21,12 +24,13 @@ while [ $# -gt 0 ]; do
             shift
             ;;
         -o | --android-out )
-            export ANDROID_PRODUCT_OUT="$2"
+            CUSTOM_PRODUCT_OUT="$2"
             shift
             ;;
         -U | --userdata-image )
             USE_USERDATA_IMG=1
             FLASH_USERDATA=1
+            FLASHING_IMAGE=1
             ;;
         -u | --userdata )
             FLASH_USERDATA=1
@@ -36,22 +40,28 @@ while [ $# -gt 0 ]; do
             ;;
         -k | --kernel )
             FLASH_KERNEL=1
+            FLASHING_IMAGE=1
             ;;
         -d | --droidboot )
             FLASH_DROIDBOOT=1
+            FLASHING_IMAGE=1
             ;;
         -D | --droidboot-reboot )
             FLASH_DROIDBOOT=1
             REBOOT_BOOTLOADER=1
+            FLASHING_IMAGE=1
             ;;
         -y | --recovery )
             FLASH_RECOVERY=1
+            FLASHING_IMAGE=1
             ;;
         -s | --system )
             FLASH_SYSTEM=1
+            FLASHING_IMAGE=1
             ;;
         -b | --bootloader )
             FLASH_BOOTLOADER=1
+            FLASHING_IMAGE=1
             ;;
         -c | --cache )
             FLASH_CACHE=1
@@ -65,6 +75,7 @@ while [ $# -gt 0 ]; do
             FLASH_SYSTEM=1
             FLASH_RECOVERY=1
             FLASH_BOOTLOADER=1
+            FLASHING_IMAGE=1
             ;;
         -A | --all-with-clear )
             FLASH_KERNEL=1
@@ -73,6 +84,10 @@ while [ $# -gt 0 ]; do
             FLASH_USERDATA=1
             FLASH_RECOVERY=1
             FLASH_BOOTLOADER=1
+            FLASHING_IMAGE=1
+            ;;
+        -f | --force )
+            FORCE=1
             ;;
         -h | --help )
             echo "Usage: $0 <flags>"
@@ -81,6 +96,7 @@ while [ $# -gt 0 ]; do
             echo "  -t --tcp-host         Sets -t argument for fastboot remote host"
             echo "  -o --android-out      Set path to 'out' directory"
             echo "  -r --no-reboot        Don't reboot when finished"
+            echo "  -f --force            Skip sanity checks before flashing"
             echo "  -k --kernel           Flash Android kernel image"
             echo "  -d --droidboot        Flash Droidboot image"
             echo "  -D --droidboot-reboot Flash Droidboot image and reboot into new Droidboot"
@@ -100,11 +116,17 @@ while [ $# -gt 0 ]; do
     shift
 done
 
+FASTBOOT="fastboot $FASTBOOT_EXTRA_ARGS"
+
+# Checks for where to find images
+if [ -n "$CUSTOM_PRODUCT_OUT" ]; then
+    export ANDROID_PRODUCT_OUT=$CUSTOM_PRODUCT_OUT
+    unset TARGET_PRODUCT
+fi
+
 if [ -z "$ANDROID_PRODUCT_OUT" ]; then
-    echo "\$ANDROID_PRODUCT_OUT not defined, using current directory"
-    export ANDROID_PRODUCT_OUT="."
-else
-    echo "Using images from $ANDROID_PRODUCT_OUT"
+    echo "\$ANDROID_PRODUCT_OUT empty or not defined, please use -o"
+    exit 1
 fi
 
 if [ ! -e "$ANDROID_PRODUCT_OUT" ]; then
@@ -122,53 +144,69 @@ if [ ! -d "$ANDROID_PRODUCT_OUT" ]; then
     exit 1
 fi
 
+echo "Using images from $ANDROID_PRODUCT_OUT"
+
+# Pre-flash sanity checks
+if [ -z "$FORCE" ] ; then
+    if [ -n "$FLASHING_IMAGE" -a -n "$TARGET_PRODUCT" ]; then
+        echo "Checking device product type..."
+        DEVICE_PRODUCT=`$FASTBOOT getvar product 2>&1 | sed q | cut -f2  -d' '`
+        if [ "$DEVICE_PRODUCT" != "$TARGET_PRODUCT" ]; then
+            echo "Refusing to flash $TARGET_PRODUCT images onto a $DEVICE_PRODUCT"
+            echo "If you really want to do this, use -f"
+            exit 1
+        fi
+    fi
+fi
+
+# Ok, lets go!
 if [ -n "$FLASH_CACHE" ]; then
     echo "Erasing cache partition..."
-    fastboot $FASTBOOT_EXTRA_ARGS erase cache
+    $FASTBOOT erase cache
 fi
 
 if [ -n "$FLASH_BOOTLOADER" ]; then
     echo "Flashing bootloader partition..."
-    fastboot $FASTBOOT_EXTRA_ARGS flash bootloader $ANDROID_PRODUCT_OUT/bootloader
+    $FASTBOOT flash bootloader $ANDROID_PRODUCT_OUT/bootloader
 fi
 
 if [ -n "$FLASH_SYSTEM" ]; then
     echo "Flashing system partition..."
-    fastboot $FASTBOOT_EXTRA_ARGS flash system $ANDROID_PRODUCT_OUT/system.img
+    $FASTBOOT flash system $ANDROID_PRODUCT_OUT/system.img
 fi
 
 if [ -n "$FLASH_KERNEL" ]; then
     echo "Flashing Android kernel image..."
-    fastboot $FASTBOOT_EXTRA_ARGS flash boot $ANDROID_PRODUCT_OUT/boot.img
+    $FASTBOOT flash boot $ANDROID_PRODUCT_OUT/boot.img
 fi
 
 if [ -n "$FLASH_RECOVERY" ]; then
     echo "Flashing recovery kernel image..."
-    fastboot $FASTBOOT_EXTRA_ARGS flash recovery $ANDROID_PRODUCT_OUT/recovery.img
+    $FASTBOOT flash recovery $ANDROID_PRODUCT_OUT/recovery.img
 fi
 
 if [ -n "$FLASH_DROIDBOOT" ]; then
     echo "Flashing Droidboot kernel image..."
-    fastboot $FASTBOOT_EXTRA_ARGS flash droidboot $ANDROID_PRODUCT_OUT/droidboot.img
+    $FASTBOOT flash droidboot $ANDROID_PRODUCT_OUT/droidboot.img
 fi
 
 if [ -n "$FLASH_USERDATA" ]; then
     if [ -n "$USE_USERDATA_IMG" ]; then
         echo "Flashing userdata image..."
-        fastboot $FASTBOOT_EXTRA_ARGS flash userdata $ANDROID_PRODUCT_OUT/userdata.img
+        $FASTBOOT flash userdata $ANDROID_PRODUCT_OUT/userdata.img
     else
         echo "Erasing userdata partition..."
-        fastboot $FASTBOOT_EXTRA_ARGS erase userdata
+        $FASTBOOT erase userdata
     fi
 fi
 
 if [ -n "$REBOOT_BOOTLOADER" ]; then
     echo "Rebooting back into Droidboot..."
-    fastboot $FASTBOOT_EXTRA_ARGS reboot-bootloader
+    $FASTBOOT reboot-bootloader
 else
     if [ -z "$NO_REBOOT" ]; then
         echo "Rebooting device..."
-        fastboot $FASTBOOT_EXTRA_ARGS reboot
+        $FASTBOOT reboot
     fi
 fi
 
