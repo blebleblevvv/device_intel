@@ -61,10 +61,10 @@ TARGET_RECOVERY_UI_LIB := libpcstd_recovery_ui
 ADDITIONAL_BUILD_PROPERTIES += \
 	ro.camera.number=2 \
 	ro.camera.0.devname=/dev/video0 \
-	ro.camera.0.facing=front \
+	ro.camera.0.facing=back \
 	ro.camera.0.orientation=0 \
 	ro.camera.1.devname=/dev/video1 \
-	ro.camera.1.facing=back \
+	ro.camera.1.facing=front \
 	ro.camera.1.orientation=0 \
 
 # end of mk file
