@@ -119,4 +119,8 @@ endif
 PRODUCT_PACKAGES += \
 	sensors.$(TARGET_PRODUCT) \
 
+
+# include firmware binaries for Intel Wifi adapters
+$(call inherit-product-if-exists, vendor/intel/iwlwifi/iwlwifi.mk)
+
 # end of file
