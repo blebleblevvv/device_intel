@@ -75,6 +75,9 @@ TARGET_USE_IAGO := true
 # Defines a partitioning scheme for the installer:
 TARGET_DISK_LAYOUT_CONFIG := device/intel/pc_std/disk_layout.conf
 
+# This defines the overlay that covers all devices inheriting pc_std
+DEVICE_PACKAGE_OVERLAYS += device/intel/pc_std/overlay
+
 BOARD_GPS_LIBRARIES := 
 BOARD_HAVE_GPS := false
 
