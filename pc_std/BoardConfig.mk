@@ -96,7 +96,7 @@ BOARD_USE_MESA := true
 BOARD_USE_LIBMIX := true
 
 BOARD_KERNEL_CMDLINE := init=/init pci=noearly console=tty0 \
-		vga=current loglevel=5 \
+		consoleblank=0 vga=current loglevel=5 \
 		androidboot.hardware=$(TARGET_PRODUCT) \
 		bcb.partno=6 i915.modeset=1 drm.vblankoffdelay=1
 
