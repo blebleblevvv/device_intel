@@ -7,11 +7,6 @@ TARGET_ARCH_VARIANT := sandybridge
 # The board name as known by Android SDK
 TARGET_BOOTLOADER_BOARD_NAME := samsungxe700t
 
-# Composes a kernel command line which will be used by build/core/Makefile when
-# setting up the boot environment.
-BOARD_KERNEL_CMDLINE_FILE := device/intel/samsungxe700t/cmdline
-BOARD_KERNEL_CMDLINE := $(shell cat $(BOARD_KERNEL_CMDLINE_FILE))
-
 # Must be set to enable WPA supplicant build. WEXT is the driver for generic
 # linux wireless extensions. NL80211 supercedes it.
 # This variable is used by external/wpa_supplicant/Android.mk
