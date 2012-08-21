@@ -23,8 +23,6 @@ LOCAL_PATH := device/intel/samsungxe700t
 OVERRIDE_COPIES := \
 	$(LOCAL_PATH)/init.samsungxe700t.rc:root/init.samsungxe700t.rc \
 	$(LOCAL_PATH)/init.samsungxe700t.sh:system/etc/init.samsungxe700t.sh \
-	$(LOCAL_PATH)/Atmel_Atmel_maXTouch_Digitizer.idc:system/usr/idc/Atmel_Atmel_maXTouch_Digitizer.idc \
-	$(LOCAL_PATH)/Wacom_ISDv4_EC_Pen.idc:system/usr/idc/Wacom_ISDv4_EC_Pen.idc \
 	$(LOCAL_PATH)/ueventd.samsungxe700t.rc:root/ueventd.samsungxe700t.rc \
 
 PRODUCT_COPY_FILES := $(OVERRIDE_COPIES) $(PRODUCT_COPY_FILES)
