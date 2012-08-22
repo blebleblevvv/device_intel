@@ -23,13 +23,6 @@ ifeq ($(TARGET_KERNEL_ARCH),)
 TARGET_KERNEL_ARCH := i386
 endif
 
-# Kernel source and config file that the build system will use for kernel
-# build:
-TARGET_KERNEL_SOURCE := kernel/intel
-# if TARGET_KERNEL_CONFIG_DIR is empty config is taken from hardware/intel/linux
-TARGET_KERNEL_CONFIG_DIR :=
-TARGET_KERNEL_CONFIG := $(TARGET_KERNEL_CONFIG_DIR)$(TARGET_KERNEL_ARCH)_pc_std_android_defconfig
-
 # This variable is used by hardware/alsa_sound/Android.mk.
 BOARD_USES_ALSA_AUDIO := true
 # Enable alsa utils compilation like aplay for Android

@@ -62,4 +62,7 @@ ADDITIONAL_BUILD_PROPERTIES += \
 	ro.camera.1.facing=front \
 	ro.camera.1.orientation=0 \
 
+# Add power button hack
+TARGET_KERNEL_CONFIG_OVERRIDES += device/intel/samsungxe700t/defconfig_overlay
+
 # end of mk file

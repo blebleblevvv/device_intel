@@ -6,7 +6,6 @@ TARGET_ARCH := x86
 # Kernel source and config file that the build system will use for kernel
 # build:
 TARGET_KERNEL_SOURCE := kernel/intel
-TARGET_KERNEL_CONFIG := $(TARGET_OUT_INTERMEDIATES)/kernel.config
 
 # Kernel prebuilt artifacts. The system *will* check for files existence here,
 # so just setting up this variable is safe. However, please note the
@@ -29,11 +28,16 @@ TARGET_PRELINK_MODULE := false
 # Self-explanatory:
 TARGET_USERIMAGES_USE_EXT4 := true
 
-# Used by make_kernel_tarball target in
-# hardware/intel/linux-2.6/AndroidKernel.mk:
-# Notice '=' and not ':='. That is because TARGET_BOARD_PLATFORM has not been defined
-# yet by the board-specific makefile.
-TARGET_KERNEL_TARBALL = $(TOP)/device/intel/prebuilt/kernel.$(TARGET_BOARD_PLATFORM).tar.gz
+# Used by logic in build/core/kernel.mk; looks for this defconfig inside
+# the kernel tree under arch/$(TARGET_ARCH)/configs
+# We use '=' since TARGET_KERNEL_ARCH and TARGET_BOARD_PLATFORM aren't set yet
+TARGET_KERNEL_CONFIG = $(TARGET_KERNEL_ARCH)_$(TARGET_BOARD_PLATFORM)_android_defconfig
+
+# We turn off some arch-agnostic debug features which have a nontrivial performance
+# penalty in user/userdebug builds
+ifneq ($(filter user userdebug,$(TARGET_BUILD_VARIANT)),)
+TARGET_KERNEL_CONFIG_OVERRIDES := device/intel/common/defconfig_production_overlay
+endif
 
 # This eventually gets passed as the length (-l) argument to make_ext4fs
 # (system/extras/ext4_utils/make_ext4fs_main.c).  For now it is needed, but
