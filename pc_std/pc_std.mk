@@ -90,6 +90,9 @@ PRODUCT_PACKAGES += \
 # Ethernet
 PRODUCT_PACKAGES += init.net.eth0.sh
 
+PRODUCT_PROPERTY_OVERRIDES += \
+        ro.opengles.version = 131072
+
 # Start eth0 on boot (for debugging)
 ifneq ($(TARGET_BUILD_VARIANT),user)
 
