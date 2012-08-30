@@ -73,7 +73,7 @@ ifeq ($(look_for_it_in),kernel_src)
     wifi_driver_basename := iwlagn
   endif
 else  # look in prebuilt
-  ifneq ($(shell zcat $(the_modules) | tar -t | grep 'modules/iwlwifi\.ko'),)
+  ifneq ($(shell gunzip -c $(the_modules) | tar -t | grep 'modules/iwlwifi\.ko'),)
     wifi_driver_basename := iwlwifi
   else
     wifi_driver_basename := iwlagn
