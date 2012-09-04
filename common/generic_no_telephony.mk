@@ -169,7 +169,7 @@ include frameworks/base/data/sounds/AudioPackage4.mk
 include frameworks/base/data/videos/VideoPackage2.mk
 
 # Heap size setting for tablet.
-include frameworks/native/build/tablet-dalvik-heap.mk
+include frameworks/native/build/tablet-7in-hdpi-1024-dalvik-heap.mk
 
 # Put en_US first in the list, so make it default.
 PRODUCT_LOCALES := en_US
