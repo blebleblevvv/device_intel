@@ -23,9 +23,11 @@
 #include "BoardConfig.h"
 #include "SensorConfig.h"
 #include "HidSensor_Accel3D.h"
+#include "HidSensor_Gyro3D.h"
 
 static const struct sensor_t sSensorList[] = {
     AccelSensor::sSensorInfo_accel3D,
+    GyroSensor::sSensorInfo_gyro3D,
 };
 
 const struct sensor_t* BoardConfig::sensorList()
@@ -41,6 +43,7 @@ int BoardConfig::sensorListSize()
 void BoardConfig::initSensors(SensorBase* sensors[])
 {
     sensors[accel] = new AccelSensor();
+    sensors[gyro] = new GyroSensor();
 }
 
 int BoardConfig::handleToDriver(int handle)
@@ -54,7 +57,7 @@ int BoardConfig::handleToDriver(int handle)
     case ID_T:
         return -EINVAL;
     case ID_GY:
-        return -EINVAL;
+        return gyro;
     case ID_L:
         return -EINVAL;
   default:
