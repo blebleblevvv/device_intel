@@ -43,6 +43,9 @@ TARGET_RECOVERY_UI_LIB := libpcstd_recovery_ui
 
 # setup additional build prop for product
 
+# Enable for boards with sensors
+BOARD_USE_PLATFORM_SENSOR_LIB := true
+
 # camera props
 # camera.n: n is camera ID to android
 # camera.devname: device name of node, e.g. /dev/video0
