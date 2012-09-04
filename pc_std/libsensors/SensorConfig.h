@@ -23,7 +23,8 @@
 
 /* Maps senor id's to the sensor list */
 enum {
-    numSensorDrivers = 0,
+    accel           = 0,
+    numSensorDrivers,
     numFds,
 };
 
