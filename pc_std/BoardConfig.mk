@@ -88,9 +88,18 @@ BOARD_USE_LIBVA := true
 BOARD_USE_MESA := true
 BOARD_USE_LIBMIX := true
 
-BOARD_KERNEL_CMDLINE := init=/init pci=noearly console=tty0 \
+ifeq ($(ANDROID_CONSOLE),usb)
+BOARD_CONSOLE_DEVICE := ttyUSB0,115200n8
+else ifeq ($(ANDROID_COSNOLE),serial)
+BOARD_CONSOLE_DEVICE := ttyS0,115200n8
+else
+BOARD_CONSOLE_DEVICE := tty0
+endif
+
+BOARD_KERNEL_CMDLINE := init=/init pci=noearly \
+		console=$(BOARD_CONSOLE_DEVICE) \
 		consoleblank=0 vga=current loglevel=5 \
 		androidboot.hardware=$(TARGET_PRODUCT) \
-		bcb.partno=6 i915.modeset=1 drm.vblankoffdelay=1
+		bcb.partno=6 i915.modeset=1 drm.vblankoffdelay=1 \
 
 # end of file
