@@ -128,6 +128,11 @@ endif
 PRODUCT_PACKAGES += \
 	sensors.$(TARGET_PRODUCT) \
 
+# systemtap support
+PRODUCT_PACKAGES += \
+	stap \
+	staprun \
+	stapio \
 
 # include firmware binaries for Intel Wifi adapters
 $(call inherit-product-if-exists, vendor/intel/iwlwifi/iwlwifi.mk)
