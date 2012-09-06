@@ -7,6 +7,10 @@ TARGET_ARCH := x86
 # build:
 TARGET_KERNEL_SOURCE := kernel/intel
 
+# Gets rid of some annoying compiler warnings during kernel build since
+# our GCC is built with nonstandard options
+TARGET_KERNEL_EXTRA_CFLAGS += -mfpmath=387
+
 # Kernel prebuilt artifacts. The system *will* check for files existence here,
 # so just setting up this variable is safe. However, please note the
 # assignment, don't use := because TARGET_PREBUILT_TAG is not available at the
