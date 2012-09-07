@@ -28,6 +28,9 @@
 # Result goes into the "wifi_driver_basename" variable
 #
 
+# Print some diagnostic info about wifi configuration:
+#debug_wifi_build := true
+
 # Various variables that determine where things are.  We use these locally
 # computed ones rather than some of the "normal" ones since the "normal" ones
 # involve TARGET_PREBUILT_TAG which is not known at the time this file is
@@ -43,7 +46,7 @@ the_image := $(wildcard $(prebuilt_variant)/$(notdir kernel))
 the_sysmap := $(wildcard $(prebuilt_variant)/$(notdir System.map))
 the_modules := $(wildcard $(prebuilt_variant)/$(notdir kernelmod.tar.gz))
 
-# begin diagnostic
+ifeq ($(debug_wifi_build),true)
 ifneq ($(CALLED_FROM_SETUP),true)
   $(info WIFI: processing the select_wifi_driver makefile)
   $(info WIFI: based on the following variables:)
@@ -53,7 +56,7 @@ ifneq ($(CALLED_FROM_SETUP),true)
   $(info WIFI: the_modules is "$(the_modules)")
   $(info WIFI: TARGET_KERNEL_SOURCE is "$(TARGET_KERNEL_SOURCE)")
 endif
-# end diagnostic
+endif
 
 ifneq ($(BUILD_KERNEL),)
   look_for_it_in := kernel_src
@@ -62,8 +65,10 @@ else ifneq ($(and $(the_image),$(the_sysmap)),)
 else
   look_for_it_in := kernel_src
 endif
+ifeq ($(debug_wifi_build),true)
 ifneq ($(CALLED_FROM_SETUP),true)
   $(info WIFI: using "$(look_for_it_in)" to determine driver module)
+endif
 endif
 
 ifeq ($(look_for_it_in),kernel_src)
@@ -79,6 +84,8 @@ else  # look in prebuilt
     wifi_driver_basename := iwlagn
   endif
 endif
+ifeq ($(debug_wifi_build),true)
 ifneq ($(CALLED_FROM_SETUP),true)
   $(info WIFI: using driver module basename "$(wifi_driver_basename)")
+endif
 endif
