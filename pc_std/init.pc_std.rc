@@ -72,11 +72,13 @@ service pc_std-setup /system/bin/sh /system/etc/init.pc_std.sh
 
 # for wifi
 service wpa_supplicant /system/bin/wpa_supplicant -Dnl80211 -iwlan0 -c/data/misc/wifi/wpa_supplicant.conf
+    class main
     group wifi
     disabled
     oneshot
 
 service dhcpcd_wlan0 /system/bin/dhcpcd -d -BK -f /system/etc/dhcpcd/android.conf
+    class main
     group wifi root system net_admin net_raw
     disabled
     oneshot
