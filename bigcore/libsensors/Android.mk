@@ -15,7 +15,7 @@
 # HAL module implemenation, not prelinked, and stored in
 # hw/<SENSORS_HARDWARE_MODULE_ID>.<ro.product.board>.so
 
-ifeq ($(TARGET_BOARD_PLATFORM),pc_std)
+ifeq ($(TARGET_BOARD_PLATFORM),bigcore)
 ifeq ($(BOARD_USE_PLATFORM_SENSOR_LIB),true)
 
 LOCAL_PATH := $(call my-dir)
@@ -51,4 +51,4 @@ LOCAL_SRC_FILES := $(common_src_files) $(sensor_src_files) BoardConfig.cpp
 include $(BUILD_SHARED_LIBRARY)
 
 endif # BOARD_USE_PLATFORM_SENSOR_LIB == true
-endif # TARGET_BOARD_PLATFORM == pc_std
+endif # TARGET_BOARD_PLATFORM == bigcore

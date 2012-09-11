@@ -8,7 +8,7 @@ TARGET_ARCH_VARIANT := x86
 USE_OPENGL_RENDERER := true
 
 # Used for creating/retrieving board-specific prebuilt images
-TARGET_BOARD_PLATFORM := pc_std
+TARGET_BOARD_PLATFORM := bigcore
 
 # Used in ./frameworks/base/services/surfaceflinger/Android.mk
 # to set LOCAL_CFLAGS += -DNO_RGBX_8888.
@@ -39,21 +39,21 @@ USE_CAMERA_STUB := true
 BOARD_HAVE_BLUETOOTH=true
 
 TARGET_USE_SYSLINUX := true
-TARGET_SYSLINUX_FILES = device/intel/pc_std/intellogo.png \
+TARGET_SYSLINUX_FILES = device/intel/bigcore/intellogo.png \
 		$(SYSLINUX_BASE)/vesamenu.c32 \
 		$(SYSLINUX_BASE)/android.c32
 INSTALLED_RADIOIMAGE_TARGET := $(PRODUCT_OUT)/bootloader
 
 ifeq ($(TARGET_STAGE_DROIDBOOT),true)
-TARGET_SYSLINUX_CONFIG := device/intel/pc_std/syslinux-fastboot.cfg
-TARGET_DISKINSTALLER_CONFIG := device/intel/pc_std/installer-fastboot.conf
+TARGET_SYSLINUX_CONFIG := device/intel/bigcore/syslinux-fastboot.cfg
+TARGET_DISKINSTALLER_CONFIG := device/intel/bigcore/installer-fastboot.conf
 INSTALLED_RADIOIMAGE_TARGET += $(PRODUCT_OUT)/droidboot.img
 else
-TARGET_SYSLINUX_CONFIG := device/intel/pc_std/syslinux.cfg
-TARGET_DISKINSTALLER_CONFIG := device/intel/pc_std/installer.conf
+TARGET_SYSLINUX_CONFIG := device/intel/bigcore/syslinux.cfg
+TARGET_DISKINSTALLER_CONFIG := device/intel/bigcore/installer.conf
 endif
 
-DROIDBOOT_HARDWARE_INITRC = device/intel/pc_std/init.droidboot.rc
+DROIDBOOT_HARDWARE_INITRC = device/intel/bigcore/init.droidboot.rc
 DROIDBOOT_SCRATCH_SIZE = 1500
 TARGET_DROIDBOOT_LIBS := libdbadbd
 
@@ -66,10 +66,10 @@ TARGET_USE_DISKINSTALLER := true
 TARGET_USE_IAGO := true
 
 # Defines a partitioning scheme for the installer:
-TARGET_DISK_LAYOUT_CONFIG := device/intel/pc_std/disk_layout.conf
+TARGET_DISK_LAYOUT_CONFIG := device/intel/bigcore/disk_layout.conf
 
-# This defines the overlay that covers all devices inheriting pc_std
-DEVICE_PACKAGE_OVERLAYS += device/intel/pc_std/overlay
+# This defines the overlay that covers all devices inheriting bigcore
+DEVICE_PACKAGE_OVERLAYS += device/intel/bigcore/overlay
 
 BOARD_GPS_LIBRARIES := 
 BOARD_HAVE_GPS := false
@@ -79,7 +79,7 @@ BOARD_USES_LIBPSS := false
 BOARD_MODEM_HAVE_DATA_DEVICE := false
 BOARD_USES_OPTION_MODEM_AUDIO := false
 
-TARGET_RELEASETOOLS_EXTENSIONS := device/intel/pc_std/releasetools.py
+TARGET_RELEASETOOLS_EXTENSIONS := device/intel/bigcore/releasetools.py
 
 TARGET_RECOVERY_PIXEL_FORMAT := "BGRA_8888"
 

@@ -1,4 +1,4 @@
-import init.pc_std.rc
+import init.bigcore.rc
 
 on post-fs-data
     # modules for Lenovo's HDAPS

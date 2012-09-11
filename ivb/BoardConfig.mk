@@ -1,6 +1,6 @@
 # Board configuration for Ivy Bridge devices
 
-include device/intel/pc_std/BoardConfig.mk
+include device/intel/bigcore/BoardConfig.mk
 
 TARGET_ARCH_VARIANT := ivybridge
 
@@ -14,7 +14,7 @@ BOARD_WPA_SUPPLICANT_DRIVER=NL80211
 WPA_SUPPLICANT_VERSION:=VER_0_8_X
 
 # set the wifi_driver_basename variable
-include device/intel/pc_std/select_wifi_driver.mk
+include device/intel/bigcore/select_wifi_driver.mk
 
 # Tells Android HAL how to load WIFI driver.
 # See hardware/libhardware_legacy/wifi/{Android.mk,wifi.c}

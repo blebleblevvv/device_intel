@@ -1,5 +1,5 @@
 # Superclass
-$(call inherit-product, device/intel/pc_std/pc_std.mk)
+$(call inherit-product, device/intel/bigcore/bigcore.mk)
 
 PRODUCT_NAME := ivb
 PRODUCT_DEVICE := ivb

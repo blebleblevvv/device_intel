@@ -1,5 +1,5 @@
 # Superclass
-$(call inherit-product, device/intel/pc_std/pc_std.mk)
+$(call inherit-product, device/intel/bigcore/bigcore.mk)
 
 # The Superclass may include PRODUCT_COPY_FILES directives that this subclass
 # may want to override.  For PRODUCT_COPY_FILES directives the Android Build

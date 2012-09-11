@@ -12,7 +12,7 @@ $(call inherit-product-if-exists, device/intel/common/multimedia.mk)
 # OVERRIDE_COPIES := <the list>
 # PRODUCT_COPY_FILES := $(OVERRIDE_COPIES) $(PRODUCT_COPY_FILES)
 
-LOCAL_PATH := device/intel/pc_std
+LOCAL_PATH := device/intel/bigcore
 
 
 #
@@ -21,7 +21,7 @@ LOCAL_PATH := device/intel/pc_std
 PRODUCT_PACKAGES += \
     libGLES_mesa    \
     gralloc.$(TARGET_PRODUCT) \
-    camera.pc_std \
+    camera.bigcore \
 
 # Configre UI to use EGL/GLES mesa by default
 # The variable allows to configure another EGL/GLES driver
@@ -47,8 +47,8 @@ OVERRIDE_COPIES := \
 	$(LOCAL_PATH)/android.conf:system/etc/dhcpcd/android.conf \
 	$(LOCAL_PATH)/vold.fstab:system/etc/vold.fstab \
 	$(LOCAL_PATH)/wpa_supplicant.conf:system/etc/wifi/wpa_supplicant.conf \
-	$(LOCAL_PATH)/init.pc_std.rc:root/init.pc_std.rc \
-	$(LOCAL_PATH)/init.pc_std.sh:system/etc/init.pc_std.sh \
+	$(LOCAL_PATH)/init.bigcore.rc:root/init.bigcore.rc \
+	$(LOCAL_PATH)/init.bigcore.sh:system/etc/init.bigcore.sh \
 	device/intel/common/fstab.common:root/fstab.common \
 	$(LOCAL_PATH)/modules.blacklist:system/etc/modules.blacklist \
 
@@ -81,7 +81,7 @@ PRODUCT_PACKAGES += \
 
 # backlight control
 PRODUCT_PACKAGES += \
-        lights.pc_std \
+        lights.bigcore \
 
 # hwcomposer
 PRODUCT_PACKAGES += \
