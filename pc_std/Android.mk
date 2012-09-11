@@ -10,4 +10,15 @@ LOCAL_MODULE_PATH := $(TARGET_OUT_ETC)
 LOCAL_SRC_FILES := $(LOCAL_MODULE)
 include $(BUILD_PREBUILT)
 
+ifneq ($(BOARD_HAS_FSTAB),true)
+FSTAB_SYMLINK := $(TARGET_ROOT_OUT)/fstab.$(TARGET_PRODUCT)
+$(FSTAB_SYMLINK):
+	$(hide) echo "Symlink: $@ -> fstab.common"
+	$(hide) mkdir -p $(dir $@)
+	$(hide) rm -rf $@
+	$(hide) ln -sf fstab.common $@
 
+ALL_DEFAULT_INSTALLED_MODULES += $(FSTAB_SYMLINK)
+endif
+
+# end of file
