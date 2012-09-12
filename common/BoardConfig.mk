@@ -98,3 +98,10 @@ BOARD_HAS_LARGE_MEMORY := true
 ifeq ($(TARGET_BUILD_VARIANT),eng)
   INIT_BOOTCHART := true
 endif
+
+# Choose the version of perf to build based on the relative path
+# in the android tree (external/linux-tools-perf or external/perf)
+# If it is not set, external/linux-tools-perf will be built.
+ifneq ($(BOARD_PERF),external/linux-tools-perf)
+  BOARD_PERF := external/perf
+endif
