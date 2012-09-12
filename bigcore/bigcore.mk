@@ -14,6 +14,12 @@ $(call inherit-product-if-exists, device/intel/common/multimedia.mk)
 
 LOCAL_PATH := device/intel/bigcore
 
+PRODUCT_NAME := bigcore
+PRODUCT_DEVICE := bigcore
+
+# For device identification to apps
+PRODUCT_MANUFACTURER := Generic-IA
+PRODUCT_MODEL := Generic-IA
 
 #
 # gralloc & mesa lib
