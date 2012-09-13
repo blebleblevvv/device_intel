@@ -63,6 +63,7 @@ on post-fs-data
 
     # for perf
     export PERF_PAGER cat
+    write /proc/sys/kernel/kptr_restrict 1
 
 on boot
     chown root bluetooth /dev/rfkill
