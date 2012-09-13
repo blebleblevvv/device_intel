@@ -61,6 +61,9 @@ on post-fs-data
     # To store BT paired info
     mkdir /data/misc/hcid 0770 bluetooth bluetooth
 
+    # for perf
+    export PERF_PAGER cat
+
 on boot
     chown root bluetooth /dev/rfkill
     chmod 0660 /dev/rfkill
