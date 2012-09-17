@@ -42,7 +42,13 @@ TARGET_USE_SYSLINUX := true
 TARGET_SYSLINUX_FILES = device/intel/bigcore/intellogo.png \
 		$(SYSLINUX_BASE)/vesamenu.c32 \
 		$(SYSLINUX_BASE)/android.c32
-INSTALLED_RADIOIMAGE_TARGET := $(PRODUCT_OUT)/bootloader
+
+# Following is used for updating SYSLINUX during OTA.
+# Instead of writing the whole bootloader partition,
+# we want to update files one by one.
+INSTALLED_RADIOIMAGE_TARGET = \
+		$(INSTALLED_SYSLINUX_TARGET_EXEC) \
+		$(TARGET_SYSLINUX_FILES) \
 
 ifeq ($(TARGET_STAGE_DROIDBOOT),true)
 TARGET_SYSLINUX_CONFIG := device/intel/bigcore/syslinux-fastboot.cfg

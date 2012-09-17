@@ -11,3 +11,4 @@ ALL_DEFAULT_INSTALLED_MODULES += $(POWEROFF_WRAPPER)
 .PHONY: tarballs
 tarballs: droid boottarball systemtarball userdatatarball
 
+include $(call all-subdir-makefiles)
