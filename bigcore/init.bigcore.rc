@@ -63,6 +63,7 @@ on post-fs-data
 
     # for perf
     export PERF_PAGER cat
+    export PERF_TMP_DIR /data/local/tmp
     write /proc/sys/kernel/kptr_restrict 1
 
 on boot
