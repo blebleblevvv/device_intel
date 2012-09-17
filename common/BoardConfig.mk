@@ -105,3 +105,6 @@ endif
 ifneq ($(BOARD_PERF),external/linux-tools-perf)
   BOARD_PERF := external/perf
 endif
+
+# Libraries for the OTA/recovery mechanism
+TARGET_RECOVERY_UPDATER_LIBS += libcommon_recovery

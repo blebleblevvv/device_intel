@@ -4,6 +4,6 @@
 /boot       emmc    /dev/block/sda2
 /recovery   emmc    /dev/block/sda3
 /misc       emmc    /dev/block/sda6
-/bootloader emmc    /dev/block/sda1
+/bootloader vfat    /dev/block/sda1
 /droidboot  emmc    /dev/block/sda5
 /sdcard     vfat    /dev/block/mmcblk0p1
