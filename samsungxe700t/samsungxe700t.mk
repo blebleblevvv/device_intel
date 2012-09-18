@@ -24,6 +24,7 @@ OVERRIDE_COPIES := \
 	$(LOCAL_PATH)/init.samsungxe700t.rc:root/init.samsungxe700t.rc \
 	$(LOCAL_PATH)/init.samsungxe700t.sh:system/etc/init.samsungxe700t.sh \
 	$(LOCAL_PATH)/ueventd.samsungxe700t.rc:root/ueventd.samsungxe700t.rc \
+	$(LOCAL_PATH)/../common/collect_panic_dumps.sh:system/etc/collect_panic_dumps.sh \
 
 PRODUCT_COPY_FILES := $(OVERRIDE_COPIES) $(PRODUCT_COPY_FILES)
 
