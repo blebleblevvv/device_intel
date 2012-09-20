@@ -48,6 +48,11 @@ on post-fs
     mkdir /data/media 0770 media_rw media_rw
     chown media_rw media_rw /data/media
 
+    # trigger block devices uevents to fire some "add" uevents to poke ueventd to
+    # start deferred module loading. System partition must be ready prior to
+    # this point. The correct sequence should be guaranteed by this rc file.
+    coldboot /sys/block
+
 on post-fs-data
     # give system access to wpa_supplicant.conf for backup and restore
     mkdir /data/system/ 0770 system system
