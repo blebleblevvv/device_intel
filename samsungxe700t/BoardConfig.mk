@@ -68,4 +68,11 @@ ADDITIONAL_BUILD_PROPERTIES += \
 # Add power button hack
 TARGET_KERNEL_CONFIG_OVERRIDES += device/intel/samsungxe700t/defconfig_overlay
 
+# Need to load pstore driver (ramoops). Some comments:
+#  - memmap was chosen from /proc/iomem by taking the last MB
+# from the last "System RAM" entry in the list
+#  - the CMDLINE is interpreted by make & bash. Thus the \$$ for representing a $.
+BOARD_KERNEL_CMDLINE += \
+	memmap=1M\$$0xdaafcfff ramoops.mem_address=0xdaafcfff ramoops.mem_size=0x100000 ramoops.record_size=0x32000 \
+
 # end of mk file

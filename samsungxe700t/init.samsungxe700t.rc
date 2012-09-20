@@ -82,3 +82,8 @@ service bugreport /system/bin/bugmailer.sh -b /system/media/audio/ui/Dock.ogg -e
     disabled
     oneshot
     keycodes 115 114
+
+# collect crash info if necessary
+service collect_panic /system/bin/sh /system/etc/collect_panic_dumps.sh
+    class core
+    oneshot
