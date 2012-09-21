@@ -63,6 +63,7 @@ static int set_output_mixer_volume()
     int num_values;
     int speaker_max_value;
     int headset_max_value;
+    int master_speaker_max_value = 0;
     int ret;
 
     _ENTER();
@@ -75,33 +76,46 @@ static int set_output_mixer_volume()
         }
     }
 
-    speaker_max_value = mixer_ctl_get_range_max(mixer_ctls.speaker_volume);
-    ALOGD("Set Volume max %d current %f", speaker_max_value, mixer_ctls.voice_volume);
+    if (!mixer_ctls.master_speaker_volume) {
+        ALOGE("mixer_ctls.master_speaker_volume: Invalid");
+        ret = -ENOSYS;
+        goto fail;
+    }
+    master_speaker_max_value = mixer_ctl_get_range_max(mixer_ctls.master_speaker_volume);
+
+    if (master_speaker_max_value > 0) {
+        num_values = mixer_ctl_get_num_values(mixer_ctls.master_speaker_volume);
+        for (i = 0; i < num_values; i++) {
+            if (mixer_ctl_set_value(mixer_ctls.master_speaker_volume, i,
+                    master_speaker_max_value * mixer_ctls.master_volume)) {
+                ALOGE( "intel_hda_set_voice_volume: invalid value\n");
+                ret = -ENOSYS;
+                goto fail;
+            }
+        }
+    }
+
+    num_values = mixer_ctl_get_num_values(mixer_ctls.master_speaker_enable);
+    for (i = 0; i < num_values; i++) {
+        if (mixer_ctl_set_value(mixer_ctls.master_speaker_enable, i, 1)) {
+            ALOGE( "intel_hda_set_input_mode: invalid value\n");
+            ret = -ENOSYS;
+            goto fail;
+        }
+    }
+
     if (!mixer_ctls.speaker_volume) {
         ALOGE("mixer_ctls.speaker_volume: Invalid");
         ret = -ENOSYS;
         goto fail;
     }
+    speaker_max_value = mixer_ctl_get_range_max(mixer_ctls.speaker_volume);
+    ALOGD("Set Volume max %d current %f", speaker_max_value, mixer_ctls.voice_volume);
+
     num_values = mixer_ctl_get_num_values(mixer_ctls.speaker_volume);
         for (i = 0; i < num_values; i++) {
         if (mixer_ctl_set_value(mixer_ctls.speaker_volume, i, speaker_max_value)) {
             ALOGE( "intel_hda_set_voice_volume: invalid value\n");
-            ret = -ENOSYS;
-            goto fail;
-        }
-    }
-    num_values = mixer_ctl_get_num_values(mixer_ctls.master_speaker_volume);
-    for (i = 0; i < num_values; i++) {
-        if (mixer_ctl_set_value(mixer_ctls.master_speaker_volume, i, speaker_max_value*mixer_ctls.voice_volume)) {
-            ALOGE( "intel_hda_set_voice_volume: invalid value\n");
-            ret = -ENOSYS;
-            goto fail;
-        }
-    }
-    num_values = mixer_ctl_get_num_values(mixer_ctls.master_speaker_enable);
-    for (i = 0; i < num_values; i++) {
-        if (mixer_ctl_set_value(mixer_ctls.master_speaker_enable, i, 1)) {
-            ALOGE( "intel_hda_set_input_mode: invalid value\n");
             ret = -ENOSYS;
             goto fail;
         }
