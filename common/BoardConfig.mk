@@ -53,7 +53,7 @@ BOARD_BOOTIMAGE_PARTITION_SIZE := 10M
 # is currently afflicted with bug 12919.  The resize will fail with certain
 # values, so after making this change, you must test flashing system with droidboot
 # to ensure that the size will work.
-BOARD_SYSTEMIMAGE_PARTITION_SIZE := 512M
+BOARD_SYSTEMIMAGE_PARTITION_SIZE := 768M
 BOARD_USERDATAIMAGE_PARTITION_SIZE := 150M
 
 # Copied from generic_x86/BoardConfig.mk. Needed when computing values in
