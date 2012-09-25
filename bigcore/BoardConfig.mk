@@ -102,4 +102,6 @@ BOARD_KERNEL_CMDLINE := init=/init pci=noearly \
 		androidboot.hardware=$(TARGET_PRODUCT) \
 		bcb.partno=6 i915.modeset=1 drm.vblankoffdelay=1 \
 
+BOARD_EGL_CFG := device/intel/bigcore/egl_mesa.cfg
+
 # end of file
