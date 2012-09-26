@@ -60,9 +60,11 @@ USE_CAMERA_STUB := true
 BOARD_HAVE_BLUETOOTH=true
 
 TARGET_USE_SYSLINUX := true
+TARGET_INSTALL_CUSTOM_SYSLINUX_CONFIG := true
 TARGET_SYSLINUX_FILES = device/intel/bigcore/intellogo.png \
 		$(SYSLINUX_BASE)/vesamenu.c32 \
 		$(SYSLINUX_BASE)/android.c32
+TARGET_SYSLINUX_CONFIG_TEMPLATE := device/intel/bigcore/syslinux.template.cfg
 
 ifeq ($(TARGET_STAGE_DROIDBOOT),true)
 TARGET_SYSLINUX_CONFIG := device/intel/bigcore/syslinux-fastboot.cfg
