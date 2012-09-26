@@ -29,16 +29,6 @@ PRODUCT_PACKAGES += \
     gralloc.$(TARGET_PRODUCT) \
     camera.bigcore \
 
-# Configre UI to use EGL/GLES mesa by default
-# The variable allows to configure another EGL/GLES driver
-USE_MESA_EGL_CONFIG?=yes
-ifeq ($(USE_MESA_EGL_CONFIG),yes)
-OVERRIDE_COPIES := \
-	$(LOCAL_PATH)/egl_mesa.cfg:system/lib/egl/egl.cfg \
-
-PRODUCT_COPY_FILES := $(OVERRIDE_COPIES) $(PRODUCT_COPY_FILES)
-endif
-
 #
 # tinyalsa utils
 #
