@@ -125,8 +125,7 @@ if [ -n "$CUSTOM_PRODUCT_OUT" ]; then
 fi
 
 if [ -z "$ANDROID_PRODUCT_OUT" ]; then
-    echo "\$ANDROID_PRODUCT_OUT empty or not defined, please use -o"
-    exit 1
+    export ANDROID_PRODUCT_OUT=.
 fi
 
 if [ ! -e "$ANDROID_PRODUCT_OUT" ]; then
