@@ -23,18 +23,12 @@ ifeq ($(TARGET_KERNEL_ARCH),)
 TARGET_KERNEL_ARCH := i386
 endif
 
-# This variable is used by hardware/alsa_sound/Android.mk.
-BOARD_USES_ALSA_AUDIO := true
-# Enable alsa utils compilation like aplay for Android
-BUILD_WITH_ALSA_UTILS := true
-BOARD_USE_VIBRATOR_ALSA := false
-
 # Camera
 # Set USE_CAMERA_STUB to 'true' for Fake Camera builds,
 # 'false' for libcamera builds to use Camera Imaging(CI) supported by intel.
 USE_CAMERA_STUB := true
 
-# Self explanatory. Used by hcidump, glib, bluez, netd, audioflinger, alsa,
+# Self explanatory. Used by hcidump, glib, bluez, netd, audioflinger,
 # etc.
 BOARD_HAVE_BLUETOOTH=true
 
