@@ -92,7 +92,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # Setup eth0 for debugging - settings only take effect when ro.debuggable=1
 PRODUCT_PROPERTY_OVERRIDES += \
-        net.eth0.startonboot=1 \
         net.eth0.netmask=255.255.255.0
 
 ifeq ($(ETH0_IP),)

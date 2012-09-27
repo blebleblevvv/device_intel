@@ -151,7 +151,7 @@ service net_eth0-start /system/bin/sh /system/etc/init.net.eth0.sh
     disabled
     oneshot
 
-on property:net.eth0.startonboot=1
+on device-added-/dev/eth0
     start net_eth0-start
 
 #enable Houdini for executable
