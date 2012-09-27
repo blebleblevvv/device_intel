@@ -3,6 +3,11 @@
 # It is needed, at the very least, to prevent libffi build.
 TARGET_ARCH := x86
 
+# Default to SW rendering, override these in product BoardConfig
+BOARD_USE_MESA := false
+BOARD_GPU_DRIVERS :=
+USE_OPENGL_RENDERER := false
+
 # Kernel source and config file that the build system will use for kernel
 # build:
 TARGET_KERNEL_SOURCE := kernel/intel
