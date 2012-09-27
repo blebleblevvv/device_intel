@@ -1,6 +1,7 @@
 # Superclass
 $(call inherit-product, device/intel/common/generic_no_telephony.mk)
 $(call inherit-product-if-exists, device/intel/common/multimedia.mk)
+$(call inherit-product-if-exists, vendor/intel/proprietary-graphics/proprietary-graphics.mk)
 
 # The Superclass may include PRODUCT_COPY_FILES directives that this subclass
 # may want to override.  For PRODUCT_COPY_FILES directives the Android Build

@@ -2,10 +2,23 @@
 
 include device/intel/common/BoardConfig.mk
 
+# 'bigcore' when built directly to use SW rendering, defined in common.mk
+ifneq ($(TARGET_PRODUCT),bigcore)
+    # Can override in system environment before building
+    INTEL_GRAPHICS_DRIVER ?= mesa
+
+    ifeq ($(INTEL_GRAPHICS_DRIVER),mesa)
+        BOARD_USE_MESA := true
+        BOARD_EGL_CFG := device/intel/bigcore/egl_mesa.cfg
+        BOARD_GPU_DRIVERS := i965
+        USE_OPENGL_RENDERER := true
+    else ifeq ($(INTEL_GRAPHICS_DRIVER),proprietary)
+        include vendor/intel/proprietary-graphics/BoardConfigPartial.mk
+    endif
+endif # !bigcore
+
 # Set default TARGET_ARCH_VARIANT
 TARGET_ARCH_VARIANT := x86
-
-USE_OPENGL_RENDERER := true
 
 # Used for creating/retrieving board-specific prebuilt images
 TARGET_BOARD_PLATFORM := bigcore
@@ -13,9 +26,6 @@ TARGET_BOARD_PLATFORM := bigcore
 # Used in ./frameworks/base/services/surfaceflinger/Android.mk
 # to set LOCAL_CFLAGS += -DNO_RGBX_8888.
 LOCAL_CFLAGS += -DNO_RGBX_8888
-
-BOARD_GPU_DRIVERS := i965
-BOARD_LIBPCIACCESS_HWDATA := external/hwids
 
 TARGET_NO_BOOTLOADER := false
 
@@ -85,7 +95,6 @@ TARGET_RECOVERY_PIXEL_FORMAT := "BGRA_8888"
 
 BOARD_USE_LIBVA_INTEL_DRIVER := true
 BOARD_USE_LIBVA := true
-BOARD_USE_MESA := true
 BOARD_USE_LIBMIX := true
 
 ifeq ($(ANDROID_CONSOLE),usb)
@@ -101,7 +110,5 @@ BOARD_KERNEL_CMDLINE := init=/init pci=noearly \
 		consoleblank=0 vga=current loglevel=5 \
 		androidboot.hardware=$(TARGET_PRODUCT) \
 		bcb.partno=6 i915.modeset=1 drm.vblankoffdelay=1 \
-
-BOARD_EGL_CFG := device/intel/bigcore/egl_mesa.cfg
 
 # end of file
