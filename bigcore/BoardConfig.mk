@@ -105,6 +105,9 @@ BOARD_USE_LIBMIX := true
 
 TARGET_SYSTEM_PROP := device/intel/bigcore/system.prop
 
+# Enables bigcore/libsensors/ to be built:
+BOARD_USE_PLATFORM_SENSOR_LIB := true
+
 # --- OTA defines ----
 
 # Python extensions to build/tools/releasetools for constructing
