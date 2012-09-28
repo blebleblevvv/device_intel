@@ -92,9 +92,6 @@ endif
 # Partition configuration file, used by Droidboot
 TARGET_DISK_LAYOUT_CONFIG := device/intel/$(TARGET_PRODUCT)/disk_layout.conf
 
-# Used by bootable/recovery/minui
-RECOVERY_24_BIT := true
-
 # Flag to tell us when we're on a large-ram device
 BOARD_HAS_LARGE_MEMORY := true
 
@@ -111,5 +108,11 @@ ifneq ($(BOARD_PERF),external/linux-tools-perf)
   BOARD_PERF := external/perf
 endif
 
-# Libraries for the OTA/recovery mechanism
+# Common libraries for the OTA/recovery mechanism
 TARGET_RECOVERY_UPDATER_LIBS += libcommon_recovery
+
+# Recovery Console libminui framebuffer pixel format
+TARGET_RECOVERY_PIXEL_FORMAT := "BGRA_8888"
+RECOVERY_24_BIT := true
+
+# end of file
