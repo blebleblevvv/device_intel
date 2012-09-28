@@ -73,6 +73,6 @@ TARGET_KERNEL_CONFIG_OVERRIDES += device/intel/samsungxe700t/defconfig_overlay
 # from the last "System RAM" entry in the list
 #  - the CMDLINE is interpreted by make & bash. Thus the \$$ for representing a $.
 BOARD_KERNEL_CMDLINE += \
-	memmap=1M\$$0xdaafcfff ramoops.mem_address=0xdaafcfff ramoops.mem_size=0x100000 ramoops.record_size=0x32000 \
+	memmap=1M\$$0xdaafcfff ramoops.mem_address=0xdaafcfff ramoops.mem_size=0x100000 ramoops.record_size=0x32000 panic=-1\
 
 # end of mk file
