@@ -99,9 +99,7 @@ PRODUCT_PACKAGES += init.net.eth0.sh
 PRODUCT_PROPERTY_OVERRIDES += \
         ro.opengles.version = 131072
 
-# Start eth0 on boot (for debugging)
-ifneq ($(TARGET_BUILD_VARIANT),user)
-
+# Setup eth0 for debugging - settings only take effect when ro.debuggable=1
 PRODUCT_PROPERTY_OVERRIDES += \
         net.eth0.startonboot=1 \
         net.eth0.netmask=255.255.255.0
@@ -117,7 +115,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	net.eth0.ip=$(ETH0_IP)
 endif
 # Otherwise net.eth0.ip is not set to enable dhcp
-endif
 endif
 
 # For OTA Update
