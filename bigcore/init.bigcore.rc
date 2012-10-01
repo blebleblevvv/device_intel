@@ -71,6 +71,12 @@ on post-fs-data
     export PERF_TMP_DIR /data/local/tmp
     write /proc/sys/kernel/kptr_restrict 1
 
+    # Offline log services: keep logs (/data/logs/*.old) of logcat and kernel
+    # from the previous reboot cycle. To enable it, remove '#' at the head of
+    # this line:
+
+    # setprop debug.offline.log 1
+
 on boot
     chown root bluetooth /dev/rfkill
     chmod 0660 /dev/rfkill
@@ -158,3 +164,47 @@ on device-added-/dev/eth0
 service enable_houdini /system/bin/enable_houdini
     class main
     oneshot
+
+# offline log services
+service kernel-log /system/bin/aklog -f /data/logs/kernel.log -s 1024 -n 1
+    class main
+    user root
+    group log
+    disabled
+    oneshot
+
+# no -b, to keep main and system log buffers' content in a single log file
+service logcat-sys /system/bin/logcat -f /data/logs/main_system.log -r 1024 -n 10 -v time
+    class main
+    user system
+    group log
+    disabled
+    oneshot
+
+service logcat-events /system/bin/logcat -f /data/logs/events.log -r 1024 -n 10 -v time -b events
+    class main
+    user system
+    group log
+    disabled
+    oneshot
+
+
+on property:debug.offline.log=1
+
+    copy /data/logs/kernel.log /data/logs/kernel.log.old
+    copy /data/logs/kernel.log.1 /data/logs/kernel.log.1.old
+    rm /data/logs/kernel.log
+    rm /data/logs/kernel.log.1
+
+    copy /data/logs/main_system.log /data/logs/main_system.log.old
+    copy /data/logs/events.log /data/logs/events.log.old
+    rm /data/logs/main_system.log
+    rm /data/logs/events.log
+
+    mkdir /data/logs/
+    chown system log /data/logs
+    chmod 0770 /data/logs
+
+    start kernel-log
+    start logcat-sys
+    start logcat-events
