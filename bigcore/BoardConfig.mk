@@ -2,6 +2,10 @@
 
 include device/intel/common/BoardConfig.mk
 
+
+# set console log level
+KERNEL_LOGLEVEL ?= 5
+
 ifeq ($(ANDROID_CONSOLE),usb)
 BOARD_CONSOLE_DEVICE := ttyUSB0,115200n8
 else ifeq ($(ANDROID_CONSOLE),serial)
@@ -12,7 +16,7 @@ endif
 
 BOARD_KERNEL_CMDLINE := init=/init pci=noearly \
 		console=$(BOARD_CONSOLE_DEVICE) \
-		consoleblank=0 loglevel=5 \
+		consoleblank=0 loglevel=$(KERNEL_LOGLEVEL) \
 		androidboot.hardware=$(TARGET_PRODUCT) \
 		bcb.partno=6 \
 
