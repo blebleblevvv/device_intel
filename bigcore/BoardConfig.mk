@@ -2,6 +2,20 @@
 
 include device/intel/common/BoardConfig.mk
 
+ifeq ($(ANDROID_CONSOLE),usb)
+BOARD_CONSOLE_DEVICE := ttyUSB0,115200n8
+else ifeq ($(ANDROID_CONSOLE),serial)
+BOARD_CONSOLE_DEVICE := ttyS0,115200n8
+else
+BOARD_CONSOLE_DEVICE := tty0
+endif
+
+BOARD_KERNEL_CMDLINE := init=/init pci=noearly \
+		console=$(BOARD_CONSOLE_DEVICE) \
+		consoleblank=0 loglevel=5 \
+		androidboot.hardware=$(TARGET_PRODUCT) \
+		bcb.partno=6 \
+
 # 'bigcore' when built directly to use SW rendering, defined in common.mk
 ifneq ($(TARGET_PRODUCT),bigcore)
     # Can override in system environment before building
@@ -12,9 +26,12 @@ ifneq ($(TARGET_PRODUCT),bigcore)
         BOARD_EGL_CFG := device/intel/bigcore/egl_mesa.cfg
         BOARD_GPU_DRIVERS := i965
         USE_OPENGL_RENDERER := true
+        BOARD_KERNEL_CMDLINE += vga=current i915.modeset=1 drm.vblankoffdelay=1
     else ifeq ($(INTEL_GRAPHICS_DRIVER),proprietary)
         include vendor/intel/proprietary-graphics/BoardConfigPartial.mk
     endif
+else
+    BOARD_KERNEL_CMDLINE += vga=ask
 endif # !bigcore
 
 # Set default TARGET_ARCH_VARIANT
@@ -89,20 +106,6 @@ BOARD_USE_LIBVA := true
 BOARD_USE_LIBMIX := true
 
 TARGET_SYSTEM_PROP := device/intel/bigcore/system.prop
-
-ifeq ($(ANDROID_CONSOLE),usb)
-BOARD_CONSOLE_DEVICE := ttyUSB0,115200n8
-else ifeq ($(ANDROID_CONSOLE),serial)
-BOARD_CONSOLE_DEVICE := ttyS0,115200n8
-else
-BOARD_CONSOLE_DEVICE := tty0
-endif
-
-BOARD_KERNEL_CMDLINE := init=/init pci=noearly \
-		console=$(BOARD_CONSOLE_DEVICE) \
-		consoleblank=0 vga=current loglevel=5 \
-		androidboot.hardware=$(TARGET_PRODUCT) \
-		bcb.partno=6 i915.modeset=1 drm.vblankoffdelay=1 \
 
 # --- OTA defines ----
 
