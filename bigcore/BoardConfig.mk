@@ -47,13 +47,6 @@ TARGET_SYSLINUX_FILES = device/intel/bigcore/intellogo.png \
 		$(SYSLINUX_BASE)/vesamenu.c32 \
 		$(SYSLINUX_BASE)/android.c32
 
-# Following is used for updating SYSLINUX during OTA.
-# Instead of writing the whole bootloader partition,
-# we want to update files one by one.
-INSTALLED_RADIOIMAGE_TARGET = \
-		$(INSTALLED_SYSLINUX_TARGET_EXEC) \
-		$(TARGET_SYSLINUX_FILES) \
-
 ifeq ($(TARGET_STAGE_DROIDBOOT),true)
 TARGET_SYSLINUX_CONFIG := device/intel/bigcore/syslinux-fastboot.cfg
 TARGET_DISKINSTALLER_CONFIG := device/intel/bigcore/installer-fastboot.conf
@@ -89,13 +82,13 @@ BOARD_USES_LIBPSS := false
 BOARD_MODEM_HAVE_DATA_DEVICE := false
 BOARD_USES_OPTION_MODEM_AUDIO := false
 
-TARGET_RELEASETOOLS_EXTENSIONS := device/intel/bigcore/releasetools.py
-
 TARGET_RECOVERY_PIXEL_FORMAT := "BGRA_8888"
 
 BOARD_USE_LIBVA_INTEL_DRIVER := true
 BOARD_USE_LIBVA := true
 BOARD_USE_LIBMIX := true
+
+TARGET_SYSTEM_PROP := device/intel/bigcore/system.prop
 
 ifeq ($(ANDROID_CONSOLE),usb)
 BOARD_CONSOLE_DEVICE := ttyUSB0,115200n8
@@ -110,5 +103,21 @@ BOARD_KERNEL_CMDLINE := init=/init pci=noearly \
 		consoleblank=0 vga=current loglevel=5 \
 		androidboot.hardware=$(TARGET_PRODUCT) \
 		bcb.partno=6 i915.modeset=1 drm.vblankoffdelay=1 \
+
+# --- OTA defines ----
+
+# Python extensions to build/tools/releasetools for constructing
+# OTA Update packages
+TARGET_RELEASETOOLS_EXTENSIONS := device/intel/bigcore/releasetools.py
+
+# Mapping file so Recovery can format/update filesystems
+TARGET_RECOVERY_FSTAB := device/intel/bigcore/recovery.fstab
+
+# Following is used for updating SYSLINUX during OTA.
+# Instead of writing the whole bootloader partition,
+# we want to update files one by one.
+INSTALLED_RADIOIMAGE_TARGET = \
+		$(INSTALLED_SYSLINUX_TARGET_EXEC) \
+		$(TARGET_SYSLINUX_FILES) \
 
 # end of file

@@ -75,4 +75,6 @@ TARGET_KERNEL_CONFIG_OVERRIDES += device/intel/samsungxe700t/defconfig_overlay
 BOARD_KERNEL_CMDLINE += \
 	memmap=1M\$$0xdaafcfff ramoops.mem_address=0xdaafcfff ramoops.mem_size=0x100000 ramoops.record_size=0x32000 panic=-1\
 
+ADDITIONAL_BUILD_PROPERTIES += ro.hardKeyboardOverride=true
+
 # end of mk file
