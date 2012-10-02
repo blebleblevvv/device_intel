@@ -14,10 +14,6 @@ include device/intel/bigcore/BoardConfig-iwlwifi.mk
 # or part of an overlay needs to apply to this target only
 # PRODUCT_PACKAGE_OVERLAYS := device/intel/samsungxe700t/overlay
 
-TARGET_RECOVERY_UI_LIB := libpcstd_recovery_ui
-
-# setup additional build prop for product
-
 # Enable for boards with sensors
 BOARD_USE_PLATFORM_SENSOR_LIB := true
 

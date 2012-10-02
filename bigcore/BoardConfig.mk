@@ -120,4 +120,11 @@ INSTALLED_RADIOIMAGE_TARGET = \
 		$(INSTALLED_SYSLINUX_TARGET_EXEC) \
 		$(TARGET_SYSLINUX_FILES) \
 
+# User interface library for Recovery Console.
+# Show/hide menu: VOL+ and VOL- chord, or UP and DOWN chord
+# Highlight up: UP or Vol+
+# Highlight downL DOWN or Vol-
+# Select: ENTER or Power
+TARGET_RECOVERY_UI_LIB := libpcstd_recovery_ui
+
 # end of file
