@@ -48,6 +48,7 @@ OVERRIDE_COPIES := \
 	$(LOCAL_PATH)/init.bigcore.sh:system/etc/init.bigcore.sh \
 	device/intel/common/fstab.common:root/fstab.common \
 	$(LOCAL_PATH)/modules.blacklist:system/etc/modules.blacklist \
+	$(LOCAL_PATH)/ueventd.bigcore.rc:root/ueventd.$(TARGET_PRODUCT).rc \
 
 # copy idc files
 IDC_FILES := $(wildcard $(LOCAL_PATH)/idc/*.idc)
