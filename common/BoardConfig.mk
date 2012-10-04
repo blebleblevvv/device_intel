@@ -22,9 +22,8 @@ TARGET_KERNEL_EXTRA_CFLAGS += -mfpmath=387
 # time this file is parsed, so it might be expanded to a null value.
 TARGET_PREBUILT_KERNEL_DIR = $(TARGET_KERNEL_SOURCE)-prebuilt/$(TARGET_PREBUILT_TAG)/kernel/$(TARGET_PRODUCT)-$(TARGET_BUILD_VARIANT)
 
-# Necessary to prevent sparse flag (-s) from being passed to make_ext4fs.
-# Droidboot and Diskinstaller do not support writing sparse EXT images yet.
-TARGET_USERIMAGES_SPARSE_EXT_DISABLED := true
+# Enable generation of sparse ext4 images
+TARGET_USERIMAGES_SPARSE_EXT_DISABLED := false
 
 # Explicitly required by build/core/config.mk:
 TARGET_CPU_ABI := x86
