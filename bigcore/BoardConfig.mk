@@ -44,10 +44,6 @@ TARGET_ARCH_VARIANT := x86
 # Used for creating/retrieving board-specific prebuilt images
 TARGET_BOARD_PLATFORM := bigcore
 
-# Used in ./frameworks/base/services/surfaceflinger/Android.mk
-# to set LOCAL_CFLAGS += -DNO_RGBX_8888.
-LOCAL_CFLAGS += -DNO_RGBX_8888
-
 TARGET_NO_BOOTLOADER := false
 
 ifeq ($(TARGET_KERNEL_ARCH),)
@@ -103,8 +99,6 @@ BOARD_USES_LIBPSS := false
 BOARD_MODEM_HAVE_DATA_DEVICE := false
 BOARD_USES_OPTION_MODEM_AUDIO := false
 
-TARGET_RECOVERY_PIXEL_FORMAT := "BGRA_8888"
-
 BOARD_USE_LIBVA_INTEL_DRIVER := true
 BOARD_USE_LIBVA := true
 BOARD_USE_LIBMIX := true
@@ -133,5 +127,8 @@ INSTALLED_RADIOIMAGE_TARGET = \
 # Highlight downL DOWN or Vol-
 # Select: ENTER or Power
 TARGET_RECOVERY_UI_LIB := libpcstd_recovery_ui
+
+# For recovery console minui
+TARGET_RECOVERY_PIXEL_FORMAT := "BGRA_8888"
 
 # end of file
