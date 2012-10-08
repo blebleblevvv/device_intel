@@ -22,18 +22,11 @@ BOARD_KERNEL_CMDLINE := init=/init pci=noearly \
 
 # 'bigcore' when built directly to use SW rendering, defined in common.mk
 ifneq ($(TARGET_PRODUCT),bigcore)
-    # Can override in system environment before building
-    INTEL_GRAPHICS_DRIVER ?= mesa
-
-    ifeq ($(INTEL_GRAPHICS_DRIVER),mesa)
-        BOARD_USE_MESA := true
-        BOARD_EGL_CFG := device/intel/bigcore/egl_mesa.cfg
-        BOARD_GPU_DRIVERS := i965
-        USE_OPENGL_RENDERER := true
-        BOARD_KERNEL_CMDLINE += vga=current i915.modeset=1 drm.vblankoffdelay=1
-    else ifeq ($(INTEL_GRAPHICS_DRIVER),proprietary)
-        include vendor/intel/proprietary-graphics/BoardConfigPartial.mk
-    endif
+    BOARD_USE_MESA := true
+    BOARD_EGL_CFG := device/intel/bigcore/egl_mesa.cfg
+    BOARD_GPU_DRIVERS := i965
+    USE_OPENGL_RENDERER := true
+    BOARD_KERNEL_CMDLINE += vga=current i915.modeset=1 drm.vblankoffdelay=1
 else
     BOARD_KERNEL_CMDLINE += vga=ask
 endif # !bigcore
