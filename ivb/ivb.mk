@@ -11,7 +11,7 @@ PRODUCT_MODEL := Ivy Bridge
 LOCAL_PATH := device/intel/ivb
 
 PRODUCT_COPY_FILES += \
-	$(LOCAL_PATH)/init.ivb.rc:root/init.ivb.rc \
+	$(LOCAL_PATH)/init.ivb.rc:root/init.$(TARGET_PRODUCT).rc \
 	$(LOCAL_PATH)/init.ivb.sh:system/etc/init.ivb.sh \
 
 PRODUCT_COPY_FILES := $(OVERRIDE_COPIES) $(PRODUCT_COPY_FILES)
