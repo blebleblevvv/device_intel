@@ -8,6 +8,7 @@ PRODUCT_PACKAGES += \
 	AudioHardwareRecord \
 	v8shell \
 	sound \
+	aklog \
 
 
 # The Google SetupWizard will require a sim card in order to provision the device
