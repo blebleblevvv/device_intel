@@ -75,13 +75,16 @@ def update_raw_image_install(info, node):
         info.script.WriteRawImage(node, out_img)
 
 
-def copy_one_file(info, in_img, out_img, node):
+def copy_one_file(info, in_img, out_img, node, inc):
     # Get rid of leading slashing. Zip does not like it.
     write_to = node
     while (write_to.find('/') == 0):
         write_to = node[1:]
 
-    tgt = get_image(info.input_zip, in_img)
+    if inc:
+        tgt = get_image(info.target_zip, in_img)
+    else:
+        tgt = get_image(info.input_zip, in_img)
 
     if tgt:
         print \
@@ -97,8 +100,13 @@ def copy_one_file(info, in_img, out_img, node):
         return False;
 
 
-def copy_files_to_archive_safe(info, in_img, out_img, node, dest_dir):
-    for zipfile in info.input_zip.namelist():
+def copy_files_to_archive_safe(info, in_img, out_img, node, dest_dir, inc):
+    if inc:
+        namelist = info.target_zip.namelist()
+    else:
+        namelist = info.input_zip.namelist()
+
+    for zipfile in namelist:
         if fnmatch.fnmatchcase(zipfile, in_img):
             # if out_img == '*', extract filename from zipfile
             # else use what is passed in.
@@ -107,13 +115,13 @@ def copy_files_to_archive_safe(info, in_img, out_img, node, dest_dir):
             else:
                 out_fn = out_img
 
-            if copy_one_file(info, zipfile, out_fn, node):
+            if copy_one_file(info, zipfile, out_fn, node, inc):
                 info.script.Print("Writing %s to %s..." % (out_fn, dest_dir))
                 info.script.script.append('package_extract_file_safe("%s/%s", "%s/%s");' \
                                               % (node, out_fn, dest_dir, out_fn));
 
 
-def copy_bootloader_files(info):
+def copy_bootloader_files(info, inc):
     # note: cannot have leading slash when writing to zip
     #       so we skip it in the list
     # note: make sure syslinux is executed first before
@@ -130,7 +138,7 @@ def copy_bootloader_files(info):
     fstab = info.script.info.get("fstab", None)
 
     # copy and execute android_linux to update bootloader
-    if copy_one_file(info, in_img, out_img, node):
+    if copy_one_file(info, in_img, out_img, node, inc):
         info.script.Print("Updating bootloader using %s..." % (out_img))
         info.script.script.append('package_extract_file("%s/%s", "/tmp/%s");' \
                                       % (node, out_img, out_img));
@@ -150,7 +158,7 @@ def copy_bootloader_files(info):
             ("RADIO/*.c32", "*", "others/syslinux", "/bootloader"),
             ("RADIO/intellogo.png", "intellogo.png", "others/syslinux", "/bootloader"),
             ]:
-        copy_files_to_archive_safe(info, in_img, out_img, node, dest_dir)
+        copy_files_to_archive_safe(info, in_img, out_img, node, dest_dir, inc)
 
     info.script.script.append('unmount("/bootloader");')
 
@@ -159,7 +167,7 @@ def FullOTA_InstallEnd(info):
     update_raw_image_verify(info, "RADIO/droidboot.img", "droidboot.img", "/droidboot", False)
     update_raw_image_install(info, "/droidboot")
 
-    copy_bootloader_files(info);
+    copy_bootloader_files(info, False);
 
 
 def IncrementalOTA_VerifyEnd(info):
@@ -169,4 +177,4 @@ def IncrementalOTA_VerifyEnd(info):
 def IncrementalOTA_InstallEnd(info):
     update_raw_image_install(info, "/droidboot")
 
-    copy_bootloader_files(info);
+    copy_bootloader_files(info, True);
