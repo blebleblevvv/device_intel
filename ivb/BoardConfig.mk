@@ -4,9 +4,6 @@ include device/intel/bigcore/BoardConfig.mk
 
 TARGET_ARCH_VARIANT := ivybridge
 
-# The board name as known by Android SDK
-TARGET_BOOTLOADER_BOARD_NAME := ivb
-
 # Use Intel wifi
 include device/intel/bigcore/BoardConfig-iwlwifi.mk
 

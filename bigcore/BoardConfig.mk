@@ -14,6 +14,9 @@ else
 BOARD_CONSOLE_DEVICE := tty0
 endif
 
+# Board name as known by Android SDK
+TARGET_BOOTLOADER_BOARD_NAME := $(TARGET_PRODUCT)
+
 BOARD_KERNEL_CMDLINE := init=/init pci=noearly \
 		console=$(BOARD_CONSOLE_DEVICE) \
 		consoleblank=0 loglevel=$(KERNEL_LOGLEVEL) \
