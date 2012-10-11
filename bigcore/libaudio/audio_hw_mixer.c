@@ -21,8 +21,11 @@
 #include "audio_hal.h"
 
 #define SPEAKER_PLAYBACK_VOLUME     "Speaker Playback Volume"
+#define PCM_PLAYBACK_VOLUME         "PCM Playback Volume"
 #define SURROUND_PLAYBACK_VOLUME    "Surround Playback Volume"
 #define SPEAKER_PLAYBACK_SWITCH     "Speaker Playback Switch"
+#define PCM_PLAYBACK_SWITCH         "PCM Playback Switch"
+#define SURROUND_PLAYBACK_SWITCH    "Surround Playback Switch"
 #define HEADPHONE_PLAYBACK_VOLUME   "Headphone Playback Volume"
 #define HEADPHONE_PLAYBACK_SWITCH   "Headphone Playback Switch"
 #define AUTO_MUTE_MODE              "Auto-Mute Mode"
@@ -41,6 +44,8 @@ struct mixer_control
 // output control
     struct mixer_ctl *speaker_enable;
     struct mixer_ctl *speaker_volume;
+    struct mixer_ctl *surround_enable;
+    struct mixer_ctl *surround_volume;
     struct mixer_ctl *master_speaker_enable;
     struct mixer_ctl *master_speaker_volume;
     struct mixer_ctl *headphone_enable;
@@ -63,6 +68,7 @@ static int set_output_mixer_volume()
     int num_values;
     int speaker_max_value;
     int headset_max_value;
+    int surround_max_value;
     int master_speaker_max_value = 0;
     int ret;
 
@@ -120,6 +126,14 @@ static int set_output_mixer_volume()
             goto fail;
         }
     }
+    num_values = mixer_ctl_get_num_values(mixer_ctls.speaker_enable);
+    for (i = 0; i < num_values; i++) {
+        if (mixer_ctl_set_value(mixer_ctls.speaker_enable, i, 1)) {
+            ALOGE( "mixer_ctls.speaker_enable: invalid value\n");
+            ret = -ENOSYS;
+            goto fail;
+        }
+    }
     headset_max_value = mixer_ctl_get_range_max(mixer_ctls.headphone_volume);
     ALOGD("Set Volume max %d current %f", headset_max_value, mixer_ctls.voice_volume);
     if (!mixer_ctls.headphone_volume) {
@@ -133,6 +147,35 @@ static int set_output_mixer_volume()
             ALOGE( "intel_hda_set_voice_volume: invalid value\n");
             ret = -ENOSYS;
             goto fail;
+        }
+    }
+
+    if (mixer_ctls.surround_enable) {
+        num_values = mixer_ctl_get_num_values(mixer_ctls.surround_enable);
+        for (i = 0; i < num_values; i++) {
+            if (mixer_ctl_set_value(mixer_ctls.surround_enable, i, 1)) {
+                ALOGE( "mixer_ctls.surround_switch: invalid value\n");
+                ret = -ENOSYS;
+                goto fail;
+            }
+        }
+    }
+
+    if (mixer_ctls.surround_volume) {
+        surround_max_value = mixer_ctl_get_range_max(mixer_ctls.surround_volume);
+        ALOGD("Set Volume max %d current %f", surround_max_value, mixer_ctls.surround_volume);
+        if (!mixer_ctls.surround_volume) {
+            ALOGE("mixer_ctls.surround_volume: Invalid");
+            ret = -ENOSYS;
+            goto fail;
+        }
+        num_values = mixer_ctl_get_num_values(mixer_ctls.surround_volume);
+            for (i = 0; i < num_values; i++) {
+            if (mixer_ctl_set_value(mixer_ctls.surround_volume, i, surround_max_value)) {
+                ALOGE( "mixer_ctls.surround_volume: invalid value\n");
+                ret = -ENOSYS;
+                goto fail;
+            }
         }
     }
 
@@ -217,10 +260,14 @@ bool intel_hda_setup_mixer()
     if (!mixer_inst)
         return false;
 
-    mixer_ctls.speaker_volume  = mixer_get_ctl_by_name(mixer_inst, SURROUND_PLAYBACK_VOLUME);
+    mixer_ctls.surround_volume  = mixer_get_ctl_by_name(mixer_inst, SURROUND_PLAYBACK_VOLUME);
+    mixer_ctls.surround_enable  = mixer_get_ctl_by_name(mixer_inst, SURROUND_PLAYBACK_SWITCH);
+    mixer_ctls.speaker_volume  = mixer_get_ctl_by_name(mixer_inst, SPEAKER_PLAYBACK_VOLUME);
     if (!mixer_ctls.speaker_volume)
-        mixer_ctls.speaker_volume  = mixer_get_ctl_by_name(mixer_inst, SPEAKER_PLAYBACK_VOLUME);
+        mixer_ctls.speaker_volume  = mixer_get_ctl_by_name(mixer_inst, PCM_PLAYBACK_VOLUME);
     mixer_ctls.speaker_enable  = mixer_get_ctl_by_name(mixer_inst, SPEAKER_PLAYBACK_SWITCH);
+    if (!mixer_ctls.speaker_enable)
+        mixer_ctls.speaker_enable  = mixer_get_ctl_by_name(mixer_inst, PCM_PLAYBACK_SWITCH);
     mixer_ctls.master_speaker_volume  = mixer_get_ctl_by_name(mixer_inst, MASTER_PLAYBACK_VOLUME);
     mixer_ctls.master_speaker_enable  = mixer_get_ctl_by_name(mixer_inst, MASTER_PLAYBACK_SWITCH);
     mixer_ctls.headphone_enable  = mixer_get_ctl_by_name(mixer_inst, HEADPHONE_PLAYBACK_SWITCH);
