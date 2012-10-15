@@ -1,1 +1,2 @@
 blacklist iwlwifi
+blacklist iwldvm

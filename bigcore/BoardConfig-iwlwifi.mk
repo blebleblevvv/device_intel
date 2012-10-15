@@ -22,8 +22,11 @@
 # else:
 #   look in the kernel source dir
 #
-# Once you decide where to look, presence of "iwlwifi" determines that this is
-# the driver modle basename, otherwise it is "iwlagn".
+# Once you decide where to look, driver to load is determined in
+# the following order:
+# 1. iwldvm
+# 2. iwlwifi
+# 3. iwlagn
 #
 # Result goes into the "wifi_driver_basename" variable
 #
@@ -72,16 +75,40 @@ endif
 endif
 
 ifeq ($(look_for_it_in),kernel_src)
-  ifneq ($(shell grep 'config  *IWLWIFI *$$' $(TARGET_KERNEL_SOURCE)/drivers/net/wireless/iwlwifi/Kconfig),)
-    wifi_driver_basename := iwlwifi
+  ifneq ($(shell grep 'config  *IWLDVM *$$' $(TARGET_KERNEL_SOURCE)/drivers/net/wireless/iwlwifi/Kconfig),)
+    wifi_driver_basename := iwldvm
   else
-    wifi_driver_basename := iwlagn
+    ifneq ($(shell grep 'config  *IWLWIFI *$$' $(TARGET_KERNEL_SOURCE)/drivers/net/wireless/iwlwifi/Kconfig),)
+      wifi_driver_basename := iwlwifi
+      wifi_driver_parameters := \
+              plcp_check=N \
+              11n_disable=1 \
+
+    else
+      wifi_driver_basename := iwlagn
+      wifi_driver_parameters := \
+              plcp_check=N \
+              11n_disable=1 \
+
+    endif
   endif
 else  # look in prebuilt
-  ifneq ($(shell gunzip -c $(the_modules) | tar -t | grep 'modules/iwlwifi\.ko'),)
-    wifi_driver_basename := iwlwifi
+  ifneq ($(shell gunzip -c $(the_modules) | tar -t | grep 'modules/iwldvm\.ko'),)
+    wifi_driver_basename := iwldvm
   else
-    wifi_driver_basename := iwlagn
+    ifneq ($(shell gunzip -c $(the_modules) | tar -t | grep 'modules/iwlwifi\.ko'),)
+      wifi_driver_basename := iwlwifi
+      wifi_driver_parameters := \
+              plcp_check=N \
+              11n_disable=1 \
+
+    else
+      wifi_driver_basename := iwlagn
+      wifi_driver_parameters := \
+              plcp_check=N \
+              11n_disable=1 \
+
+    endif
   endif
 endif
 ifeq ($(debug_wifi_build),true)
@@ -102,9 +129,7 @@ WIFI_DRIVER_MODULE_NAME := $(wifi_driver_basename)
 #               that cause continuous resetting of RF
 # 11n_disable=1 Works around excessive tx retransmits while 11n
 #               is enabled, symptom: name-resolve failure
-IWLWIFI_PARMLIST := \
-       plcp_check=N \
-       11n_disable=1 \
+IWLWIFI_PARMLIST := $(wifi_driver_parameters)
 
 WIFI_DRIVER_MODULE_ARG = "$(strip $(IWLWIFI_PARMLIST))"
 ADDITIONAL_DEFAULT_PROPERTIES += wifi.interface=wlan0
