@@ -35,10 +35,10 @@ on init
     mkdir /storage/usbcard 0000 system system
 
     # device information
-    setprop ro.product.manufacturer </sys/class/dmi/id/sys_vendor
-    setprop ro.product.model </sys/class/dmi/id/product_name
-    setprop ro.product.name </sys/class/dmi/id/product_name
-    setprop ro.serialno </sys/class/dmi/id/product_serial
+    setprop ro.product.manufacturer $[/sys/class/dmi/id/sys_vendor]
+    setprop ro.product.model $[/sys/class/dmi/id/product_name]
+    setprop ro.product.name $[/sys/class/dmi/id/product_name]
+    setprop ro.serialno $[/sys/class/dmi/id/product_serial]
 
 on fs
     mount_all /fstab.common
