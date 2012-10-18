@@ -21,7 +21,7 @@ BOARD_KERNEL_CMDLINE := init=/init pci=noearly \
 		console=$(BOARD_CONSOLE_DEVICE) \
 		consoleblank=0 loglevel=$(KERNEL_LOGLEVEL) \
 		androidboot.hardware=$(TARGET_PRODUCT) \
-		bcb.partno=6 \
+		androidboot.bcb_device=/dev/block/sda6 \
 
 # 'bigcore' when built directly to use SW rendering, defined in common.mk
 ifneq ($(TARGET_PRODUCT),bigcore)
