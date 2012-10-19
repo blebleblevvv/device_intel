@@ -132,4 +132,8 @@ TARGET_RECOVERY_UI_LIB := libpcstd_recovery_ui
 # For recovery console minui
 TARGET_RECOVERY_PIXEL_FORMAT := "BGRA_8888"
 
+# Use Intel OMX components
+BOARD_USES_WRS_OMXIL_CORE := true
+USE_INTEL_OMX_COMPONENTS := true
+
 # end of file
