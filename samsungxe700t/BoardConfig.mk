@@ -9,7 +9,7 @@ include device/intel/bigcore/BoardConfig-iwlwifi.mk
 
 # Product specific overlay - uncomment this if/when an overlay
 # or part of an overlay needs to apply to this target only
-# PRODUCT_PACKAGE_OVERLAYS := device/intel/samsungxe700t/overlay
+# PRODUCT_PACKAGE_OVERLAYS += device/intel/samsungxe700t/overlay
 
 # camera props
 # camera.n: n is camera ID to android

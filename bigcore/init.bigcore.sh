@@ -17,8 +17,8 @@ done
 
 # Used for UFO graphics driver; harmless if some other driver is used
 if test ! -f /data/ufo.prop; then
-    echo "OGL_cb2cr 1" > /data/ufo.prop;
+    ln -s /system/etc/ufo.prop /data/ufo.prop
+    chmod 644 /data/ufo.prop
 fi
-chmod 644 /data/ufo.prop
 
 exit 0
