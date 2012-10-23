@@ -129,5 +129,7 @@ PRODUCT_PACKAGES += \
 
 # include firmware binaries for Intel Wifi adapters
 $(call inherit-product-if-exists, vendor/intel/iwlwifi/iwlwifi.mk)
+# include third-party-apps
+$(call inherit-product-if-exists, vendor/third-party-apps/third-party-apps.mk)
 
 # end of file
