@@ -132,4 +132,6 @@ $(call inherit-product-if-exists, vendor/intel/iwlwifi/iwlwifi.mk)
 # include third-party-apps
 $(call inherit-product-if-exists, vendor/third-party-apps/third-party-apps.mk)
 
+$(call inherit-product-if-exists, external/sep/sep.mk)
+
 # end of file
