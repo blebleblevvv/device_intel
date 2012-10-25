@@ -44,6 +44,10 @@ on fs
     mount_all /fstab.common
     setprop ro.crypto.fuse_sdcard true
 
+    # Allow system group to read/write the Bootloader control block device
+    chown root system ${ro.boot.bcb_device}
+    chmod 660 ${ro.boot.bcb_device}
+
 on post-fs
     mkdir /data/media 0770 media_rw media_rw
     chown media_rw media_rw /data/media
