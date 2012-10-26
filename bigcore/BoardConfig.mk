@@ -29,7 +29,9 @@ ifneq ($(TARGET_PRODUCT),bigcore)
     BOARD_EGL_CFG := device/intel/bigcore/egl_mesa.cfg
     BOARD_GPU_DRIVERS := i965
     USE_OPENGL_RENDERER := true
-    BOARD_KERNEL_CMDLINE += vga=current i915.modeset=1 drm.vblankoffdelay=1
+    BOARD_KERNEL_CMDLINE += vga=current i915.modeset=1 drm.vblankoffdelay=1 \
+			acpi_backlight=vendor \
+
 else
     BOARD_KERNEL_CMDLINE += vga=ask
 endif # !bigcore
