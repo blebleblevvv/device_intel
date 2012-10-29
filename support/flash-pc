@@ -192,10 +192,10 @@ fi
 if [ -n "$FLASH_USERDATA" ]; then
     if [ -n "$USE_USERDATA_IMG" ]; then
         echo "Flashing userdata image..."
-        $FASTBOOT flash userdata $ANDROID_PRODUCT_OUT/userdata.img
+        $FASTBOOT flash data $ANDROID_PRODUCT_OUT/userdata.img
     else
         echo "Erasing userdata partition..."
-        $FASTBOOT erase userdata
+        $FASTBOOT erase data
     fi
 fi
 
