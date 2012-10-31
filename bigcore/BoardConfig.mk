@@ -63,11 +63,14 @@ TARGET_SYSLINUX_FILES = device/intel/bigcore/intellogo.png \
 		$(SYSLINUX_BASE)/vesamenu.c32 \
 		$(SYSLINUX_BASE)/android.c32
 TARGET_SYSLINUX_CONFIG_TEMPLATE := device/intel/bigcore/syslinux.template.cfg
+TARGET_IAGO_PLUGINS += bootable/iago/plugins/syslinux
+TARGET_IAGO_INI := device/intel/bigcore/iago.ini
 
 ifeq ($(TARGET_STAGE_DROIDBOOT),true)
 TARGET_SYSLINUX_CONFIG := device/intel/bigcore/syslinux-fastboot.cfg
 TARGET_DISKINSTALLER_CONFIG := device/intel/bigcore/installer-fastboot.conf
 INSTALLED_RADIOIMAGE_TARGET += $(PRODUCT_OUT)/droidboot.img
+TARGET_IAGO_PLUGINS += bootable/iago/plugins/droidboot
 else
 TARGET_SYSLINUX_CONFIG := device/intel/bigcore/syslinux.cfg
 TARGET_DISKINSTALLER_CONFIG := device/intel/bigcore/installer.conf
