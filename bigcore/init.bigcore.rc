@@ -25,6 +25,7 @@ on early-init
 
 on init
     chown system system /sys/class/backlight/intel_backlight/brightness
+    chown system system /sys/class/backlight/acpi_video0/brightness
 
     # For Houdini; add extra library paths
     export LD_LIBRARY_PATH /vendor/lib:/system/lib:/system/lib/arm:/system/lib/egl
