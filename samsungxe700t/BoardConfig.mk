@@ -46,5 +46,20 @@ BOARD_KERNEL_CMDLINE += \
 	logger.panic_dump=1 \
 
 ADDITIONAL_BUILD_PROPERTIES += ro.hardKeyboardOverride=true
+TARGET_RECOVERY_FSTAB := device/intel/samsungxe700t/recovery.fstab
+
+# Causes bootable/diskinstaller/config.mk to be included which enables the
+# installer_img build target.  For more information on the installer, see
+# http://otc-android.intel.com/wiki/index.php/Installer
+TARGET_USE_DISKINSTALLER := true
+
+ifeq ($(TARGET_STAGE_DROIDBOOT),true)
+TARGET_DISKINSTALLER_CONFIG := device/intel/samsungxe700t/installer-fastboot.conf
+else
+TARGET_DISKINSTALLER_CONFIG := device/intel/samsungxe700t/installer.conf
+endif
+
+# Defines a partitioning scheme for the installer:
+TARGET_DISK_LAYOUT_CONFIG := device/intel/samsungxe700t/disk_layout.conf
 
 # end of mk file

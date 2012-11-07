@@ -15,6 +15,10 @@ on early-init
     # instead of going to adb.
     #setprop log.redirect-stdio true
 
+    # Mount point for installation partition, containing
+    # fstabs and installation-specific properties
+    mkdir /install 0700 root root
+
 on init
     mkdir /storage 0050 system sdcard_r
     mkdir /storage/sdcard0 0000 system system
@@ -70,6 +74,7 @@ on post-fs
     coldboot /sys/block
 
 on post-fs-data
+    readprops /install/install.prop
     # give system access to wpa_supplicant.conf for backup and restore
     mkdir /data/system/ 0770 system system
     mkdir /data/misc/wifi 0770 wifi wifi

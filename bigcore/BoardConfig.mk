@@ -21,7 +21,7 @@ BOARD_KERNEL_CMDLINE := init=/init pci=noearly \
 		console=$(BOARD_CONSOLE_DEVICE) \
 		consoleblank=0 loglevel=$(KERNEL_LOGLEVEL) \
 		androidboot.hardware=$(TARGET_PRODUCT) \
-		androidboot.bcb_device=/dev/block/sda6 \
+                androidboot.bcb_device=/dev/block/by-name/misc \
 
 # 'bigcore' when built directly to use SW rendering, defined in common.mk
 ifneq ($(TARGET_PRODUCT),bigcore)
@@ -69,28 +69,20 @@ TARGET_IAGO_INI := device/intel/bigcore/iago.ini
 
 ifeq ($(TARGET_STAGE_DROIDBOOT),true)
 TARGET_SYSLINUX_CONFIG := device/intel/bigcore/syslinux-fastboot.cfg
-TARGET_DISKINSTALLER_CONFIG := device/intel/bigcore/installer-fastboot.conf
 INSTALLED_RADIOIMAGE_TARGET += $(PRODUCT_OUT)/droidboot.img
 TARGET_IAGO_PLUGINS += bootable/iago/plugins/droidboot
 else
 TARGET_SYSLINUX_CONFIG := device/intel/bigcore/syslinux.cfg
-TARGET_DISKINSTALLER_CONFIG := device/intel/bigcore/installer.conf
 endif
 
-DROIDBOOT_HARDWARE_INITRC = device/intel/bigcore/init.droidboot.rc
+DROIDBOOT_HARDWARE_INITRC = device/intel/bigcore/init.bigcore-minimal.rc
+TARGET_RECOVERY_INITRC = device/intel/bigcore/init.bigcore-minimal.rc
+
 DROIDBOOT_SCRATCH_SIZE = 1500
 TARGET_DROIDBOOT_LIBS := libdbadbd libdbupdate
 
-# Causes bootable/diskinstaller/config.mk to be included which enables the
-# installer_img build target.  For more information on the installer, see
-# http://otc-android.intel.com/wiki/index.php/Installer
-TARGET_USE_DISKINSTALLER := true
-
 # Allow creation of iago live USB/CD images
 TARGET_USE_IAGO := true
-
-# Defines a partitioning scheme for the installer:
-TARGET_DISK_LAYOUT_CONFIG := device/intel/bigcore/disk_layout.conf
 
 # This defines the overlay that covers all devices inheriting bigcore
 DEVICE_PACKAGE_OVERLAYS += device/intel/bigcore/overlay
