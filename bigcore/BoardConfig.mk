@@ -134,4 +134,7 @@ TARGET_RECOVERY_PIXEL_FORMAT := "BGRA_8888"
 BOARD_USES_WRS_OMXIL_CORE := true
 USE_INTEL_OMX_COMPONENTS := true
 
+# For wifi
+include device/intel/bigcore/wifi/wifi.mk
+
 # end of file

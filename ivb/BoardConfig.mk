@@ -4,9 +4,6 @@ include device/intel/bigcore/BoardConfig.mk
 
 TARGET_ARCH_VARIANT := ivybridge
 
-# Use Intel wifi
-include device/intel/bigcore/BoardConfig-iwlwifi.mk
-
 # Product specific overlay - uncomment this if/when an overlay
 # or part of an overlay needs to apply to this target only
 PRODUCT_PACKAGE_OVERLAYS += device/intel/ivb/overlay

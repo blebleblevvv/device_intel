@@ -128,8 +128,10 @@ PRODUCT_PACKAGES += \
 	staprun \
 	stapio \
 
-# include firmware binaries for Intel Wifi adapters
+# include firmware binaries for Wifi adapters
 $(call inherit-product-if-exists, vendor/intel/iwlwifi/iwlwifi.mk)
+$(call inherit-product-if-exists, vendor/realtek/realtek.mk)
+
 # include third-party-apps
 $(call inherit-product-if-exists, vendor/third-party-apps/third-party-apps.mk)
 

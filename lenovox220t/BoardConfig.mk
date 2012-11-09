@@ -4,9 +4,6 @@ include device/intel/bigcore/BoardConfig.mk
 
 TARGET_ARCH_VARIANT := sandybridge
 
-# Use Intel wifi
-include device/intel/bigcore/BoardConfig-iwlwifi.mk
-
 # setup additional build prop for product
 
 # camera props
