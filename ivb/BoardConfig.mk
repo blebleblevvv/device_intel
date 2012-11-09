@@ -14,7 +14,7 @@ PRODUCT_PACKAGE_OVERLAYS += device/intel/ivb/overlay
 ADDITIONAL_BUILD_PROPERTIES += \
                                ro.camera.number=1 \
                                ro.camera.0.devname=/dev/video0 \
-                               ro.camera.0.facing=front \
+                               ro.camera.0.facing=back \
                                ro.camera.0.orientation=0 \
 
 # end of file
