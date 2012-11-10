@@ -166,7 +166,7 @@ fi
 
 if [ -n "$FLASH_BOOTLOADER" ]; then
     echo "Flashing bootloader partition..."
-    $FASTBOOT flash bootloader $ANDROID_PRODUCT_OUT/bootloader
+    $FASTBOOT flash bootloader $ANDROID_PRODUCT_OUT/dbupdate.bin
 fi
 
 if [ -n "$FLASH_SYSTEM" ]; then

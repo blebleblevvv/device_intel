@@ -59,7 +59,8 @@ BOARD_HAVE_BLUETOOTH=true
 
 TARGET_USE_SYSLINUX := true
 TARGET_INSTALL_CUSTOM_SYSLINUX_CONFIG := true
-TARGET_SYSLINUX_FILES = device/intel/bigcore/intellogo.png \
+SYSLINUX_BASE := $(HOST_OUT)/usr/lib/syslinux
+TARGET_SYSLINUX_FILES := device/intel/bigcore/intellogo.png \
 		$(SYSLINUX_BASE)/vesamenu.c32 \
 		$(SYSLINUX_BASE)/android.c32
 TARGET_SYSLINUX_CONFIG_TEMPLATE := device/intel/bigcore/syslinux.template.cfg
@@ -78,7 +79,7 @@ endif
 
 DROIDBOOT_HARDWARE_INITRC = device/intel/bigcore/init.droidboot.rc
 DROIDBOOT_SCRATCH_SIZE = 1500
-TARGET_DROIDBOOT_LIBS := libdbadbd
+TARGET_DROIDBOOT_LIBS := libdbadbd libdbupdate
 
 # Causes bootable/diskinstaller/config.mk to be included which enables the
 # installer_img build target.  For more information on the installer, see
