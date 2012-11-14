@@ -23,7 +23,7 @@ TARGET_KERNEL_EXTRA_CFLAGS += -mfpmath=387
 TARGET_PREBUILT_KERNEL_DIR = $(TARGET_KERNEL_SOURCE)-prebuilt/$(TARGET_PREBUILT_TAG)/kernel/$(TARGET_PRODUCT)-$(TARGET_BUILD_VARIANT)
 
 # Enable generation of sparse ext4 images
-TARGET_USERIMAGES_SPARSE_EXT_DISABLED := false
+TARGET_USERIMAGES_SPARSE_EXT_DISABLED := true
 
 # Explicitly required by build/core/config.mk:
 TARGET_CPU_ABI := x86
