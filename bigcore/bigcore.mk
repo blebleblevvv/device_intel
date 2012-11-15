@@ -84,8 +84,28 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
         hwcomposer.default
 
+# Ethernet
+PRODUCT_PACKAGES += init.net.eth0.sh
+
 PRODUCT_PROPERTY_OVERRIDES += \
         ro.opengles.version = 131072
+
+# Setup eth0 for debugging - settings only take effect when ro.debuggable=1
+PRODUCT_PROPERTY_OVERRIDES += \
+        net.eth0.netmask=255.255.255.0
+
+ifeq ($(ETH0_IP),)
+# Use default IP
+PRODUCT_PROPERTY_OVERRIDES += \
+        net.eth0.ip=192.168.42.1
+else
+ifneq ($(ETH0_IP),dhcp)
+# Use user defined static IP if not dhcp
+PRODUCT_PROPERTY_OVERRIDES += \
+	net.eth0.ip=$(ETH0_IP)
+endif
+# Otherwise net.eth0.ip is not set to enable dhcp
+endif
 
 # For OTA Update
 PRODUCT_PACKAGES += \
