@@ -1,12 +1,4 @@
 on early-init
-    export EXTERNAL_STORAGE /storage/sdcard0
-    mkdir /storage 0050 system sdcard_r
-    mkdir /storage/sdcard0 0000 system system
-    mkdir /storage/sdcard2 0000 system system
-    # for backwards compatibility
-    symlink /storage/sdcard0 /sdcard
-    symlink /storage/sdcard0 /mnt/sdcard
-
     # Mesa environment variables
     export MESA_EXTENSION_OVERRIDE "+GL_OES_EGL_image_external -GL_ARB_framebuffer_object"
     # Force on S3TC hardware decompression support in Mesa
@@ -24,6 +16,26 @@ on early-init
     #setprop log.redirect-stdio true
 
 on init
+    mkdir /mnt/shell/emulated 0700 shell shell
+    mkdir /storage/emulated 0555 root root
+
+    export EXTERNAL_STORAGE /storage/sdcard0
+    export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
+    export EMULATED_STORAGE_TARGET /storage/emulated
+
+    mkdir /storage 0050 system sdcard_r
+    mkdir /storage/sdcard0 0000 system system
+    mkdir /storage/sdcard2 0000 system system
+    # for backwards compatibility
+    symlink /storage/sdcard0 /sdcard
+    symlink /storage/sdcard0 /mnt/sdcard
+
+    # Support legacy paths
+    symlink /storage/emulated/legacy /sdcard
+    symlink /storage/emulated/legacy /mnt/sdcard
+    symlink /storage/emulated/legacy /storage/sdcard0
+    symlink /mnt/shell/emulated/0 /storage/emulated/legacy
+
     chown system system /sys/class/backlight/intel_backlight/brightness
     chown system system /sys/class/backlight/acpi_video0/brightness
 
