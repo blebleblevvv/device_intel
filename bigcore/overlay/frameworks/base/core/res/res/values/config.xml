@@ -1,4 +1,8 @@
 <resources>
     <!-- Indicate device is not voice capable -->
     <bool name="config_voice_capable">false</bool>
+
+    <!-- Separate software navigation bar required on this device. -->
+    <bool name="config_showNavigationBar">true</bool>
+
 </resources>
