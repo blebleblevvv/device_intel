@@ -82,6 +82,7 @@ PRODUCT_PACKAGES += \
 
 # hwcomposer
 PRODUCT_PACKAGES += \
+        hwcomposer.$(TARGET_PRODUCT) \
         hwcomposer.default
 
 # Ethernet
