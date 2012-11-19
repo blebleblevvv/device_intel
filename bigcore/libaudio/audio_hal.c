@@ -111,11 +111,11 @@ static int intel_hda_open(const hw_module_t* module, const char* name,
     }
 
     adev->device.common.tag = HARDWARE_DEVICE_TAG;
-    adev->device.common.version =  AUDIO_DEVICE_API_VERSION_1_0;
+    adev->device.common.version =  AUDIO_DEVICE_API_VERSION_2_0;
     adev->device.common.module = (struct hw_module_t *) module;
     adev->device.common.close = intel_hda_close;
 
-    adev->device.get_supported_devices = intel_hda_get_supported_devices;
+    adev->device.get_supported_devices = NULL;
     adev->device.init_check = intel_hda_init_check;
     adev->device.set_voice_volume = intel_hda_set_voice_volume;
     adev->device.set_master_volume = intel_hda_set_master_volume;
