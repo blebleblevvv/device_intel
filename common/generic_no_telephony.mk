@@ -1,6 +1,6 @@
 $(call inherit-product, build/target/product/generic_no_telephony.mk)
 #$(call inherit-product-if-exists, vendor/google/products/gms.mk)
-$(call inherit-product-if-exists, hardware/intel/PRIVATE/houdini/houdini.mk)
+#$(call inherit-product-if-exists, hardware/intel/PRIVATE/houdini/houdini.mk)
 
 # Extra debug tools
 PRODUCT_PACKAGES += \
