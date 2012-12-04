@@ -1,2 +1,3 @@
 blacklist iwlwifi
 blacklist iwldvm
+blacklist rtl8192ce
