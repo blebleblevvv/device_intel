@@ -15,7 +15,7 @@ drpkg_platform_files := $(ANDROID_BUILD_TOP)/device/intel/support/flash-pc \
 # With the necessary files, pack them
 $(DROIDBOOT_RELEASE_PACKAGE): \
 		$(drpkg_platform_files) \
-		$(INSTALLED_BOOTLOADER_MODULE) \
+		$(DBUPDATE_BLOB) \
 		$(INSTALLED_SYSTEMIMAGE) \
 		$(INSTALLED_RECOVERYIMAGE_TARGET) \
 		$(INSTALLED_BOOTIMAGE_TARGET) \
@@ -27,7 +27,7 @@ $(DROIDBOOT_RELEASE_PACKAGE): \
 	$(hide) mkdir -p $(DROIDBOOT_RELEASE_DIR)/$(RELEASE_PACKAGE_NAME)
 	$(hide) $(ACP) -p \
 		$(drpkg_platform_files) \
-		$(INSTALLED_BOOTLOADER_MODULE) \
+		$(DBUPDATE_BLOB) \
 		$(INSTALLED_SYSTEMIMAGE) \
 		$(INSTALLED_RECOVERYIMAGE_TARGET) \
 		$(INSTALLED_BOOTIMAGE_TARGET) \
