@@ -109,6 +109,7 @@ static int update_droid(Hashmap *params, void *data, unsigned sz)
 		goto out_fail;
 	}
 
+	chmod("/sbin/android_syslinux", 0700);
 	ret = execute_command("/sbin/android_syslinux -U %s", bootptn);
 	if (ret != 0) { /* bad */
 		pr_error("Couldn't run syslinux to update.\n");
