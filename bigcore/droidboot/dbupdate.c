@@ -30,7 +30,7 @@ static int rdline(char *ptr)
 
 static int update_droid(Hashmap *params, void *data, unsigned sz)
 {
-	int cnt, i, ret;
+	int cnt, i, ret = -1;
 	char *ptr = data;
 	const char *bootptn;
 	char buf[PATH_MAX];
@@ -98,32 +98,14 @@ static int update_droid(Hashmap *params, void *data, unsigned sz)
 		ptr += len;
 	}
 
-	ret = mkdir("/tmp", S_IRWXU | S_IRWXG | S_IRWXO | S_ISVTX);
-	if (ret < 0) {
-		pr_error("Couldn't make tmp directory.\n");
-		goto out_fail;
-	}
-
-	if (mount_partition_device("tmpfs", "tmpfs", "/tmp")) {
-		pr_error("Couldn't mount tmp partition.\n");
-		goto out_fail;
-	}
-
 	chmod("/sbin/android_syslinux", 0700);
 	ret = execute_command("/sbin/android_syslinux -U %s", bootptn);
-	if (ret != 0) { /* bad */
+	if (ret != 0)
 		pr_error("Couldn't run syslinux to update.\n");
-		goto out_fail;
-	}
-
-	umount(bootptn);
-	umount("/tmp");
-	rmdir("/tmp");
-	return 0;
 
 out_fail:
 	umount(bootptn);
-	return -1;
+	return ret;
 }
 
 void libdbupdate_init(void)
