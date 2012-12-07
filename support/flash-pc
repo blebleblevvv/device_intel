@@ -186,7 +186,7 @@ fi
 
 if [ -n "$FLASH_DROIDBOOT" ]; then
     echo "Flashing Droidboot kernel image..."
-    $FASTBOOT flash droidboot $ANDROID_PRODUCT_OUT/droidboot.img
+    $FASTBOOT flash fastboot $ANDROID_PRODUCT_OUT/droidboot.img
 fi
 
 if [ -n "$FLASH_USERDATA" ]; then
