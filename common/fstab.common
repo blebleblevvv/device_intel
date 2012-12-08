@@ -6,4 +6,5 @@
 /dev/block/by-name/system     /system              ext4         ro                        wait
 /dev/block/by-name/cache      /cache               ext4         nosuid,nodev              wait
 /dev/block/by-name/data       /data                ext4         nosuid,nodev              wait,encryptable=footer
+/dev/block/by-name/install    /install             ext4         nosuid,nodev              wait
 
