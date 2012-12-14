@@ -4,7 +4,6 @@ LOCAL_PATH := $(call my-dir)
 .PHONY: dbimages
 dbimages: systemimage \
 	  recoveryimage \
-	  syslinux-image \
 	  bootimage \
 	  userdataimage
 
