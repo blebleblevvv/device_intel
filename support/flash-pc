@@ -205,7 +205,9 @@ if [ -n "$REBOOT_BOOTLOADER" ]; then
 else
     if [ -z "$NO_REBOOT" ]; then
         echo "Rebooting device..."
-        $FASTBOOT reboot
+        $FASTBOOT reboot &
+        sleep 1
+        kill %1
     fi
 fi
 
