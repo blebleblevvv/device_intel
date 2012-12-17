@@ -6,13 +6,11 @@ FLASH_KERNEL=
 FLASH_DROIDBOOT=
 FLASH_RECOVERY=
 FLASH_SYSTEM=
-FLASH_BOOTLOADER=
 NO_REBOOT=
 
 function usage {
     echo "Usage: `basename $0` <options>"
     echo " -a Equivalent to -bdksy"
-    echo " -b Flash bootloader"
     echo " -d Flash droidboot"
     echo " -k Flash Android kernel"
     echo " -s Update system"
@@ -29,13 +27,11 @@ fi
 
 while getopts abdksyrh name; do
     case $name in
-        a)  FLASH_BOOTLOADER=1
-            FLASH_DROIDBOOT=1
+        a)  FLASH_DROIDBOOT=1
             FLASH_KERNEL=1
             FLASH_SYSTEM=1
             FLASH_RECOVERY=1
             ;;
-        b)  FLASH_BOOTLOADER=1;;
         d)  FLASH_DROIDBOOT=1;;
         k)  FLASH_KERNEL=1;;
         s)  FLASH_SYSTEM=1;;
@@ -76,22 +72,17 @@ fi
 
 if [ -n "$FLASH_KERNEL" ]; then
     echo "Flashing Android kernel image..."
-    flashimage $ANDROID_PRODUCT_OUT/boot.img /dev/block/sda2
+    flashimage $ANDROID_PRODUCT_OUT/boot.img /dev/block/by-name/boot
 fi
 
 if [ -n "$FLASH_RECOVERY" ]; then
     echo "Flashing recovery kernel image..."
-    flashimage $ANDROID_PRODUCT_OUT/recovery.img /dev/block/sda3
+    flashimage $ANDROID_PRODUCT_OUT/recovery.img /dev/block/by-name/recovery
 fi
 
 if [ -n "$FLASH_DROIDBOOT" ]; then
     echo "Flashing Droidboot kernel image..."
-    flashimage $ANDROID_PRODUCT_OUT/droidboot.img /dev/block/sda5
-fi
-
-if [ -n "$FLASH_BOOTLOADER" ]; then
-    echo "Flashing bootloader image..."
-    flashimage $ANDROID_PRODUCT_OUT/bootloader /dev/block/sda1
+    flashimage $ANDROID_PRODUCT_OUT/droidboot.img /dev/block/by-name/fastboot
 fi
 
 if [ -z "$NO_REBOOT" ]; then
