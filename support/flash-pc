@@ -206,7 +206,7 @@ else
     if [ -z "$NO_REBOOT" ]; then
         echo "Rebooting device..."
         $FASTBOOT reboot &
-        sleep 1
+        sleep 3
         kill %1
     fi
 fi
