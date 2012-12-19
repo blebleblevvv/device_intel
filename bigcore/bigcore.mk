@@ -135,9 +135,6 @@ $(call inherit-product-if-exists, vendor/realtek/realtek.mk)
 # include third-party-apps
 $(call inherit-product-if-exists, vendor/third-party-apps/third-party-apps.mk)
 
-# for now, sep only compiles on x86 32-bit kernel
-ifeq ($(TARGET_ARCH),x86)
 $(call inherit-product-if-exists, external/sep/sep.mk)
-endif
 
 # end of file
