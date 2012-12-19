@@ -87,4 +87,7 @@
          To ensure this feature enabled on this board, we need to add this line no matter its setting
          is in the common config.xml file which is for all products.-->
     <bool name="config_automatic_brightness_available">true</bool>
+
+    <!--  Maximum number of supported users -->
+    <integer name="config_multiuserMaximumUsers">8</integer>
 </resources>
