@@ -15,7 +15,7 @@
  */
 
 #define LOG_TAG "audio_hw_primary"
-/*#define LOG_NDEBUG 0*/
+#define LOG_NDEBUG 0
 
 #include <errno.h>
 #include <pthread.h>
@@ -38,7 +38,7 @@
 
 #include "audio_route.h"
 
-#define PCM_CARD 1
+#define PCM_CARD 0
 #define PCM_DEVICE 0
 #define PCM_DEVICE_SCO 2
 
@@ -1263,8 +1263,8 @@ struct audio_module HAL_MODULE_INFO_SYM = {
         .module_api_version = AUDIO_MODULE_API_VERSION_0_1,
         .hal_api_version = HARDWARE_HAL_API_VERSION,
         .id = AUDIO_HARDWARE_MODULE_ID,
-        .name = "Grouper audio HW HAL",
-        .author = "The Android Open Source Project",
+        .name = "Intel HD-Audio HAL",
+        .author = "The Android Open Source Project & Intel Corporation.",
         .methods = &hal_module_methods,
     },
 };
