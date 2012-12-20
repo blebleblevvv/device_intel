@@ -60,10 +60,15 @@ BOARD_HAVE_BLUETOOTH=true
 
 TARGET_USE_SYSLINUX := true
 TARGET_INSTALL_CUSTOM_SYSLINUX_CONFIG := true
-SYSLINUX_BASE := $(HOST_OUT)/usr/lib/syslinux
+SYSLINUX_BASE := $(PRODUCT_OUT)/syslinux
 TARGET_SYSLINUX_FILES := device/intel/bigcore/intellogo.png \
 		$(SYSLINUX_BASE)/vesamenu.c32 \
-		$(SYSLINUX_BASE)/android.c32
+		$(SYSLINUX_BASE)/libcom32.c32 \
+		$(SYSLINUX_BASE)/libcom32gpl.c32 \
+		$(SYSLINUX_BASE)/libutil_com.c32 \
+		$(SYSLINUX_BASE)/ldlinux.c32 \
+		$(SYSLINUX_BASE)/libmenu.c32 \
+
 TARGET_SYSLINUX_CONFIG_TEMPLATE := device/intel/bigcore/syslinux.template.cfg
 TARGET_IAGO_PLUGINS += bootable/iago/plugins/syslinux
 TARGET_IAGO_INI := device/intel/bigcore/iago.ini
