@@ -78,7 +78,6 @@ PRODUCT_CHARACTERISTICS := tablet
 # Removing this allows the wpa_supplicant to run, which we want
 PRODUCT_COPY_FILES += \
         device/intel/common/apns-conf.xml:system/etc/apns-conf.xml \
-        device/intel/common/asound.conf:system/etc/asound.conf \
         device/intel/common/audio_policy.conf:system/vendor/etc/audio_policy.conf \
         device/intel/common/media_profiles.xml:system/etc/media_profiles.xml \
         device/intel/common/media_codecs.xml:system/etc/media_codecs.xml \

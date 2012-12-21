@@ -39,7 +39,6 @@ PRODUCT_PACKAGES += \
 
 # PC std common files
 OVERRIDE_COPIES := \
-	$(LOCAL_PATH)/asound.conf:system/etc/asound.conf \
 	$(LOCAL_PATH)/android.conf:system/etc/dhcpcd/android.conf \
 	$(LOCAL_PATH)/vold.fstab:system/etc/vold.fstab \
 	$(LOCAL_PATH)/wpa_supplicant.conf:system/etc/wifi/wpa_supplicant.conf \
