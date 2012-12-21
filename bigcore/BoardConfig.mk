@@ -31,6 +31,7 @@ ifneq ($(TARGET_PRODUCT),bigcore)
     USE_OPENGL_RENDERER := true
     BOARD_KERNEL_CMDLINE += vga=current i915.modeset=1 drm.vblankoffdelay=1 \
 			acpi_backlight=vendor \
+			intel_iommu=igfx_off \
 
     ifneq ($(TARGET_BUILD_VARIANT),eng)
         BOARD_KERNEL_CMDLINE += quiet vt.init_hide=1
