@@ -33,6 +33,7 @@ TARGET_KERNEL_CONFIG_OVERRIDES += device/intel/samsungxe700t/defconfig_overlay
 #  - memmap was chosen from /proc/iomem by taking the last MB
 # from the last "System RAM" entry in the list
 #  - the CMDLINE is interpreted by make & bash. Thus the \$$ for representing a $.
+BOARD_KERNEL_CMDLINE := $(filter-out androidboot.bcb_device=/dev/block/by-name/misc, $(BOARD_KERNEL_CMDLINE))
 BOARD_KERNEL_CMDLINE += \
 	memmap=2M\$$0xdaafcfff \
 	ramoops.mem_address=0xdaafcfff \
@@ -41,6 +42,7 @@ BOARD_KERNEL_CMDLINE += \
 	panic=-1 \
 	dump_tasks.enabled=1 \
 	logger.panic_dump=1 \
+	androidboot.bcb_device=/dev/block/sda6 \
 
 ADDITIONAL_BUILD_PROPERTIES += ro.hardKeyboardOverride=true
 TARGET_RECOVERY_FSTAB := device/intel/samsungxe700t/recovery.fstab
