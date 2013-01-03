@@ -1,0 +1,117 @@
+-----------------------------------------------------------------------------
+Ethernet support in Android-IA
+-----------------------------------------------------------------------------
+
+* Default behavior & GUI controls
+* Connecting Ethernet when system_server is down or crashing
+* Connecting Ethernet simultaneously with Wifi
+* Defining a utility interface
+* Running a local DHCP server
+
+-----------------------------------------------------------------------------
+Default behavior & GUI controls
+-----------------------------------------------------------------------------
+When an Android-IA system boots for the first time, it will attempt
+to bring up the first ethernet interface it finds using using DHCP to
+automatically acquire IP settings. This behavior can be changed using the
+Ethernet panel in the standard Android settings app. The settings panel
+shows the current settings as well as allows the user to make various
+changes such as assigning a static IP address, setting the http proxy
+information, etc. The Android network connectivity manager treats
+Ethernet as lower priority than Wifi and will turn Ethernet off when Wifi
+connectivity is established. For details on how to maintain Ethernet
+connectivity while Wifi is in use, refer to the utility interface
+section below.
+
+When an Android-IA system boots into the bootloader (droidboot), it will
+use hardcoded IP address 192.168.42.1. To foce droidboot to use DHCP,
+edit the file device/intel/bigcore/init.bigcore-minimal.rc and comment the
+setprop lines for net.utilitynet.* and then rebuilt your droidboot image.
+
+-----------------------------------------------------------------------------
+Connecting Ethernet when system_server is down or crashing
+-----------------------------------------------------------------------------
+When doing new platform bringup or graphics driver development, it is
+frequently the case that the Android system_server is permanently down
+or frequently crashing. As such, this prevents the default Ethernet
+support from working because it runs as an Android service inside
+system_server. To work around this, Android-IA provides the idea of a
+"utility interface" or an interface that is managed by init scripts
+instead of by the Android frameworks. See the section "Defining a utility
+interface" below.
+
+-----------------------------------------------------------------------------
+Connecting Ethernet simultaneously with Wifi
+-----------------------------------------------------------------------------
+Android was designed with the intention that devices will only be
+connected to one network at a time. As such, the Android connectivity
+manager will disconnect any network interface when a higher priority
+interface becomes available. This causes problems for users who are trying
+to debug Wifi connectivity using adb connected through Ethernet. To work
+around this, Android-IA provides the idea of a "utility interface" or
+an interface that is managed by init scripts instead of by the Android
+frameworks. See the section "Defining a utility interface" below.
+
+-----------------------------------------------------------------------------
+Defining a utility interface
+-----------------------------------------------------------------------------
+A utility interface is an Ethernet interface that is managed by simple
+init scripts and is not exposed to the Android frameworks or Settings
+app. It can be useful in a number of cases where Ethernet availability
+is of utmost importance. To define a utility interface, set its name in
+the system property "persist.sys.utility_iface". For example, to do this
+dynamically at runtime, you can use the setprop command:
+
+    adb shell setprop persist.sys.utility_iface eth0
+    adb reboot
+
+Or, if you prefer, you can set the property at build time by adding the
+following to device/intel/bigcore/bigcore.mk:
+
+    PRODUCT_PROPERTY_OVERRIDES += persist.sys.utility_iface=eth0
+
+After booting a device with a defined utility interface, the script
+/system/etc/init.utilitynet.sh will be executed by init to configure
+the interface. By default, it will use DHCP to acquire IP settings. To
+force the utility interface to use a static IP address you will again
+use system properties. At run time:
+
+    adb shell setprop net.utilitynet.ip=192.168.42.1
+    adb shell setprop net.utilitynet.netmask=255.255.255.0
+    adb reboot
+
+Or at build time by editing device/intel/bigcore/bigcore.mk:
+
+    PRODUCT_PROPERTY_OVERRIDES += net.utilitynet.ip=192.168.42.1
+    PRODUCT_PROPERTY_OVERRIDES += net.utilitynet.netmask=255.255.255.0
+
+-----------------------------------------------------------------------------
+Running a local DHCP server
+-----------------------------------------------------------------------------
+Because Android-IA uses DHCP by default to configure its ethernet
+interface, some users may want to run a DHCP server on their local
+private network. Doing so is fairly straightforward:
+    1) Configure your workstation on the private network to have a static
+       IP address. For example, 192.168.42.3
+    2) Install the isc-dhcp-server package on your workstation using
+       your distro's package manager.
+       For example on Ubuntu: sudo apt-get install isc-dhcp-server
+    3) Create /etc/dhcp/dhcpd.conf using the skeleton below. Be sure
+       to replace the MAC address with the address of your actual
+       ethernet interface.
+            local-address 192.168.42.3;
+            ddns-update-style none;
+            option domain-name "example.org";
+            option domain-name-servers ns1.example.org, ns2.example.org;
+            default-lease-time 600;
+            max-lease-time 7200;
+            authoritative;
+            log-facility local7;
+            subnet 192.168.42.0 netmask 255.255.255.0 { }
+
+            host mydevice {
+                hardware ethernet 00:10:60:b1:d7:39;
+                fixed-address 192.168.42.4;
+            }
+    4) Restart dhcpd: sudo /etc/init.d/isc-dhcp-server restart
+
