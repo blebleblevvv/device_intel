@@ -22,7 +22,7 @@ BOARD_KERNEL_CMDLINE += androidboot.bcb_device=/dev/block/sda6
 ADDITIONAL_BUILD_PROPERTIES += \
 	ro.camera.number=1 \
 	ro.camera.0.devname=/dev/video0 \
-	ro.camera.0.facing=front \
+	ro.camera.0.facing=back \
 	ro.camera.0.orientation=0 \
 
 # Product specific overlay - uncomment this if/when an overlay
