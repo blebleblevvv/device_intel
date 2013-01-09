@@ -46,6 +46,7 @@ OVERRIDE_COPIES := \
 	$(LOCAL_PATH)/init.bigcore.sh:system/etc/init.bigcore.sh \
 	device/intel/common/fstab.common:root/fstab.common \
 	$(LOCAL_PATH)/modules.blacklist:system/etc/modules.blacklist \
+	$(LOCAL_PATH)/ueventd.modules.blacklist:system/etc/ueventd.modules.blacklist \
 	$(LOCAL_PATH)/ueventd.bigcore.rc:root/ueventd.$(TARGET_PRODUCT).rc \
 	$(LOCAL_PATH)/mixer_paths_Realtek.xml:system/etc/mixer_paths_Realtek.xml \
 	$(LOCAL_PATH)/mixer_paths_Analog_Devices.xml:system/etc/mixer_paths_Analog_Devices.xml \
