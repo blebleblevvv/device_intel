@@ -16,22 +16,26 @@
  */
 
 #define LOG_TAG "audio_hw_primary"
-/*#define LOG_NDEBUG 0*/
+#define LOG_NDEBUG 0
 
 #include <errno.h>
 #include <expat.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <fcntl.h>
 
 #include <cutils/log.h>
 
 #include <tinyalsa/asoundlib.h>
 
 #define BUF_SIZE 1024
-#define MIXER_XML_PATH "/system/etc/mixer_paths.xml"
+#define MIXER_XML_PATH "/system/etc/mixer_paths_%s.xml"
+#define CODEC_VENDOR_NAME_PATH "/sys/class/sound/hwC0D0/vendor_name"
+#define CODEC_VENDOR_NAME_UNKNOWN "unknown"
 #define INITIAL_MIXER_PATH_SIZE 8
+#define MIXER_OPEN_RETRYS 50
 
-#define MIXER_CARD 1
+#define MIXER_CARD 0
 
 struct mixer_state {
     struct mixer_ctl *ctl;
@@ -123,6 +127,10 @@ static struct mixer_path *path_create(struct audio_route *ar, const char *name)
 
     /* initialise the new mixer path */
     ar->mixer_path[ar->num_mixer_paths].name = strdup(name);
+    if (ar->mixer_path[ar->num_mixer_paths].name == NULL) {
+        ALOGE("Unable to allocate more paths");
+        return NULL;
+    }
     ar->mixer_path[ar->num_mixer_paths].size = 0;
     ar->mixer_path[ar->num_mixer_paths].length = 0;
     ar->mixer_path[ar->num_mixer_paths].setting = NULL;
@@ -246,6 +254,7 @@ static void start_tag(void *data, const XML_Char *tag_name,
     struct mixer_ctl *ctl;
     int value;
     struct mixer_setting mixer_setting;
+    struct mixer_path *new_mixer_path = NULL;
 
     /* Get name, type and value attributes (these may be empty) */
     for (i = 0; attr[i]; i += 2) {
@@ -262,7 +271,9 @@ static void start_tag(void *data, const XML_Char *tag_name,
         } else {
             if (state->level == 1) {
                 /* top level path: create and stash the path */
-                state->path = path_create(ar, (char *)attr_name);
+                new_mixer_path = path_create(ar, (char *)attr_name);
+                if (new_mixer_path != NULL)
+                    state->path = new_mixer_path;
             } else {
                 /* nested path */
                 struct mixer_path *sub_path = path_get_by_name(ar, attr_name);
@@ -404,19 +415,34 @@ struct audio_route *audio_route_init(void)
     FILE *file;
     int bytes_read;
     void *buf;
-    int i;
+    int i, fd, cnt;
     struct mixer_path *path;
     struct audio_route *ar;
+    char   vendor_xml_path[PATH_MAX];
+    char   vendor_name[255];
+    char  *tmpchar;
 
     ar = calloc(1, sizeof(struct audio_route));
     if (!ar)
         goto err_calloc;
 
-    ar->mixer = mixer_open(MIXER_CARD);
+    i = 0;
+    ar->mixer = NULL;
+    while (!ar->mixer) {
+        ar->mixer = mixer_open(MIXER_CARD);
+        if (!ar->mixer) {
+            ALOGV("[%d]Unable to open the mixer, retrying.", i);
+            usleep(20000);
+        }
+        i++;
+        if (i > MIXER_OPEN_RETRYS)
+            break;
+    }
     if (!ar->mixer) {
         ALOGE("Unable to open the mixer, aborting.");
         goto err_mixer_open;
     }
+    ALOGV("Mixer open successful.");
 
     ar->mixer_path = NULL;
     ar->mixer_path_size = 0;
@@ -426,9 +452,36 @@ struct audio_route *audio_route_init(void)
     if (alloc_mixer_state(ar) < 0)
         goto err_mixer_state;
 
-    file = fopen(MIXER_XML_PATH, "r");
+    fd = open(CODEC_VENDOR_NAME_PATH, O_RDONLY);
+    if (fd == -1) {
+        ALOGE("Failed to open %s", CODEC_VENDOR_NAME_PATH);
+        /* If no codec name file, then use unknown. */
+        strcpy(vendor_name, CODEC_VENDOR_NAME_UNKNOWN);
+    } else {
+
+        cnt = read(fd, vendor_name, 255);
+        if (cnt <= 0) {
+            ALOGE("Failed to read vendor name:%s.", vendor_name);
+            /* If no codec name file, then use unknown. */
+            strcpy(vendor_name, CODEC_VENDOR_NAME_UNKNOWN);
+        } else {
+           vendor_name[cnt-1] = '\0';
+        }
+        close(fd);
+    }
+    /* Replace spaces with underscore in vendor name */
+    tmpchar = vendor_name;
+    while (*tmpchar) {
+        if (*tmpchar == ' ')
+            *tmpchar = '_';
+        tmpchar++;
+    }
+
+    sprintf(vendor_xml_path, MIXER_XML_PATH, vendor_name);
+    ALOGV("Opening up %s.", vendor_xml_path);
+    file = fopen(vendor_xml_path, "r");
     if (!file) {
-        ALOGE("Failed to open %s", MIXER_XML_PATH);
+        ALOGE("Failed to open %s", vendor_xml_path);
         goto err_fopen;
     }
 
@@ -449,7 +502,7 @@ struct audio_route *audio_route_init(void)
             goto err_parse;
 
         bytes_read = fread(buf, 1, BUF_SIZE, file);
-        if (bytes_read < 0)
+        if (ferror(file))
             goto err_parse;
 
         if (XML_ParseBuffer(parser, bytes_read,

@@ -48,6 +48,9 @@ OVERRIDE_COPIES := \
 	device/intel/common/fstab.common:root/fstab.common \
 	$(LOCAL_PATH)/modules.blacklist:system/etc/modules.blacklist \
 	$(LOCAL_PATH)/ueventd.bigcore.rc:root/ueventd.$(TARGET_PRODUCT).rc \
+	$(LOCAL_PATH)/mixer_paths_Realtek.xml:system/etc/mixer_paths_Realtek.xml \
+	$(LOCAL_PATH)/mixer_paths_Analog_Devices.xml:system/etc/mixer_paths_Analog_Devices.xml \
+	$(LOCAL_PATH)/mixer_paths_unknown.xml:system/etc/mixer_paths_unknown.xml \
 
 # copy idc files
 IDC_FILES := $(wildcard $(LOCAL_PATH)/idc/*.idc)
