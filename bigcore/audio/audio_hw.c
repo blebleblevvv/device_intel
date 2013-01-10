@@ -1248,6 +1248,10 @@ static int adev_open(const hw_module_t* module, const char* name,
     adev->hw_device.dump = adev_dump;
 
     adev->ar = audio_route_init();
+    if (adev->ar == NULL) {
+       free(adev);
+       return -EINVAL;
+    }
     adev->orientation = ORIENTATION_UNDEFINED;
     adev->out_device = AUDIO_DEVICE_OUT_SPEAKER;
     adev->in_device = AUDIO_DEVICE_IN_BUILTIN_MIC & ~AUDIO_DEVICE_BIT_IN;
