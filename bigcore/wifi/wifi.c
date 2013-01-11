@@ -358,7 +358,8 @@ int wifi_load_driver()
                 wifi_modules[idx].args,
                 NULL,
                 1,
-                wifi_modules[idx].modpath)) {
+                wifi_modules[idx].modpath,
+                NULL)) {
             ALOGE("Loading of wifi module '%s' with parameters '%s' failed\n",
                 wifi_modules[idx].name, wifi_modules[idx].args);
             goto skip_this_module;
