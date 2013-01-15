@@ -42,6 +42,12 @@ CONFIG_ANDROID_RAM_CONSOLE=n
 # Production builds don't want penguins
 CONFIG_LOGO=n
 
+# FTRACE Only used during development
+CONFIG_FUNCTION_TRACER=n
+CONFIG_FUNCTION_GRAPH_TRACER=n
+CONFIG_IRQSOFF_TRACER=n
+CONFIG_SCHED_TRACER=n
+
 ##############################################################################
 # Other options that were tested, but did not significantly affect results   #
 ##############################################################################
