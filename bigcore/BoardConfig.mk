@@ -58,7 +58,14 @@ USE_CAMERA_STUB := true
 # etc.
 BOARD_HAVE_BLUETOOTH=true
 
+# Allow creation of iago live USB/CD images
+TARGET_USE_IAGO := true
+TARGET_IAGO_PLUGINS := bootable/iago/plugins/gummiboot
 TARGET_IAGO_INI := device/intel/bigcore/iago.ini
+
+ifeq ($(TARGET_BUILD_VARIANT),user)
+TARGET_IAGO_INI += device/intel/bigcore/iago-production.ini
+endif
 
 ifeq ($(TARGET_STAGE_DROIDBOOT),true)
 INSTALLED_RADIOIMAGE_TARGET += $(PRODUCT_OUT)/droidboot.img
@@ -71,8 +78,6 @@ TARGET_RECOVERY_INITRC = device/intel/bigcore/init.bigcore-minimal.rc
 DROIDBOOT_SCRATCH_SIZE = 1500
 TARGET_DROIDBOOT_LIBS := libdbadbd
 
-# Allow creation of iago live USB/CD images
-TARGET_USE_IAGO := true
 
 # This defines the overlay that covers all devices inheriting bigcore
 DEVICE_PACKAGE_OVERLAYS += device/intel/bigcore/overlay
