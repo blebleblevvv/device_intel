@@ -4,8 +4,3 @@
 
 # for video devices
 /dev/video*    0660    media    system
-
-/sys/devices/*/sdb3 dummy 0600 root root trigger:sdb3
-/sys/devices/*/sdb4 dummy 0600 root root trigger:sdb4
-/sys/devices/*/sdc3 dummy 0600 root root trigger:sdc3
-/sys/devices/*/sdc4 dummy 0600 root root trigger:sdc4
