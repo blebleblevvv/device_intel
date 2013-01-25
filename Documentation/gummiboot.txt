@@ -1,0 +1,140 @@
+Test Plan for the Gummiboot Bootloader on Android Devices
+
+
+OBJECTIVE:
+
+Test the Gummiboot Bootloader by booting to all possible targets, booting to those targets in all possible ways,
+and do some negative testing where the boot targets don't exist.
+
+
+LIST OF TESTS:
+
+gummiboot.1 : Test booting the device into Android using the Gummiboot menu
+
+gummiboot.2 : Test booting the device to the recovery console using the Gummiboot menu
+gummiboot.3 : Test booting the device to the recovery console using the "volume up" button
+gummiboot.4 : Test booting the device to the recovery console using the "reboot" command
+
+gummiboot.5 : Test booting the device into fastboot mode using the Gummiboot menu
+gummiboot.6 : Test booting the device into fastboot mode using the "volume down" button
+gummiboot.7 : Test booting the device into fastboot mode using the "reboot" command
+
+gummiboot.8 : Test booting the device with a corrupted boot partition (negative test)
+gummiboot.9 : Test booting the device into fastboot mode with a corrupted fastboot partition (negative test)
+
+-----
+
+TEST DEFINITIONS:
+
+Preperation:
+
+Have a device to test with that has a functional build installed on it
+Have that device connected to a host computer via adb (over usb or ethernet)
+
+gummiboot.1:
+	Purpose:
+	Test booting the device into Android using the Gummiboot menu
+
+	Method:
+	Boot the Android device to the Gummiboot menu
+	Select the Android option and press the Enter key
+
+	Expected Outcome:
+	The Android device should boot into the currently installed Android OS
+
+gummiboot.2:
+	Purpose:
+	Test booting the device to the recovery console using the Gummiboot menu
+
+	Method:
+	Boot the Android device to the Gummiboot menu
+	Select the recovery console option and press the Enter key
+
+	Expected Outcome:
+	The Android device should boot to the recovery console, and you should see the Dead Android Robot graphic
+
+gummiboot.3:
+	Purpose:
+	Test booting the device to the recovery console using the "volume up" button
+
+	Method:
+	Boot the Android device while holding the "volume up" button
+
+	Expected Outcome:
+	The Android device should boot to the recovery console, and you should see the Dead Android Robot graphic
+
+gummiboot.4:
+	Purpose:
+	Test booting the device to the recovery console using the "reboot" command
+
+	Method:
+	Bring up a shell prompt using either the terminal or the adb command
+	Type "reboot recovery"
+
+	Expected Outcome:
+	The Android device should boot to the recovery console, and you should see the Dead Android Robot graphic
+
+gummiboot.5:
+	Purpose:
+	Test booting the device into fastboot mode using the Gummiboot menu
+
+	Method:
+	Boot the Android device to the Gummiboot menu
+	Select the fastboot mode option and press the Enter key
+
+	Expected Outcome:
+	The Android device should boot into the fastboot console, and you should see the Dead Android Robot graphic
+
+gummiboot.6:
+	Purpose:
+	Test booting the device into fastboot mode using the "volume down" button
+
+	Method:
+	Boot the Android device while holding the "volume down" button
+
+	Expected Outcome:
+	The Android device should boot into the fastboot console, and you should see the Dead Android Robot graphic
+
+gummiboot.7:
+	Purpose:
+	Test booting the device into fastboot mode using the "reboot" command
+
+	Method:
+	Bring up a shell prompt using either the terminal or the adb command from your host machine
+	Type "reboot fastboot"
+
+	Expected Outcome:
+	The Android device should boot into the recovery console, and you should see the Dead Android Robot graphic
+
+gummiboot.8:
+	Purpose:
+	Test booting the device with a corrupted boot partition (negative test)
+
+	Method:
+	Boot the Android device to the Gummiboot menu
+	Select the Android option and press the Enter key
+	Bring up a shell prompt using either the terminal or the adb command from your host machine
+	Type "dd if=/dev/zero of=/dev/block/by-name/boot bs=1024 count=1" to corrupt the boot partition
+
+	Boot the Android device to the Gummiboot menu
+	Select the Android option and press the Enter key
+
+	Expected Outcome:
+	The Android device should boot into the recovery console, and you should see the Dead Android Robot graphic
+
+gummiboot.9:
+	Purpose:
+	Test booting the device into fastboot mode with a corrupted fastboot partition (negative test)
+
+	Method:
+	Boot the Android device to the Gummiboot menu
+	Select the Android option and press the Enter key
+	Bring up a shell prompt using either the terminal or the adb command from your host machine
+	Type "dd if=/dev/zero of=/dev/block/by-name/fastboot bs=1024 count=1" to corrupt the fastboot partition
+
+	Boot the Android device to the Gummiboot menu
+	Select the fastboot option and press the Enter key
+
+	Expected Outcome:
+	The Android device should boot into the currently installed Android OS
+	(If the fastboot partition does not exist, the device should fall back to booting to the Android OS)
