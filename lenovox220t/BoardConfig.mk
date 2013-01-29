@@ -20,6 +20,7 @@ BOARD_KERNEL_CMDLINE := $(filter-out androidboot.bcb_device=/dev/block/by-name/m
 BOARD_KERNEL_CMDLINE += androidboot.bcb_device=/dev/block/sda6
 
 ADDITIONAL_BUILD_PROPERTIES += \
+	ro.sf.lcd_density = 160 \
 	ro.camera.number=1 \
 	ro.camera.0.devname=/dev/video0 \
 	ro.camera.0.facing=back \

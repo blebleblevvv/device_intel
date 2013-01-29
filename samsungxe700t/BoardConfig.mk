@@ -19,6 +19,7 @@ TARGET_ARCH_VARIANT := sandybridge
 # cameras will be reported to Android.
 
 ADDITIONAL_BUILD_PROPERTIES += \
+	ro.sf.lcd_density = 160 \
 	ro.camera.number=2 \
 	ro.camera.0.devname=/dev/video0 \
 	ro.camera.0.facing=back \

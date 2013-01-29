@@ -1,0 +1,12 @@
+#
+# Properties for the Acer W700 Iconia tablet
+#
+ro.camera.number = 2
+ro.camera.0.devname = /dev/video0
+ro.camera.0.facing = front
+ro.camera.0.orientation = 0
+ro.camera.1.devname = /dev/video1
+ro.camera.1.facing = back
+ro.camera.1.orientation = 0
+ro.hardKeyboardOverride = true
+ro.sf.lcd_density = 213
