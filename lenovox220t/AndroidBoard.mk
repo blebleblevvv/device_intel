@@ -9,4 +9,4 @@ include $(BUILD_KEY_CHAR_MAP)
 
 allimages: installer_img
 
-include device/intel/bigcore/AndroidBoard.mk
+include device/intel/core_mesa/AndroidBoard.mk

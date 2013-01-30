@@ -1,4 +1,4 @@
-import init.bigcore.rc
+import init.core_mesa.rc
 
 on post-fs-data
     # modules for Lenovo's HDAPS
@@ -9,15 +9,12 @@ on post-fs-data
     write /sys/devices/platform/hdaps/sampling_rate 20
     write /sys/devices/platform/hdaps/invert 5
 
-    #flag vold that post-fs-data is finished
-    setprop vold.post_fs_data_done 1
-
 # Driver modules for camera will be loaded by ueventd.
 # If you still want to ensure moduels are loaded prior to launching
 # camera service, try use insmod here.
 
 # additional initialization
-service device-setup /system/bin/sh /system/etc/init.lenovox220t.sh
+service lenovox220t-setup /system/bin/sh /system/etc/init.lenovox220t.sh
     class core
     oneshot
 

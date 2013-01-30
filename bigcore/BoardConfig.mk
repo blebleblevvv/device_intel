@@ -1,4 +1,6 @@
-# Board configuration for Intel PC STD platform
+#
+# Board configuration for Intel Standard Platform
+#
 
 include device/intel/common/BoardConfig.mk
 
@@ -21,17 +23,12 @@ BOARD_KERNEL_CMDLINE := init=/init pci=noearly \
 		console=$(BOARD_CONSOLE_DEVICE) \
 		consoleblank=0 loglevel=$(KERNEL_LOGLEVEL) \
 		androidboot.hardware=$(TARGET_PRODUCT) \
-                androidboot.bcb_device=/dev/block/by-name/misc \
+		androidboot.bcb_device=/dev/block/by-name/misc \
+		intel_iommu=igfx_off \
 
 # 'bigcore' when built directly to use SW rendering, defined in common.mk
 ifneq ($(TARGET_PRODUCT),bigcore)
-    BOARD_USE_MESA := true
-    BOARD_EGL_CFG := device/intel/bigcore/egl_mesa.cfg
-    BOARD_GPU_DRIVERS := i965
-    USE_OPENGL_RENDERER := true
     BOARD_KERNEL_CMDLINE += vga=current i915.modeset=1 drm.vblankoffdelay=1 \
-			acpi_backlight=vendor \
-			intel_iommu=igfx_off \
 
     ifneq ($(TARGET_BUILD_VARIANT),eng)
         BOARD_KERNEL_CMDLINE += quiet vt.init_hide=1

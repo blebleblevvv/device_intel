@@ -1,0 +1,10 @@
+import init.bigcore.rc
+
+on post-fs-data
+    #flag vold that post-fs-data is finished
+    setprop vold.post_fs_data_done 1
+
+# additional initialization
+service core_mesa-setup /system/bin/sh /system/etc/init.core_mesa.sh
+    class core
+    oneshot

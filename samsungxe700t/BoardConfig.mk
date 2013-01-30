@@ -1,8 +1,9 @@
-# Board configuration for Intel PC STD platform
+# Board configuration for Samsung XE700T
 
-include device/intel/bigcore/BoardConfig.mk
+# Camera configuration is done in this file
+BOARD_USE_DEFAULT_CAMERA_CONFIG := false
 
-TARGET_ARCH_VARIANT := sandybridge
+include device/intel/core_mesa/BoardConfig.mk
 
 # Product specific overlay - uncomment this if/when an overlay
 # or part of an overlay needs to apply to this target only

@@ -1,30 +1,11 @@
-# Board configuration for Intel PC STD platform
+# Board configuration for Lenovo X220t
 
-include device/intel/bigcore/BoardConfig.mk
-
-TARGET_ARCH_VARIANT := sandybridge
+include device/intel/core_mesa/BoardConfig.mk
 
 # setup additional build prop for product
 
-# camera props
-# camera.n: n is camera ID to android
-# camera.devname: device name of node, e.g. /dev/video0
-# number: number of cameras on board. If you claim more than two
-#         cameras, Adroid (ICS) will limit it to 2 in run time.
-# facing: [front/back]
-# orientation: [0/90/180/270]
-# If any field is missed or fed with an invalid value, NONE of
-# cameras will be reported to Android.
-
 BOARD_KERNEL_CMDLINE := $(filter-out androidboot.bcb_device=/dev/block/by-name/misc, $(BOARD_KERNEL_CMDLINE))
 BOARD_KERNEL_CMDLINE += androidboot.bcb_device=/dev/block/sda6
-
-ADDITIONAL_BUILD_PROPERTIES += \
-	ro.sf.lcd_density = 160 \
-	ro.camera.number=1 \
-	ro.camera.0.devname=/dev/video0 \
-	ro.camera.0.facing=back \
-	ro.camera.0.orientation=0 \
 
 # Product specific overlay - uncomment this if/when an overlay
 # or part of an overlay needs to apply to this target only

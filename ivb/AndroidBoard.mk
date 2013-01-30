@@ -7,4 +7,4 @@ include $(CLEAR_VARS)
 LOCAL_MODULE_TAGS := optional
 include $(BUILD_KEY_CHAR_MAP)
 
-include device/intel/bigcore/AndroidBoard.mk
+include device/intel/core_mesa/AndroidBoard.mk
