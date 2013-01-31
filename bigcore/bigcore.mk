@@ -135,6 +135,9 @@ PRODUCT_PACKAGES += \
 $(call inherit-product-if-exists, vendor/intel/iwlwifi/iwlwifi.mk)
 $(call inherit-product-if-exists, vendor/realtek/realtek.mk)
 
+# tools for Iago installer
+$(call inherit-product, bootable/iago/iago.mk)
+
 # include third-party-apps
 $(call inherit-product-if-exists, vendor/third-party-apps/third-party-apps.mk)
 
