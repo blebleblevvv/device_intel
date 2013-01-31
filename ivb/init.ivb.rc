@@ -1,6 +1,0 @@
-import init.core_mesa.rc
-
-# additional initialization
-service ivb-setup /system/bin/sh /system/etc/init.ivb.sh
-    class core
-    oneshot

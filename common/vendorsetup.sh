@@ -22,7 +22,7 @@
 
 PATH=$PATH:$(gettop)/device/intel/support
 
-# Remove sync_img function from old shell state (set by ivb_dev)
+# Remove sync_img function from old shell state
 unset -f sync_img
 
 # $1 : remote IP address (e.g. 192.168.42.1)
