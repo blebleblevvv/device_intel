@@ -165,11 +165,11 @@ def copy_bootloader_files(info, inc):
 
 
 def FullOTA_InstallEnd(info):
-    update_raw_image_verify(info, "RADIO/droidboot.img", "droidboot.img", "/droidboot", False)
+    update_raw_image_verify(info, "RADIO/droidboot.img", "droidboot.img", "/fastboot", False)
     update_raw_image_install(info, "/droidboot")
 
 def IncrementalOTA_VerifyEnd(info):
-    update_raw_image_verify(info, "RADIO/droidboot.img", "droidboot.img", "/droidboot", True)
+    update_raw_image_verify(info, "RADIO/droidboot.img", "droidboot.img", "/fastboot", True)
 
 
 def IncrementalOTA_InstallEnd(info):
