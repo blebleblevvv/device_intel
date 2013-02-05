@@ -17,6 +17,9 @@ CUSTOM_PRODUCT_OUT=
 FLASHING_IMAGE=
 FORCE=
 
+BOOTLOADER_FILE=
+BOOTLOADER_DEFAULT_FILE=dbupdate.bin
+
 while [ $# -gt 0 ]; do
     case $1 in
         -t | --tcp-host )
@@ -63,6 +66,10 @@ while [ $# -gt 0 ]; do
             FLASH_BOOTLOADER=1
             FLASHING_IMAGE=1
             ;;
+        -i | --bootloader-file )
+            BOOTLOADER_FILE=$2
+            shift
+            ;;
         -c | --cache )
             FLASH_CACHE=1
             ;;
@@ -103,6 +110,7 @@ while [ $# -gt 0 ]; do
             echo "  -y --recovery         Flash recovery image"
             echo "  -s --system           Flash system image"
             echo "  -b --bootloader       Flash bootloader"
+            echo "  -i --bootloader-file  Specify bootloader image file name"
             echo "  -c --cache            Erase /cache partition"
             echo "  -u --userdata         Erase /data partition"
             echo "  -U --userdata-image   Flash userdata.img instead of erasing data (implies -u)"
@@ -158,46 +166,65 @@ if [ -z "$FORCE" ] ; then
     fi
 fi
 
-# Ok, lets go!
-if [ -n "$FLASH_CACHE" ]; then
-    echo "Erasing cache partition..."
-    $FASTBOOT erase cache
-fi
+fflash() {
+    # Simple function that sends the flash subcommand via fasboot.
+    # Second argument, the file, is relative to the $ANDROID_PRODUCT_OUT
+    # location.
+    # Arguments: <partition> <file> [<optional message>]
+    echo "Flashing ${3:-${1}} partition..."
+    $FASTBOOT flash ${1} $ANDROID_PRODUCT_OUT/${2}
+}
 
-if [ -n "$FLASH_BOOTLOADER" ]; then
-    echo "Flashing EFI System Partition components"
-    $FASTBOOT flash bootloader $ANDROID_PRODUCT_OUT/dbupdate.bin
-fi
-
-if [ -n "$FLASH_SYSTEM" ]; then
-    echo "Flashing system partition..."
-    $FASTBOOT flash system $ANDROID_PRODUCT_OUT/system.img
-fi
-
-if [ -n "$FLASH_KERNEL" ]; then
-    echo "Flashing Android kernel image..."
-    $FASTBOOT flash boot $ANDROID_PRODUCT_OUT/boot.img
-fi
-
-if [ -n "$FLASH_RECOVERY" ]; then
-    echo "Flashing recovery kernel image..."
-    $FASTBOOT flash recovery $ANDROID_PRODUCT_OUT/recovery.img
-fi
-
-if [ -n "$FLASH_DROIDBOOT" ]; then
-    echo "Flashing Droidboot kernel image..."
-    $FASTBOOT flash fastboot $ANDROID_PRODUCT_OUT/droidboot.img
-fi
-
-if [ -n "$FLASH_USERDATA" ]; then
-    if [ -n "$USE_USERDATA_IMG" ]; then
-        echo "Flashing userdata image..."
-        $FASTBOOT flash data $ANDROID_PRODUCT_OUT/userdata.img
-    else
-        echo "Erasing userdata partition..."
-        $FASTBOOT erase data
+fflash_cond() {
+    # Conditionally calls the flashing function.
+    # Arguments: <condition> <partition> <file> [<optional message>]
+    if [ "${1}" ]; then
+        shift
+        fflash "${@}"
     fi
-fi
+}
+
+ferase() {
+    # Similar to fflash, sends the erase command for a partition.
+    # Arguments: <partition> [<optional message>]
+    echo "Flashing ${2:-${1}} partition..."
+    $FASTBOOT erase ${1}
+}
+
+ferase_cond() {
+    # Conditionally calls the erasing function
+    # Arguments: <condition> <partition> [<optional message>]
+    if [ "${1}" ]; then
+        shift
+        ferase "${@}"
+    fi
+}
+
+fflasherase_cond() {
+    # Conditionally erases a partition before flashing it. The entire block is
+    # also called only if the first condition parameter is true.
+    # Arguments: <condition> <erase condition> <partition> <file> [<message>]
+    if [ "${1}" ]; then
+        shift
+        if [ "${1}" ]; then
+            shift
+            fflash "${@}"
+        else
+            shift
+            ferase "${1}"
+        fi
+    fi
+    shift
+}
+
+# Ok, lets go!
+ferase_cond "${FLASH_CACHE}" cache
+fflasherase_cond "${FLASH_USERDATA}" "${USE_USERDATA_IMG}" data userdata.img
+fflash_cond "${FLASH_BOOTLOADER}" bootloader ${BOOTLOADER_FILE:-${BOOTLOADER_DEFAULT_FILE}} "EFI System"
+fflash_cond "${FLASH_KERNEL}" boot boot.img "Android kernel"
+fflash_cond "${FLASH_RECOVERY}" recovery recovery.img "recovery kernel"
+fflash_cond "${FLASH_SYSTEM}" system system.img
+fflash_cond "${FLASH_DROIDBOOT}" fastboot droidboot.img "Droidboot kernel"
 
 if [ -n "$REBOOT_BOOTLOADER" ]; then
     echo "Rebooting back into Droidboot..."
