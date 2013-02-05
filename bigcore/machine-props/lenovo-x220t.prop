@@ -1,0 +1,8 @@
+#
+# Properties for the Lenovo X220t touchscreen laptop
+#
+ro.camera.number = 1
+ro.camera.0.devname = /dev/video0
+ro.camera.0.facing = back
+ro.camera.0.orientation = 0
+ro.sf.lcd_density  =  160

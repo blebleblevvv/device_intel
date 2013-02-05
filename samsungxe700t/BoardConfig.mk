@@ -9,26 +9,6 @@ include device/intel/core_mesa/BoardConfig.mk
 # or part of an overlay needs to apply to this target only
 # PRODUCT_PACKAGE_OVERLAYS += device/intel/samsungxe700t/overlay
 
-# camera props
-# camera.n: n is camera ID to android
-# camera.devname: device name of node, e.g. /dev/video0
-# number: number of cameras on board. If you claim more than two
-#         cameras, Adroid (ICS) will limit it to 2 in run time.
-# facing: [front/back]
-# orientation: [0/90/180/270]
-# If any field is missed or fed with an invalid value, NONE of
-# cameras will be reported to Android.
-
-ADDITIONAL_BUILD_PROPERTIES += \
-	ro.sf.lcd_density = 160 \
-	ro.camera.number=2 \
-	ro.camera.0.devname=/dev/video0 \
-	ro.camera.0.facing=back \
-	ro.camera.0.orientation=0 \
-	ro.camera.1.devname=/dev/video1 \
-	ro.camera.1.facing=front \
-	ro.camera.1.orientation=0 \
-
 TARGET_KERNEL_CONFIG_OVERRIDES += device/intel/samsungxe700t/defconfig_overlay
 
 # Need to load pstore driver (ramoops). Some comments:
