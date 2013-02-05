@@ -125,4 +125,22 @@ USE_INTEL_OMX_COMPONENTS := true
 # For wifi
 include device/intel/bigcore/wifi/wifi.mk
 
+ifneq ($(BOARD_USE_DEFAULT_CAMERA_CONFIG),false)
+# camera props
+# camera.n: n is camera ID to android
+# camera.devname: device name of node, e.g. /dev/video0
+# number: number of cameras on board. If you claim more than two
+#         cameras, Adroid (ICS) will limit it to 2 in run time.
+# facing: [front/back]
+# orientation: [0/90/180/270]
+# If any field is missed or fed with an invalid value, NONE of
+# cameras will be reported to Android.
+ADDITIONAL_BUILD_PROPERTIES += \
+                               ro.camera.number=1 \
+                               ro.camera.0.devname=/dev/video0 \
+                               ro.camera.0.facing=back \
+                               ro.camera.0.orientation=0 \
+
+endif # BOARD_USE_DEFAULT_CAMERA_CONFIG != false
+
 # end of file
