@@ -70,7 +70,9 @@ on post-fs
     coldboot /sys/block
 
 on post-fs-data
+    # Installer-configured properties
     readprops /install/install.prop
+
     # give system access to wpa_supplicant.conf for backup and restore
     mkdir /data/system/ 0770 system system
     mkdir /data/misc/wifi 0770 wifi wifi
@@ -93,6 +95,14 @@ on post-fs-data
     # this line:
 
     # setprop debug.offline.log 1
+
+# Fallback if neither the installer nor platform detection gave us a
+# screen density.  Must be after the completion of post-fs-data (when
+# the property files are loaded) otherwise this value, being an ro
+# property, will take precedence.  "early-boot" is the first trigger
+# after post-fs-data.
+on early-boot
+    setprop ro.sf.lcd_density 160
 
 on boot
     chown root bluetooth /dev/rfkill
