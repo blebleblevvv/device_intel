@@ -24,7 +24,6 @@ OVERRIDE_COPIES := \
 	$(LOCAL_PATH)/init.lenovox220t.rc:root/init.lenovox220t.rc \
 	$(LOCAL_PATH)/init.lenovox220t.sh:system/etc/init.lenovox220t.sh \
 	frameworks/native/data/etc/android.hardware.sensor.accelerometer.xml:system/etc/permissions/android.hardware.sensor.accelerometer.xml \
-	$(LOCAL_PATH)/fstab.common:root/fstab.common \
 
 PRODUCT_COPY_FILES := $(OVERRIDE_COPIES) $(PRODUCT_COPY_FILES)
 

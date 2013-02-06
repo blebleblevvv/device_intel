@@ -35,7 +35,6 @@ TARGET_KERNEL_CONFIG_OVERRIDES += device/intel/samsungxe700t/defconfig_overlay
 #  - memmap was chosen from /proc/iomem by taking the last MB
 # from the last "System RAM" entry in the list
 #  - the CMDLINE is interpreted by make & bash. Thus the \$$ for representing a $.
-BOARD_KERNEL_CMDLINE := $(filter-out androidboot.bcb_device=/dev/block/by-name/misc, $(BOARD_KERNEL_CMDLINE))
 BOARD_KERNEL_CMDLINE += \
 	memmap=2M\$$0xdaafcfff \
 	ramoops.mem_address=0xdaafcfff \
@@ -47,20 +46,5 @@ BOARD_KERNEL_CMDLINE += \
 	androidboot.bcb_device=/dev/block/sda6 \
 
 ADDITIONAL_BUILD_PROPERTIES += ro.hardKeyboardOverride=true
-TARGET_RECOVERY_FSTAB := device/intel/samsungxe700t/recovery.fstab
-
-# Causes bootable/diskinstaller/config.mk to be included which enables the
-# installer_img build target.  For more information on the installer, see
-# http://otc-android.intel.com/wiki/index.php/Installer
-TARGET_USE_DISKINSTALLER := true
-
-ifeq ($(TARGET_STAGE_DROIDBOOT),true)
-TARGET_DISKINSTALLER_CONFIG := device/intel/samsungxe700t/installer-fastboot.conf
-else
-TARGET_DISKINSTALLER_CONFIG := device/intel/samsungxe700t/installer.conf
-endif
-
-# Defines a partitioning scheme for the installer:
-TARGET_DISK_LAYOUT_CONFIG := device/intel/samsungxe700t/disk_layout.conf
 
 # end of mk file
