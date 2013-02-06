@@ -127,6 +127,8 @@ PRODUCT_PACKAGES += \
 	staprun \
 	stapio \
 
+PRODUCT_PACKAGES += efibootmgr
+
 # include firmware binaries for Wifi adapters
 $(call inherit-product-if-exists, vendor/intel/iwlwifi/iwlwifi.mk)
 $(call inherit-product-if-exists, vendor/realtek/realtek.mk)
