@@ -121,6 +121,7 @@ def copy_files_to_archive_safe(info, in_img, out_img, node, dest_dir, inc):
                                               % (node, out_fn, dest_dir, out_fn));
 
 
+# FIXME: needs to be re-written to handle generic EFI system partition update
 def copy_bootloader_files(info, inc):
     # note: cannot have leading slash when writing to zip
     #       so we skip it in the list
@@ -167,9 +168,6 @@ def FullOTA_InstallEnd(info):
     update_raw_image_verify(info, "RADIO/droidboot.img", "droidboot.img", "/droidboot", False)
     update_raw_image_install(info, "/droidboot")
 
-    copy_bootloader_files(info, False);
-
-
 def IncrementalOTA_VerifyEnd(info):
     update_raw_image_verify(info, "RADIO/droidboot.img", "droidboot.img", "/droidboot", True)
 
@@ -177,4 +175,3 @@ def IncrementalOTA_VerifyEnd(info):
 def IncrementalOTA_InstallEnd(info):
     update_raw_image_install(info, "/droidboot")
 
-    copy_bootloader_files(info, True);

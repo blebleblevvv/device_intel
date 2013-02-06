@@ -58,34 +58,18 @@ USE_CAMERA_STUB := true
 # etc.
 BOARD_HAVE_BLUETOOTH=true
 
-TARGET_USE_SYSLINUX := true
-TARGET_INSTALL_CUSTOM_SYSLINUX_CONFIG := true
-SYSLINUX_BASE := $(PRODUCT_OUT)/syslinux
-TARGET_SYSLINUX_FILES := device/intel/bigcore/intellogo.png \
-		$(SYSLINUX_BASE)/vesamenu.c32 \
-		$(SYSLINUX_BASE)/libcom32.c32 \
-		$(SYSLINUX_BASE)/libcom32gpl.c32 \
-		$(SYSLINUX_BASE)/libutil_com.c32 \
-		$(SYSLINUX_BASE)/ldlinux.c32 \
-		$(SYSLINUX_BASE)/libmenu.c32 \
-
-TARGET_SYSLINUX_CONFIG_TEMPLATE := device/intel/bigcore/syslinux.template.cfg
-TARGET_IAGO_PLUGINS += bootable/iago/plugins/syslinux
 TARGET_IAGO_INI := device/intel/bigcore/iago.ini
 
 ifeq ($(TARGET_STAGE_DROIDBOOT),true)
-TARGET_SYSLINUX_CONFIG := device/intel/bigcore/syslinux-fastboot.cfg
 INSTALLED_RADIOIMAGE_TARGET += $(PRODUCT_OUT)/droidboot.img
 TARGET_IAGO_PLUGINS += bootable/iago/plugins/droidboot
-else
-TARGET_SYSLINUX_CONFIG := device/intel/bigcore/syslinux.cfg
 endif
 
 DROIDBOOT_HARDWARE_INITRC = device/intel/bigcore/init.bigcore-minimal.rc
 TARGET_RECOVERY_INITRC = device/intel/bigcore/init.bigcore-minimal.rc
 
 DROIDBOOT_SCRATCH_SIZE = 1500
-TARGET_DROIDBOOT_LIBS := libdbadbd libdbupdate
+TARGET_DROIDBOOT_LIBS := libdbadbd
 
 # Allow creation of iago live USB/CD images
 TARGET_USE_IAGO := true
@@ -118,13 +102,6 @@ TARGET_RELEASETOOLS_EXTENSIONS := device/intel/bigcore/releasetools.py
 
 # Mapping file so Recovery can format/update filesystems
 TARGET_RECOVERY_FSTAB := device/intel/bigcore/recovery.fstab
-
-# Following is used for updating SYSLINUX during OTA.
-# Instead of writing the whole bootloader partition,
-# we want to update files one by one.
-INSTALLED_RADIOIMAGE_TARGET = \
-		$(INSTALLED_SYSLINUX_TARGET_EXEC) \
-		$(TARGET_SYSLINUX_FILES) \
 
 # User interface library for Recovery Console.
 # Show/hide menu: VOL+ and VOL- chord, or UP and DOWN chord
