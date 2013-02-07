@@ -23,12 +23,26 @@
 #include <unistd.h>
 #include <poll.h>
 
+/* Sadly bionic doesn't seem to have imported this header, so
+ * redeclare the bits need */
+#ifdef HAVE_LINUX_RFKILL_H
+#include <linux/rfkill.h>
+#else
+#define RFKILL_TYPE_WLAN 1
+#define RFKILL_OP_CHANGE_ALL 3
+struct rfkill_event {
+        __u32 idx;
+        __u8  type;
+        __u8  op;
+        __u8  soft, hard;
+} __attribute__((packed));
+#endif
+
 #include "hardware_legacy/wifi.h"
 #include "libwpa_client/wpa_ctrl.h"
 
 #define LOG_TAG "WifiHW"
 #include "cutils/log.h"
-#include "cutils/probe_module.h"
 #include "cutils/memory.h"
 #include "cutils/misc.h"
 #include "cutils/properties.h"
@@ -69,8 +83,6 @@ static char primary_iface[PROPERTY_VALUE_MAX];
 #define WIFI_TEST_INTERFACE             "sta"
 #define WIFI_DRIVER_LOADER_DELAY        1000000
 
-static char DEFAULT_MODULE_PATH[]       = "/system/lib/modules/";
-
 static const char IFACE_DIR[]           = "/data/system/wpa_supplicant";
 
 static const char DRIVER_PROP_NAME[]    = "wlan.driver.status";
@@ -95,85 +107,7 @@ static char supplicant_name[PROPERTY_VALUE_MAX];
 /* Is either SUPP_PROP_NAME or P2P_PROP_NAME */
 static char supplicant_prop_name[PROPERTY_KEY_MAX];
 
-/* To store the name of successfully loaded module */
-static const char PERSIST_MOD_PROP_NAME[] = "persist.sys.net.wlan0.driver";
-
-/* File exists if module is loaded and adapter present */
 static const char DRIVER_LOAD_CHECK[] = "/sys/class/net/%s/phy80211/name";
-
-/* Wifi module description       */
-/* Unless noted, these items must not be null. */
-struct __wifi_modules_desc {
-    /* Name of kernel module */
-    char* name;
-
-    /* Arguments for kernel module */
-    char* args;
-
-    /* Path to module */
-    char* modpath;
-
-    /* Firmware-related, usually not needed as */
-    /* kernel or ueventd should take care of   */
-    /* firmware loading.                       */
-    char* fw_loader;
-    char* fw_path_sta;   /* can be NULL */
-    char* fw_path_ap;    /* can be NULL */
-    char* fw_path_p2p;   /* can be NULL */
-    char* fw_path_param; /* can be NULL */
-};
-
-static struct __wifi_modules_desc wifi_modules[] = {
-    {
-        .name = "iwldvm",
-        .args = "",
-        .modpath = DEFAULT_MODULE_PATH,
-        .fw_loader = "",
-    },
-    {
-        .name = "iwlwifi",
-        .args = "",
-        .modpath = DEFAULT_MODULE_PATH,
-        .fw_loader = "",
-    },
-    {
-        .name = "rtl8192ce",
-        .args = "",
-        .modpath = DEFAULT_MODULE_PATH,
-        .fw_loader = "",
-    },
-    {
-        .name = "ath9k",
-        .args = "",
-        .modpath = DEFAULT_MODULE_PATH,
-        .fw_loader = "",
-    },
-    {
-        /* Last entry with name == NULL */
-        .name = NULL,
-    }
-    /* DO NOT ADD MORE ENTRY HERE */
-};
-
-/* Indicate which wifi_modules we are using.     */
-/* This needs to specified globally as userspace */
-/* does not keep track.                          */
-static int cur_mod_idx = -1;
-static int max_mod_idx = -1;
-
-static void __attribute__ ((constructor)) wifi_hal_init()
-{
-    int i = 0;
-
-    while (1) {
-        if (wifi_modules[i].name == NULL) {
-            max_mod_idx = i;
-            return;
-        }
-
-        i++;
-    }
-}
 
 static int is_primary_interface(const char *ifname)
 {
@@ -182,6 +116,34 @@ static int is_primary_interface(const char *ifname)
     if (ifname == NULL || !strncmp(ifname, primary_iface, strlen(primary_iface))) {
         return 1;
     }
+    return 0;
+}
+
+static int set_rfkill_soft_block(int val)
+{
+    struct rfkill_event ev;
+    int fd = open("/dev/rfkill", O_WRONLY);
+    if(fd < 0) {
+        ALOGE("cannot open /dev/rfkill: %s", strerror(errno));
+        return -1;
+    }
+
+    /* Use CHANGE_ALL to turn them all off.  Because rfkill devices
+     * can be platform devices (e.g. things like hard "airplane mode"
+     * switches), they aren't necessarily 1:1 with network devices.
+     * Thankfully the Android HAL doesn't understand un/load_driver()
+     * operating independently on different interfaces anyway. */
+    ev.idx = 0;
+    ev.type = RFKILL_TYPE_WLAN;
+    ev.op = RFKILL_OP_CHANGE_ALL;
+    ev.soft = val;
+    ev.hard = 0;
+    if(write(fd, (void*)&ev, sizeof(ev)) != sizeof(ev)) {
+        ALOGE("error writing to /dev/rfkill: %s", strerror(errno));
+        return -1;
+    }
+
+    close(fd);
     return 0;
 }
 
@@ -203,53 +165,6 @@ static int is_iface_present()
     free(sysfs_path);
 
     return ret;
-}
-
-static int is_module_in_kernel()
-{
-    FILE *proc;
-    char line[1024]; /* to accomodate different module names */
-
-    if (cur_mod_idx < 0)
-        return 0;
-
-    if ((proc = fopen(MODULE_FILE, "r")) == NULL) {
-        ALOGE("Could not open %s: %s", MODULE_FILE, strerror(errno));
-        return 0;
-    }
-
-    while ((fgets(line, sizeof(line), proc)) != NULL) {
-        if (strstr(line, wifi_modules[cur_mod_idx].name) == line  // try to find a match at the beginning of a line
-                && line[strlen(wifi_modules[cur_mod_idx].name)] == ' ') {
-            fclose(proc);
-            return 1;
-        }
-    }
-
-    fclose(proc);
-    return 0;
-}
-
-static int find_idx_by_module_name(const char* module_name)
-{
-    int i = 0;
-
-    if (!module_name) {
-        return -1;
-    }
-
-    while (wifi_modules[i].name) {
-        /* this function is mainly called to find the index */
-        /* from module name stored in system property. So   */
-        /* we only have to deal with this max length.       */
-        if (strncmp(wifi_modules[i].name, module_name, PROPERTY_VALUE_MAX) == 0) {
-            return i;
-        }
-
-        i++;
-    }
-
-    return -1;
 }
 
 int do_dhcp_request(int *ipaddr, int *gateway, int *mask,
@@ -276,228 +191,26 @@ const char *get_dhcp_error_string()
     return dhcp_lasterror();
 }
 
+/*
+ * Driver "loading" support: the wifi HAL framework uses this as its
+ * metaphor for "turn the radio off", but the actual drivers
+ * (i.e. mainline nl80211 drivers on platforms with integrated rfkill
+ * support) don't require it.  Don't bother unloading kernel modules,
+ * just use the rfkill framework to disable the radio state.
+ */
 int is_wifi_driver_loaded()
 {
-    char driver_status[PROPERTY_VALUE_MAX];
-
-    // report by prop value if we have not selected a module to load
-    if ((cur_mod_idx == -1) && is_iface_present()) {
-        if (!property_get(DRIVER_PROP_NAME, driver_status, NULL)
-                || strcmp(driver_status, "ok") != 0) {
-            return 0;
-        } else {
-            return 1;
-        }
-    } else {
-        /*
-         * If the property says the driver is loaded, check to
-         * make sure that the property setting isn't just left
-         * over from a previous manual shutdown or a runtime
-         * crash.
-         */
-        if (is_module_in_kernel()) {
-            return 1;
-        } else {
-            property_set(DRIVER_PROP_NAME, "unloaded");
-            return 0;
-        }
-    }
+    return is_iface_present();
 }
 
 int wifi_load_driver()
 {
-    char driver_status[PROPERTY_VALUE_MAX];
-    char prop_driver_name[PROPERTY_VALUE_MAX];
-    int count = 100; /* wait at most 20 seconds for completion */
-    int idx;
-    int i = -2;
-    int ret;
-
-    /* If we have not selected a module and the iface is present,
-     * there is no need to load driver.
-     */
-    if ((cur_mod_idx < 0) && is_iface_present()) {
-        property_set(DRIVER_PROP_NAME, "ok");
-        return 0;
-    }
-
-    if (is_wifi_driver_loaded())
-        return 0;
-
-    while ((i < 0) || wifi_modules[i].name) {
-
-        idx = i;
-        if (i == -2) {
-            /* If cur_mod_idx is valid, we try it */
-            if ((cur_mod_idx >= 0) && (cur_mod_idx < max_mod_idx)) {
-                idx = cur_mod_idx;
-            } else {
-                goto skip_this_module;
-            }
-        } else if (i == -1) {
-            /* Try the module defined in persistent property,
-             * as it indicates previously successfully loaded module.
-             */
-            if (!property_get(PERSIST_MOD_PROP_NAME, prop_driver_name, NULL)) {
-                /* no persist property set, ignore */
-                goto skip_this_module;
-            }
-
-            idx = find_idx_by_module_name(prop_driver_name);
-            if (idx < 0) {
-                /* not found in list, skip */
-                goto skip_this_module;
-            }
-        }
-
-        ALOGV("Trying to load wifi module '%s' with parameters '%s'\n",
-            wifi_modules[idx].name, wifi_modules[idx].args);
-
-        if (insmod_by_dep(
-                wifi_modules[idx].name,
-                wifi_modules[idx].args,
-                NULL,
-                1,
-                wifi_modules[idx].modpath,
-                NULL)) {
-            ALOGE("Loading of wifi module '%s' with parameters '%s' failed\n",
-                wifi_modules[idx].name, wifi_modules[idx].args);
-            goto skip_this_module;
-        }
-
-        /*
-         * The sysfs nodes exported by the driver are typically created by
-         * initialization code that runs in the background after the driver is
-         * loaded.  Since the caller of this procedure may expect to use the driver
-         * immediately upon return, this procedure needs to wait (up to some
-         * maximum time) for the driver to create the relevant sysfs node.
-         *
-         * Do exponential-backoff on the waiting to compromise between promptness
-         * and system-load.  Use 1.2x increase per wait-cycle starting at 10 ms and
-         * a maximum total wait time of 10 seconds.
-         */
-        {
-            char ifc[PROPERTY_VALUE_MAX];
-            char *sysfs_path;
-            int ret;
-            unsigned int usec_waited;
-            unsigned int current_wait_usec;
-            struct stat s;
-
-            property_get("wifi.interface", ifc, WIFI_TEST_INTERFACE);
-            /*
-             * The parts of the following path outside of the interpolated
-             * interface name are:
-             *
-             *   () device-neutral since they come from the kernel's net/core
-             *      implementation, and
-             *   () exactly what the wpa_supplicant is using and expecting.
-             */
-            ret = asprintf(&sysfs_path, DRIVER_LOAD_CHECK, ifc);
-            if (ret < 0) {
-                ALOGE("Error allocating sysfs path");
-
-                /* if memory allocation fails, assume system is in bad
-                 * state and so not to try again.
-                 */
-                return -1;
-            }
-
-            usec_waited = 0;
-            current_wait_usec = 10 * 1000;
-            while ((usec_waited < 10 * 1000 * 1000) &&
-                   ((ret = stat(sysfs_path, &s)) != 0)) {
-                usleep(current_wait_usec);
-                usec_waited += current_wait_usec;
-                current_wait_usec = current_wait_usec * 12 / 10;
-            }
-
-            if (ret == 0) {
-                ALOGI("Wifi driver sysfs node %s present after %d usec wait",
-                    sysfs_path, usec_waited);
-            } else {
-                ALOGE("Wifi driver sysfs node %s missing after %d usec wait",
-                    sysfs_path, usec_waited);
-                free(sysfs_path);
-                rmmod_by_dep(wifi_modules[idx].name, NULL);
-                goto skip_this_module;
-            }
-
-            free(sysfs_path);
-
-            /* loading is success if gets to here */
-            cur_mod_idx = idx;
-            break;
-        }
-
-skip_this_module:
-        i++;
-    } // while there is module in the list to try
-
-    if (cur_mod_idx >= max_mod_idx) {
-        property_set(DRIVER_PROP_NAME, "failed");
-        return -1;
-    }
-
-    if (strcmp(wifi_modules[cur_mod_idx].fw_loader, "") == 0) {
-        property_set(DRIVER_PROP_NAME, "ok");
-    } else {
-        property_set("ctl.start", wifi_modules[cur_mod_idx].fw_loader);
-    }
-
-    sched_yield();
-    while (count-- > 0) {
-        if (property_get(DRIVER_PROP_NAME, driver_status, NULL)) {
-            if (strcmp(driver_status, "ok") == 0) {
-                property_set(PERSIST_MOD_PROP_NAME,
-                    wifi_modules[cur_mod_idx].name);
-                return 0;
-            } else if (strcmp(DRIVER_PROP_NAME, "failed") == 0) {
-                wifi_unload_driver();
-                return -1;
-            }
-        }
-        usleep(200000);
-    }
-
-    // timeout:
-    property_set(DRIVER_PROP_NAME, "timeout");
-    wifi_unload_driver();
-    return -1;
+    return set_rfkill_soft_block(0);
 }
 
 int wifi_unload_driver()
 {
-    usleep(200000); /* allow to finish interface down */
-
-    if (cur_mod_idx < 0) {
-        /* no module was selected to load, so skip unloading */
-        property_set(DRIVER_PROP_NAME, "unloaded");
-        return 0;
-    }
-
-    if (cur_mod_idx >= max_mod_idx) {
-        return -1;
-    }
-
-    if (!is_wifi_driver_loaded())
-        return 0;
-
-    if (rmmod_by_dep(wifi_modules[cur_mod_idx].name, NULL) == 0) {
-        int count = 20; /* wait at most 10 seconds for completion */
-        while (count-- > 0) {
-            if (!is_wifi_driver_loaded())
-                break;
-            usleep(500000);
-        }
-        usleep(500000); /* allow card removal */
-        if (count) {
-            return 0;
-        }
-        return -1;
-    } else {
-        return -1;
-    }
+    return set_rfkill_soft_block(1);
 }
 
 int ensure_entropy_file_exists()
@@ -1072,45 +785,15 @@ int wifi_command(const char *ifname, const char *command, char *reply, size_t *r
     }
 }
 
-const char *wifi_get_fw_path(int fw_type)
-{
-    if ((cur_mod_idx >= 0) && (cur_mod_idx < max_mod_idx)) {
-        switch (fw_type) {
-        case WIFI_GET_FW_PATH_STA:
-            return wifi_modules[cur_mod_idx].fw_path_sta;
-        case WIFI_GET_FW_PATH_AP:
-            return wifi_modules[cur_mod_idx].fw_path_ap;
-        case WIFI_GET_FW_PATH_P2P:
-            return wifi_modules[cur_mod_idx].fw_path_p2p;
-        }
-    }
-    return NULL;
-}
-
-int wifi_change_fw_path(const char *fwpath)
-{
-    int len;
-    int fd;
-    int ret = 0;
-
-    if ((cur_mod_idx < 0) || (cur_mod_idx >= max_mod_idx)) {
-        return -1;
-    }
-
-    if (!fwpath) {
-        return ret;
-    }
-
-    fd = TEMP_FAILURE_RETRY(open(wifi_modules[cur_mod_idx].fw_path_param, O_WRONLY));
-    if (fd < 0) {
-        ALOGE("Failed to open wlan fw path param (%s)", strerror(errno));
-        return -1;
-    }
-    len = strlen(fwpath) + 1;
-    if (TEMP_FAILURE_RETRY(write(fd, fwpath, len)) != len) {
-        ALOGE("Failed to write wlan fw path param (%s)", strerror(errno));
-        ret = -1;
-    }
-    close(fd);
-    return ret;
-}
+/*
+ * Firmware switching.  These are called from
+ * system/netd/SoftapController.cpp to support devices that need
+ * different firmware for STA/AP/P2P modes.  None of our supported
+ * drivers require that, and AFAICT the drivers (driver, rather:
+ * orinoco was the only one I found with this property) in the
+ * mainline kernel will already request the proper firmware files
+ * automatically via request_firmware()/hotplug, and presumably be
+ * handled correctly already with no help needed from the HAL.
+ */
+const char *wifi_get_fw_path(int fw_type) { return NULL; }
+int wifi_change_fw_path(const char *fwpath) { return 0; }
