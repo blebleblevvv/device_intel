@@ -27,17 +27,15 @@ endif
 include $(BUILD_STATIC_LIBRARY)
 
 DBUPDATE_MK_BLOB := $(LOCAL_PATH)/mkbblob.py
-DBUPDATE_ANDROID_SYSLINUX := $(PRODUCT_OUT)/syslinux/bin/android_syslinux
+DBUPDATE_FILES := $(PRODUCT_OUT)/gummiboot/gummiboot.efi
 
 $(DBUPDATE_BLOB): \
-		$(TARGET_SYSLINUX_FILES) \
-		$(DBUPDATE_ANDROID_SYSLINUX) \
+		$(DBUPDATE_FILES) \
 		$(DBUPDATE_MK_BLOB)
 	$(hide) mkdir -p $(dir $@)
 	$(hide) $(DBUPDATE_MK_BLOB) \
 			--output $@ \
-			$(DBUPDATE_ANDROID_SYSLINUX) \
-			$(TARGET_SYSLINUX_FILES)
+			$(DBUPDATE_FILES)
 
 endif # TARGET_USE_DROIDBOOT
 

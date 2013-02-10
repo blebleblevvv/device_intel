@@ -76,7 +76,7 @@ DROIDBOOT_HARDWARE_INITRC = device/intel/bigcore/init.bigcore-minimal.rc
 TARGET_RECOVERY_INITRC = device/intel/bigcore/init.bigcore-minimal.rc
 
 DROIDBOOT_SCRATCH_SIZE = 1500
-TARGET_DROIDBOOT_LIBS := libdbadbd
+TARGET_DROIDBOOT_LIBS := libdbadbd libdbupdate
 
 
 # This defines the overlay that covers all devices inheriting bigcore
