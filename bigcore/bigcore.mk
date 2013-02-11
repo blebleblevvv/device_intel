@@ -130,6 +130,11 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_PACKAGES += efibootmgr
 
+# AndroidTerm and its shared library.  These are in the debug_tools
+# manifest, and may not be present at build time.  That's fine, the
+# missing packages will be silently ignored.
+PRODUCT_PACKAGES += AndroidTerm libjackpal-androidterm4
+
 # include firmware binaries for Wifi adapters
 $(call inherit-product-if-exists, vendor/intel/iwlwifi/iwlwifi.mk)
 $(call inherit-product-if-exists, vendor/realtek/realtek.mk)
