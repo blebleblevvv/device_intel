@@ -165,7 +165,8 @@ if [ -n "$FLASH_CACHE" ]; then
 fi
 
 if [ -n "$FLASH_BOOTLOADER" ]; then
-    echo "ERROR bootloader update currently a stub, skipping"
+    echo "Flashing EFI System Partition components"
+    $FASTBOOT flash bootloader $ANDROID_PRODUCT_OUT/dbupdate.bin
 fi
 
 if [ -n "$FLASH_SYSTEM" ]; then

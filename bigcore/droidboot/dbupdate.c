@@ -84,10 +84,7 @@ static int update_droid(Hashmap *params, void *data, unsigned sz)
 			pr_error("Bad blob format");
 			goto out_fail;
 		}
-		if (!strcmp("android_syslinux", name))
-			snprintf(buf, PATH_MAX, "/sbin/%s", name);
-		else
-			snprintf(buf, PATH_MAX, "/boot/%s", name);
+		snprintf(buf, PATH_MAX, "/boot/%s", name);
 
 		pr_info("Writing file '%s'\n", name);
 		ret = named_file_write(buf, prog, len, 0, 0);
@@ -97,11 +94,7 @@ static int update_droid(Hashmap *params, void *data, unsigned sz)
 		}
 		ptr += len;
 	}
-
-	chmod("/sbin/android_syslinux", 0700);
-	ret = execute_command("/sbin/android_syslinux -U %s", bootptn);
-	if (ret != 0)
-		pr_error("Couldn't run syslinux to update.\n");
+	ret = 0;
 
 out_fail:
 	umount(bootptn);

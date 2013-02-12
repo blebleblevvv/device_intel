@@ -7,9 +7,7 @@ dbimages: systemimage \
 	  bootimage \
 	  userdataimage
 
-# TODO: Need to uncomment this after droidboot
-#       update on ESP is done.
-# DBUPDATE_BLOB := $(PRODUCT_OUT)/dbupdate.bin
+DBUPDATE_BLOB := $(PRODUCT_OUT)/dbupdate.bin
 
 ifeq ($(TARGET_STAGE_DROIDBOOT),true)
 dbimages: droidboot-bootimage $(DBUPDATE_BLOB)
