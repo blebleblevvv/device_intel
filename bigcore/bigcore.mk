@@ -44,6 +44,7 @@ OVERRIDE_COPIES := \
 	$(LOCAL_PATH)/wpa_supplicant.conf:system/etc/wifi/wpa_supplicant.conf \
 	$(LOCAL_PATH)/init.bigcore.rc:root/init.bigcore.rc \
 	$(LOCAL_PATH)/init.bigcore.sh:system/etc/init.bigcore.sh \
+	$(LOCAL_PATH)/init.bigcore-minimal.rc:root/init.recovery.$(TARGET_PRODUCT).rc \
 	device/intel/common/fstab.common:root/fstab.common \
 	$(LOCAL_PATH)/modules.blacklist:system/etc/modules.blacklist \
 	$(LOCAL_PATH)/ueventd.modules.blacklist:system/etc/ueventd.modules.blacklist \
