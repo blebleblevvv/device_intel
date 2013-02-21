@@ -75,103 +75,116 @@ def update_raw_image_install(info, node):
         info.script.WriteRawImage(node, out_img)
 
 
-def copy_one_file(info, in_img, out_img, node, inc):
-    # Get rid of leading slashing. Zip does not like it.
-    write_to = node
-    while (write_to.find('/') == 0):
-        write_to = node[1:]
+verbatim_targets = []
+patch_list = []
+target_data = None
+source_data = None
 
-    if inc:
-        tgt = get_image(info.target_zip, in_img)
+def LoadBootloaderFiles(z):
+    out = {}
+    for info in z.infolist():
+        # XXX assumes only stuff that ends in .efi belongs in ESP
+        # reasonable in current design
+        if info.filename.startswith("RADIO/") and info.filename.endswith(".efi"):
+            basefilename = info.filename[6:]
+            fn = "bootloader/" + basefilename
+            data = z.read(info.filename)
+            out[fn] = common.File(fn, data)
+    return out
+
+def EspUpdateInit(info, incremental):
+    global target_data
+    global source_data
+
+    if incremental:
+        target_data = LoadBootloaderFiles(info.target_zip)
+        source_data = LoadBootloaderFiles(info.source_zip)
     else:
-        tgt = get_image(info.input_zip, in_img)
+        target_data = LoadBootloaderFiles(info.input_zip)
+        source_data = None
 
-    if tgt:
-        print \
-            "NOTE: Copying %s to %s/%s that needs special processing on device. Make sure this is the way you want." \
-                % (in_img, write_to, out_img)
+    diffs = []
 
-        common.ZipWriteStr(info.output_zip, "%s/%s" % (write_to, out_img), tgt.data);
+    for fn in sorted(target_data.keys()):
+        tf = target_data[fn]
+        if incremental:
+            sf = source_data.get(fn, None)
+        else:
+            sf = None
 
-        return True;
-    else:
-        # should never reach this unless something is very wrong
-        print "WARNING: Cannot copying %s to %s/%s." % (in_img, write_to, out_img)
-        return False;
+        if sf is None:
+            tf.AddToZip(info.output_zip)
+            verbatim_targets.append(fn)
+        elif tf.sha1 != sf.sha1:
+            diffs.append(common.Difference(tf, sf))
 
+    if not incremental:
+        return
 
-def copy_files_to_archive_safe(info, in_img, out_img, node, dest_dir, inc):
-    if inc:
-        namelist = info.target_zip.namelist()
-    else:
-        namelist = info.input_zip.namelist()
+    common.ComputeDifferences(diffs)
 
-    for zipfile in namelist:
-        if fnmatch.fnmatchcase(zipfile, in_img):
-            # if out_img == '*', extract filename from zipfile
-            # else use what is passed in.
-            if out_img == "*":
-                out_fn = os.path.basename(zipfile);
-            else:
-                out_fn = out_img
-
-            if copy_one_file(info, zipfile, out_fn, node, inc):
-                info.script.Print("Writing %s to %s..." % (out_fn, dest_dir))
-                info.script.script.append('package_extract_file_safe("%s/%s", "%s/%s");' \
-                                              % (node, out_fn, dest_dir, out_fn));
+    for diff in diffs:
+        tf, sf, d = diff.GetPatch()
+        if d is None or len(d) > tf.size * 0.95:
+            tf.AddToZip(output_zip)
+            verbatim_targets.append(tf.name)
+        else:
+            common.ZipWriteStr(info.output_zip, "patch/" + tf.name + ".p", d)
+            patch_list.append((tf.name, tf, sf, tf.size, common.sha1(d).hexdigest()))
 
 
-# FIXME: needs to be re-written to handle generic EFI system partition update
-def copy_bootloader_files(info, inc):
-    # note: cannot have leading slash when writing to zip
-    #       so we skip it in the list
-    # note: make sure syslinux is executed first before
-    #       mounting the partition to copy files over
-
-    # Extract the android_syslinux binary to /tmp,
-    # and execute it to update the bootloader
-    in_img = "RADIO/android_syslinux"
-    out_img = "android_syslinux"
-    node = "others/bin"
-
-    # intentionally do not check if fstab is valid.
-    # the build will fail to signal issue.
-    fstab = info.script.info.get("fstab", None)
-
-    # copy and execute android_linux to update bootloader
-    if copy_one_file(info, in_img, out_img, node, inc):
-        info.script.Print("Updating bootloader using %s..." % (out_img))
-        info.script.script.append('package_extract_file("%s/%s", "/tmp/%s");' \
-                                      % (node, out_img, out_img));
-        info.script.SetPermissions('/tmp', 0, 0, 1023); # 1023 => 1777
-        info.script.SetPermissions('/tmp/%s' % (out_img), 0, 0, 493); # 493 => 0755
-
-        info.script.script.append('run_program("/tmp/%s", "--update", "%s");' % \
-                           (out_img, fstab['/bootloader'].device))
-
+def MountEsp(info):
     # AOSP edify generator in build/ does not support vfat.
     # So we need to generate the full command to mount here.
+    # TODO bit-for-bit copy bootloader to bootloader2 and mount that
+    fstab = info.script.info.get("fstab", None)
     info.script.script.append('mkdir("/bootloader");')
     info.script.script.append('mount("vfat", "EMMC", "%s", "/bootloader");' % (fstab['/bootloader'].device))
 
-    # Copy the bootloader files
-    for in_img, out_img, node, dest_dir in [
-            ("RADIO/*.c32", "*", "others/syslinux", "/bootloader"),
-            ("RADIO/intellogo.png", "intellogo.png", "others/syslinux", "/bootloader"),
-            ]:
-        copy_files_to_archive_safe(info, in_img, out_img, node, dest_dir, inc)
+
+def IncrementalOTA_Assertions(info):
+    EspUpdateInit(info, True)
+    MountEsp(info)
+
+
+def IncrementalOTA_VerifyEnd(info):
+    update_raw_image_verify(info, "RADIO/droidboot.img", "droidboot.img", "/fastboot", True)
+    for fn, tf, sf, size, patch_sha in patch_list:
+        info.script.PatchCheck("/"+fn, tf.sha1, sf.sha1)
+
+
+def IncrementalOTA_InstallEnd(info):
+    update_raw_image_install(info, "/droidboot")
+
+    info.script.Print("Removing unnecessary bootloader files...")
+    info.script.DeleteFiles(["/"+i[0] for i in verbatim_targets] +
+                     ["/"+i for i in sorted(source_data) if i not in target_data])
+
+    info.script.Print("Patching bootloader files...")
+    for item in patch_list:
+        fn, tf, sf, size, _ = item
+        info.script.ApplyPatch("/"+fn, "-", tf.size, tf.sha1, sf.sha1, "patch/"+fn+".p")
+
+    if verbatim_targets:
+        info.script.Print("Adding new bootloader files...")
+        info.script.UnpackPackageDir("bootloader", "/bootloader")
 
     info.script.script.append('unmount("/bootloader");')
+
+
+def FullOTA_Assertions(info):
+    EspUpdateInit(info, False)
+    MountEsp(info)
 
 
 def FullOTA_InstallEnd(info):
     update_raw_image_verify(info, "RADIO/droidboot.img", "droidboot.img", "/fastboot", False)
     update_raw_image_install(info, "/droidboot")
 
-def IncrementalOTA_VerifyEnd(info):
-    update_raw_image_verify(info, "RADIO/droidboot.img", "droidboot.img", "/fastboot", True)
+    if verbatim_targets:
+        info.script.Print("Copying updated bootloader files...")
+        info.script.UnpackPackageDir("bootloader", "/bootloader")
 
-
-def IncrementalOTA_InstallEnd(info):
-    update_raw_image_install(info, "/droidboot")
+    # TODO swap the bootloader and bootloader2 partition entries in the GPT
+    info.script.script.append('unmount("/bootloader");')
 
