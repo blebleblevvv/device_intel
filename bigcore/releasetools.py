@@ -77,6 +77,7 @@ def update_raw_image_install(info, node):
 
 verbatim_targets = []
 patch_list = []
+delete_files = None
 target_data = None
 source_data = None
 
@@ -95,6 +96,7 @@ def LoadBootloaderFiles(z):
 def EspUpdateInit(info, incremental):
     global target_data
     global source_data
+    global delete_files
 
     if incremental:
         target_data = LoadBootloaderFiles(info.target_zip)
@@ -132,19 +134,26 @@ def EspUpdateInit(info, incremental):
             common.ZipWriteStr(info.output_zip, "patch/" + tf.name + ".p", d)
             patch_list.append((tf.name, tf, sf, tf.size, common.sha1(d).hexdigest()))
 
+    delete_files = (["/"+i[0] for i in verbatim_targets] +
+                     ["/"+i for i in sorted(source_data) if i not in target_data])
+
+
+
 
 def MountEsp(info):
     # AOSP edify generator in build/ does not support vfat.
     # So we need to generate the full command to mount here.
     # TODO bit-for-bit copy bootloader to bootloader2 and mount that
     fstab = info.script.info.get("fstab", None)
-    info.script.script.append('mkdir("/bootloader");')
-    info.script.script.append('mount("vfat", "EMMC", "%s", "/bootloader");' % (fstab['/bootloader'].device))
+    info.script.script.append('copy_partition("%s", "%s");' %
+            (fstab['/bootloader'].device, fstab['/bootloader2'].device))
+    info.script.script.append('mount("vfat", "EMMC", "%s", "/bootloader");' % (fstab['/bootloader2'].device))
 
 
 def IncrementalOTA_Assertions(info):
     EspUpdateInit(info, True)
-    MountEsp(info)
+    if delete_files or patch_list or verbatim_files:
+        MountEsp(info)
 
 
 def IncrementalOTA_VerifyEnd(info):
@@ -153,24 +162,33 @@ def IncrementalOTA_VerifyEnd(info):
         info.script.PatchCheck("/"+fn, tf.sha1, sf.sha1)
 
 
+def swap_entries(info):
+    fstab = info.script.info.get("fstab", None)
+    info.script.script.append('swap_entries("%s", "bootloader", "bootloader2");' %
+            (fstab['/bootloader'].device,))
+
 def IncrementalOTA_InstallEnd(info):
     update_raw_image_install(info, "/droidboot")
 
-    info.script.Print("Removing unnecessary bootloader files...")
-    info.script.DeleteFiles(["/"+i[0] for i in verbatim_targets] +
-                     ["/"+i for i in sorted(source_data) if i not in target_data])
+    if not delete_files and not patch_list and not verbatim_targets:
+        return
 
-    info.script.Print("Patching bootloader files...")
-    for item in patch_list:
-        fn, tf, sf, size, _ = item
-        info.script.ApplyPatch("/"+fn, "-", tf.size, tf.sha1, sf.sha1, "patch/"+fn+".p")
+    if delete_files:
+        info.script.Print("Removing unnecessary bootloader files...")
+        info.script.DeleteFiles(delete_files)
+
+    if patch_list:
+        info.script.Print("Patching bootloader files...")
+        for item in patch_list:
+            fn, tf, sf, size, _ = item
+            info.script.ApplyPatch("/"+fn, "-", tf.size, tf.sha1, sf.sha1, "patch/"+fn+".p")
 
     if verbatim_targets:
         info.script.Print("Adding new bootloader files...")
         info.script.UnpackPackageDir("bootloader", "/bootloader")
 
     info.script.script.append('unmount("/bootloader");')
-
+    swap_entries(info)
 
 def FullOTA_Assertions(info):
     EspUpdateInit(info, False)
@@ -181,10 +199,9 @@ def FullOTA_InstallEnd(info):
     update_raw_image_verify(info, "RADIO/droidboot.img", "droidboot.img", "/fastboot", False)
     update_raw_image_install(info, "/droidboot")
 
-    if verbatim_targets:
-        info.script.Print("Copying updated bootloader files...")
-        info.script.UnpackPackageDir("bootloader", "/bootloader")
-
-    # TODO swap the bootloader and bootloader2 partition entries in the GPT
+    info.script.Print("Copying updated bootloader files...")
+    info.script.UnpackPackageDir("bootloader", "/bootloader")
     info.script.script.append('unmount("/bootloader");')
+    swap_entries(info)
+
 

@@ -1,13 +1,14 @@
 # NOTE: by-name symlinks might be aliased by specially crafted removable
 # storage. Locked-down devices should use hard-coded device nodes instead
 # of these links
-/system     ext4    /dev/block/by-name/system
-/cache      ext4    /dev/block/by-name/cache
-/data       ext4    /dev/block/by-name/data    length=-16384
-/boot       emmc    /dev/block/by-name/boot
-/recovery   emmc    /dev/block/by-name/recovery
-/misc       emmc    /dev/block/by-name/misc
-/bootloader vfat    /dev/block/by-name/bootloader
-/fastboot   emmc    /dev/block/by-name/fastboot
-/sdcard     vfat    /dev/block/mmcblk0p1
+/system      ext4    /dev/block/by-name/system
+/cache       ext4    /dev/block/by-name/cache
+/data        ext4    /dev/block/by-name/data    length=-16384
+/boot        emmc    /dev/block/by-name/boot
+/recovery    emmc    /dev/block/by-name/recovery
+/misc        emmc    /dev/block/by-name/misc
+/bootloader  vfat    /dev/block/by-name/bootloader
+/bootloader2 vfat    /dev/block/by-name/bootloader2
+/fastboot    emmc    /dev/block/by-name/fastboot
+/sdcard      vfat    /dev/block/mmcblk0p1
 

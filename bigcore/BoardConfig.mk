@@ -109,12 +109,18 @@ TARGET_RELEASETOOLS_EXTENSIONS := device/intel/bigcore/releasetools.py
 # Mapping file so Recovery can format/update filesystems
 TARGET_RECOVERY_FSTAB := device/intel/bigcore/recovery.fstab
 
+# Addional Edify command implementations
+TARGET_RECOVERY_UPDATER_LIBS := libbigcore_updater
+
+# Extra libraries needed to be rolled into recovery updater
+TARGET_RECOVERY_UPDATER_EXTRA_LIBS := libgpt_static
+
 # User interface library for Recovery Console.
 # Show/hide menu: VOL+ and VOL- chord, or UP and DOWN chord
 # Highlight up: UP or Vol+
 # Highlight downL DOWN or Vol-
 # Select: ENTER or Power
-TARGET_RECOVERY_UI_LIB := libpcstd_recovery_ui
+TARGET_RECOVERY_UI_LIB := libbigcore_recovery_ui
 
 # For recovery console minui
 TARGET_RECOVERY_PIXEL_FORMAT := "BGRA_8888"
