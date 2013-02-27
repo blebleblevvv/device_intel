@@ -8,5 +8,5 @@ ro.camera.0.orientation = 0
 ro.camera.1.devname = /dev/video1
 ro.camera.1.facing = back
 ro.camera.1.orientation = 0
-ro.hardKeyboardOverride = true
+ro.ignore_atkbd = 1
 ro.sf.lcd_density = 213
