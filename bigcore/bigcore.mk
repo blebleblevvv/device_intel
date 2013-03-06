@@ -138,6 +138,7 @@ PRODUCT_PACKAGES += AndroidTerm libjackpal-androidterm4
 # include firmware binaries for Wifi adapters
 $(call inherit-product-if-exists, vendor/intel/iwlwifi/iwlwifi.mk)
 $(call inherit-product-if-exists, vendor/realtek/realtek.mk)
+$(call inherit-product-if-exists, vendor/atheros/ar3k/ar3k.mk)
 
 # tools for Iago installer
 $(call inherit-product, bootable/iago/iago.mk)
