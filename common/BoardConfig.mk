@@ -10,7 +10,14 @@ USE_OPENGL_RENDERER := false
 
 # Kernel source and config file that the build system will use for kernel
 # build:
+ifeq ($(BUILD_EXPERIMENTAL_KERNEL),)
+# Use stable kernel
 TARGET_KERNEL_SOURCE := kernel/intel
+else
+# Use experimental kernel, and force building from source
+TARGET_KERNEL_SOURCE := kernel/experimental/intel
+BUILD_KERNEL := 1
+endif
 
 # Gets rid of some annoying compiler warnings during kernel build since
 # our GCC is built with nonstandard options
