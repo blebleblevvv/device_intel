@@ -81,7 +81,6 @@ while [ $# -gt 0 ]; do
             FLASH_KERNEL=1
             FLASH_SYSTEM=1
             FLASH_RECOVERY=1
-            FLASH_BOOTLOADER=1
             FLASHING_IMAGE=1
             ;;
         -A | --all-with-clear )
@@ -90,7 +89,6 @@ while [ $# -gt 0 ]; do
             FLASH_CACHE=1
             FLASH_USERDATA=1
             FLASH_RECOVERY=1
-            FLASH_BOOTLOADER=1
             FLASHING_IMAGE=1
             ;;
         -f | --force )
@@ -115,7 +113,7 @@ while [ $# -gt 0 ]; do
             echo "  -u --userdata         Erase /data partition"
             echo "  -U --userdata-image   Flash userdata.img instead of erasing data (implies -u)"
             echo "  -l --clear            Erase /cache and /data"
-            echo "  -a --all              Equivalent to -k -y -s -b (Droidboot intentionally omitted)"
+            echo "  -a --all              Equivalent to -k -y -s (Droidboot & bootloader intentionally omitted)"
             echo "  -A --all-with-clear   Equivalent to -a -l"
             echo
             echo "Typical users will want -a or -A"
