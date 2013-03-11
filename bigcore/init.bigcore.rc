@@ -118,7 +118,6 @@ on boot
     insmod /system/lib/modules/hid-sensor-gyro-3d.ko
     insmod /system/lib/modules/hid-sensor-als.ko
     insmod /system/lib/modules/hid-sensor-magn-3d.ko
-    insmod /system/lib/modules/ath3k.ko
 
 
 # additional initialization
