@@ -33,7 +33,7 @@
 #define CODEC_VENDOR_NAME_PATH "/sys/class/sound/hwC0D0/vendor_name"
 #define CODEC_VENDOR_NAME_UNKNOWN "unknown"
 #define INITIAL_MIXER_PATH_SIZE 8
-#define MIXER_OPEN_RETRYS 50
+#define MIXER_OPEN_RETRYS 100
 
 #define MIXER_CARD 0
 
