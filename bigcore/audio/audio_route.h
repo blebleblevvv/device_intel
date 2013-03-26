@@ -18,7 +18,7 @@
 #define AUDIO_ROUTE_H
 
 /* Initialises and frees the audio routes */
-struct audio_route *audio_route_init(void);
+struct audio_route *audio_route_init(unsigned int card_slot);
 void audio_route_free(struct audio_route *ar);
 
 /* Applies an audio route path by name */

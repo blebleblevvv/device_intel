@@ -30,12 +30,10 @@
 
 #define BUF_SIZE 1024
 #define MIXER_XML_PATH "/system/etc/mixer_paths_%s.xml"
-#define CODEC_VENDOR_NAME_PATH "/sys/class/sound/hwC0D0/vendor_name"
+#define CODEC_VENDOR_NAME_PATH "/sys/class/sound/hwC%uD0/vendor_name"
 #define CODEC_VENDOR_NAME_UNKNOWN "unknown"
 #define INITIAL_MIXER_PATH_SIZE 8
-#define MIXER_OPEN_RETRYS 100
 
-#define MIXER_CARD 0
 
 struct mixer_state {
     struct mixer_ctl *ctl;
@@ -408,17 +406,18 @@ void audio_route_apply_path(struct audio_route *ar, const char *name)
     path_apply(ar, path);
 }
 
-struct audio_route *audio_route_init(void)
+struct audio_route *audio_route_init(unsigned int card_slot)
 {
     struct config_parse_state state;
     XML_Parser parser;
     FILE *file;
     int bytes_read;
     void *buf;
-    int i, fd, cnt;
+    int fd, cnt;
     struct mixer_path *path;
     struct audio_route *ar;
     char   vendor_xml_path[PATH_MAX];
+    char   codec_vendor_name[PATH_MAX];
     char   vendor_name[255];
     char  *tmpchar;
 
@@ -426,18 +425,7 @@ struct audio_route *audio_route_init(void)
     if (!ar)
         goto err_calloc;
 
-    i = 0;
-    ar->mixer = NULL;
-    while (!ar->mixer) {
-        ar->mixer = mixer_open(MIXER_CARD);
-        if (!ar->mixer) {
-            ALOGV("[%d]Unable to open the mixer, retrying.", i);
-            usleep(20000);
-        }
-        i++;
-        if (i > MIXER_OPEN_RETRYS)
-            break;
-    }
+    ar->mixer = mixer_open(card_slot);
     if (!ar->mixer) {
         ALOGE("Unable to open the mixer, aborting.");
         goto err_mixer_open;
@@ -452,7 +440,8 @@ struct audio_route *audio_route_init(void)
     if (alloc_mixer_state(ar) < 0)
         goto err_mixer_state;
 
-    fd = open(CODEC_VENDOR_NAME_PATH, O_RDONLY);
+    snprintf(codec_vendor_name, sizeof(codec_vendor_name), CODEC_VENDOR_NAME_PATH, card_slot);
+    fd = open(codec_vendor_name, O_RDONLY);
     if (fd == -1) {
         ALOGE("Failed to open %s", CODEC_VENDOR_NAME_PATH);
         /* If no codec name file, then use unknown. */

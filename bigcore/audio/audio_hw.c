@@ -21,6 +21,12 @@
 #include <pthread.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+
+#include <linux/ioctl.h>
 #include <sys/time.h>
 
 #include <cutils/log.h>
@@ -32,15 +38,21 @@
 
 #include <system/audio.h>
 
+#include <sound/asound.h>
 #include <tinyalsa/asoundlib.h>
 
 #include <audio_utils/resampler.h>
 
 #include "audio_route.h"
 
-#define PCM_CARD 0
+#define CARD_CTRL_PATH "/dev/snd/controlC%u"
+#define PCH_STR "PCH"
+#define MAX_CARDS 2
+#define MAX_RETRIES 50
+
 #define PCM_DEVICE 0
 #define PCM_DEVICE_SCO 2
+#define CARD_SLOT_NOT_FOUND -1
 
 #define OUT_PERIOD_SIZE 512
 #define OUT_SHORT_PERIOD_COUNT 2
@@ -104,6 +116,8 @@ struct audio_device {
     struct audio_route *ar;
     int orientation;
     bool screen_off;
+
+    int card_slot;
 
     struct stream_out *active_out;
     struct stream_in *active_in;
@@ -172,6 +186,43 @@ static void release_buffer(struct resampler_buffer_provider *buffer_provider,
  */
 
 /* Helper functions */
+
+static int find_card_slot()
+{
+    int slot_num;
+    int retval, retry_cnt, fd;
+    char control_path[PATH_MAX];
+    char error_str[255];
+    struct snd_ctl_card_info card_info;
+
+
+    for (retry_cnt = 0; retry_cnt < MAX_RETRIES; retry_cnt++) {
+        for(slot_num = 0; slot_num < MAX_CARDS; slot_num++) {
+
+            snprintf(control_path, sizeof(control_path), CARD_CTRL_PATH, slot_num);
+
+            fd = open(control_path, O_RDWR);
+            ALOGV("[%d]find_card_slot: open %s fd=%d", retry_cnt, control_path, fd);
+            if (fd == -1) {
+                strerror_r(errno, error_str, sizeof(error_str));
+                ALOGV("%s", error_str);
+            } else {
+                if ((retval = ioctl(fd, SNDRV_CTL_IOCTL_CARD_INFO, &card_info)) < 0) {
+                    ALOGV("[%d]find_card_slot: ioctl() failed. retval=%d", retry_cnt, retval);
+                    close(fd);
+                    continue;
+                }
+                close(fd);
+                ALOGV("find_card_slot: id=%s slot_num=%d", card_info.id, slot_num);
+                if (strncmp(PCH_STR, &card_info.id[0], strlen(PCH_STR)) == 0)
+                    return slot_num;
+            }
+        }
+        usleep(20000);
+    }
+
+    return CARD_SLOT_NOT_FOUND;
+}
 
 static void select_devices(struct audio_device *adev)
 {
@@ -289,7 +340,7 @@ static int start_output_stream(struct stream_out *out)
         pthread_mutex_unlock(&in->lock);
     }
 
-    out->pcm = pcm_open(PCM_CARD, device, PCM_OUT | PCM_NORESTART, out->pcm_config);
+    out->pcm = pcm_open((unsigned int)adev->card_slot, device, PCM_OUT | PCM_NORESTART, out->pcm_config);
 
     if (out->pcm && !pcm_is_ready(out->pcm)) {
         ALOGE("pcm_open(out) failed: %s", pcm_get_error(out->pcm));
@@ -357,7 +408,7 @@ static int start_input_stream(struct stream_in *in)
         pthread_mutex_unlock(&out->lock);
     }
 
-    in->pcm = pcm_open(PCM_CARD, device, PCM_IN, in->pcm_config);
+    in->pcm = pcm_open((unsigned int)adev->card_slot, device, PCM_IN, in->pcm_config);
 
     if (in->pcm && !pcm_is_ready(in->pcm)) {
         ALOGE("pcm_open(in) failed: %s", pcm_get_error(in->pcm));
@@ -1247,7 +1298,15 @@ static int adev_open(const hw_module_t* module, const char* name,
     adev->hw_device.close_input_stream = adev_close_input_stream;
     adev->hw_device.dump = adev_dump;
 
-    adev->ar = audio_route_init();
+    adev->card_slot = find_card_slot();
+    ALOGV("Card Slot: 0x%x", adev->card_slot);
+    if (adev->card_slot == CARD_SLOT_NOT_FOUND)
+    {
+        free(adev);
+        return -EINVAL;
+    }
+
+    adev->ar = audio_route_init((unsigned int)adev->card_slot);
     if (adev->ar == NULL) {
        free(adev);
        return -EINVAL;
