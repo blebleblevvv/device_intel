@@ -16,6 +16,7 @@
 
   <path name="headphone">
     <ctl name="Headphone Playback Switch" value="1" />
+    <ctl name="Master Playback Switch" value="1" />
   </path>
 
   <path name="main-mic-top">
