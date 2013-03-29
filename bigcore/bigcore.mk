@@ -101,12 +101,15 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # Ethernet
 PRODUCT_PACKAGES += init.utilitynet.sh
 
-# Uncomment this (or set these properties on a running device) to cause the
-# utility network to be statically configured instead of using DHCP:
-
-#PRODUCT_PROPERTY_OVERRIDES += \
-#        net.utilitynet.ip=192.168.42.1 \
-#        net.utilitynet.netmask=255.255.255.0
+# Set ETHERNET_UTILITY_IFACE in your envrionment to enable Ethernet
+# connectivity in utility mode. See Documentation/ethernet.txt for
+# more information.
+ifneq ($(ETHERNET_UTILITY_IFACE),)
+PRODUCT_PROPERTY_OVERRIDES += \
+	persist.sys.utility_iface=eth0 \
+	net.utilitynet.ip=192.168.42.1 \
+	net.utilitynet.netmask=255.255.255.0
+endif
 
 # For OTA Update
 PRODUCT_PACKAGES += \
