@@ -62,7 +62,7 @@ BOARD_HAVE_BLUETOOTH=true
 TARGET_USE_IAGO := true
 TARGET_IAGO_PLUGINS := bootable/iago/plugins/gummiboot
 TARGET_IAGO_INI := device/intel/bigcore/iago.ini
-INSTALLED_RADIOIMAGE_TARGET += $(PRODUCT_OUT)/gummiboot/gummiboot.efi
+INSTALLED_RADIOIMAGE_TARGET += $(PRODUCT_OUT)/efi/gummiboot.efi
 
 ifeq ($(TARGET_BUILD_VARIANT),user)
 TARGET_IAGO_INI += device/intel/bigcore/iago-production.ini
