@@ -218,7 +218,7 @@ static int find_card_slot()
                     return slot_num;
             }
         }
-        usleep(20000);
+        usleep(30000);
     }
 
     return CARD_SLOT_NOT_FOUND;
