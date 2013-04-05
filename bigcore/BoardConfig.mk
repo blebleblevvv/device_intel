@@ -57,6 +57,9 @@ USE_CAMERA_STUB := true
 # Self explanatory. Used by hcidump, glib, bluez, netd, audioflinger,
 # etc.
 BOARD_HAVE_BLUETOOTH=true
+BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/intel/bigcore/bluetooth
+BOARD_HAVE_BLUETOOTH_BCM := true
+BLUETOOTH_HCI_USE_USB := true
 
 # Allow creation of iago live USB/CD images
 TARGET_USE_IAGO := true

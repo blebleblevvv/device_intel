@@ -4,3 +4,10 @@
 
 # for video devices
 /dev/video*    0660    media    system
+
+#for bluedroid uhid support
+/dev/uhid             0660 bluetooth bluetooth
+
+__uevent_add_VID_PID__ 4ca/3008 0660 bluetooth bluetooth
+__uevent_add_VID_PID__ 8086/189 0660 bluetooth bluetooth
+__uevent_add_VID_PID__ 8087/7da 0660 bluetooth bluetooth
