@@ -73,6 +73,9 @@ on post-fs-data
     # Installer-configured properties
     readprops /install/install.prop
 
+    # set saved local timezone, warp system clock to utc.
+    sysclktz 1
+
     # give system access to wpa_supplicant.conf for backup and restore
     mkdir /data/system/ 0770 system system
     mkdir /data/misc/wifi 0770 wifi wifi
