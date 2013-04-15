@@ -34,6 +34,16 @@ TARGET_MODULE_PRIVATE_KEY := device/intel/support/testkeys/kernel/signing_key.pr
 TARGET_MODULE_CERTIFICATE := device/intel/support/testkeys/kernel/signing_key.x509
 TARGET_MODULE_GENKEY := device/intel/support/testkeys/kernel/x509.genkey
 
+# Test key to sign boot image
+TARGET_BOOT_IMAGE_KEY := device/intel/support/testkeys/shim/shim.key
+
+# Command run by MKBOOTIMG to sign target's boot image. It is expected to:
+# () Take unsigned image from STDIN
+# () Output signature's content ONLY to STDOUT
+TARGET_BOOT_IMAGE_SIGN_CMD := openssl dgst -sha256 -sign $(TARGET_BOOT_IMAGE_KEY)
+
+BOARD_MKBOOTIMG_ARGS := --signsize 256  --signexec "$(TARGET_BOOT_IMAGE_SIGN_CMD)"
+
 # Enable generation of sparse ext4 images
 TARGET_USERIMAGES_SPARSE_EXT_DISABLED := true
 
