@@ -135,6 +135,11 @@ service wpa_supplicant /system/bin/wpa_supplicant -Dnl80211 -iwlan0 -c/data/misc
     disabled
     oneshot
 
+service setconsole /system/bin/logwrapper /system/bin/setconsole -g
+    class main
+    user root
+    oneshot
+
 service dhcpcd_wlan0 /system/bin/dhcpcd -d -BK -f /system/etc/dhcpcd/android.conf
     class main
     group wifi root system net_admin net_raw
