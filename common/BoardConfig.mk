@@ -70,7 +70,7 @@ BOARD_BOOTIMAGE_PARTITION_SIZE := 10M
 # values, so after making this change, you must test flashing system with droidboot
 # to ensure that the size will work.
 BOARD_SYSTEMIMAGE_PARTITION_SIZE := 768M
-BOARD_USERDATAIMAGE_PARTITION_SIZE := 150M
+BOARD_USERDATAIMAGE_PARTITION_SIZE := 300M
 
 # Copied from generic_x86/BoardConfig.mk. Needed when computing values in
 # build/core/definitions.mk.
