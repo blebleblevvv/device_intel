@@ -152,7 +152,7 @@ def MountEsp(info):
 
 def IncrementalOTA_Assertions(info):
     EspUpdateInit(info, True)
-    if delete_files or patch_list or verbatim_files:
+    if delete_files or patch_list or verbatim_targets:
         MountEsp(info)
 
 
