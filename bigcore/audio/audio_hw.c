@@ -48,7 +48,7 @@
 #define CARD_CTRL_PATH "/dev/snd/controlC%u"
 #define PCH_STR "PCH"
 #define MAX_CARDS 2
-#define MAX_RETRIES 50
+#define MAX_RETRIES 100
 
 #define PCM_DEVICE 0
 #define PCM_DEVICE_SCO 2
@@ -218,7 +218,7 @@ static int find_card_slot()
                     return slot_num;
             }
         }
-        usleep(30000);
+        usleep(60000);
     }
 
     return CARD_SLOT_NOT_FOUND;
