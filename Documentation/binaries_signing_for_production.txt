@@ -1,0 +1,139 @@
+Re-signing Binaries for Production Run
+--------------------------------------
+
+Android builds APKs and certain binaries with test keys, and these are to be
+replaced by production keys using build/tools/releasetools/sign_target_files_apks
+for actual production images. These production keys should not be in wild
+distribution and definitely should not be checked into the tree. Only a few
+people should have access to these keys to prevent accidentally disclosure.
+
+The default behavior of the sign_target_files_apks script is to re-sign
+all the APKs with the production key. With the introduction of UEFI shim and
+gummiboot, the script has been extended to re-sign these binaries using sbsign.
+
+
+-----------------------------
+Re-sign Binaries using sbsign
+-----------------------------
+To mark the binaries for sign_target_files_apks to process, the Android.mk
+needs to be modified.
+
+1. Set LOCAL_CERTIFICATE := SBSIGN
+
+2. Add LOCAL_SBSIGN_CERTIFICATE := <key alias>, where <key alias> is the prefix
+   of the filename of the production key and certificate (e.g. uefi_shim_key)
+
+The <key alias> will be processed by the sign_target_files_apks. Similar to
+how it signs APKs, the key/cert pair can be specified in command line on a per
+binary basis to override default values. Refer to the help in the script
+for further information.
+
+Currently, this only works with prebuilt binaries, in other words, those built
+by "include $(BUILD_PREBUILT)".
+
+This directive puts the line in sbsign_certs.txt inside the target files
+archive. Similar to apkcerts.txt for APKs, this contains information on
+with which production key to re-sign.
+
+
+----------------------------------------
+Replace Binary Certification in Binaries
+----------------------------------------
+Some binaries embed a binary certificate so that it can verify other binaries,
+e.g. UEFI shim to verify later stages. To do this, add to Android.mk:
+
+  LOCAL_SBSIGN_BINARY_REPLACE_CERTIFICATE := <path to key>:<new key alias>
+
+For example,
+
+  LOCAL_SBSIGN_BINARY_REPLACE_CERTIFICATE := device/intel/support/testkeys/shim/shim.crt:uefi_shim_key
+
+The <path to key> needs to exist under Android top, and it will be included
+in the target files archive, under path DISCARD/. The sign_target_files_apk
+will read the old certificate in the target files archive and use it to
+search for the binary blob in the target binary. The <new key alias> is
+the prefix of filename similar to how the Android keys are named.
+
+
+--------------------------------
+Executing sign_target_files_apks
+--------------------------------
+First, you need to make the target files archive by doing:
+
+  make target-files-package
+
+This creates a zip file in your out directory.
+
+Then, under the Android build top directory:
+
+  build/tools/releasetools/sign_target_files_apks -v $ANDROID_PRODUCT_OUT/<target files archive.zip> <output.zip>
+
+where <target files archive.zip> is the name of the target files archive,
+and <output.zip> is where to put the resulting zip file. The output zip
+will contain the APKs and those binaries which have been re-sign with
+the new keys.
+
+The default names for new key/cert are: uefi_bios_db_key.{crt,key},
+and uefi_shim_key.{crt,key} . They can be generated according to
+instruction under device/intel/support/testkeys/{bios,shim}.
+
+
+------------------------------------------------
+Testing out newly signed UEFI shim and gummiboot
+------------------------------------------------
+This section describes how you would test the newly signed UEFI shim and
+gummiboot binaries to ensure the boot path still works as intended. Please
+read the whole section before proceeding as it may help you to avoid building
+too many times.
+
+1. Need to have a working device that boots to GUI. This ensures the UEFI boot
+   sequence is working under both secure boot and non-secure boot.
+
+2. Build the target files archive and re-sign the binaries according to
+   instructions from previous section.
+
+3. Also you will need to generate a new boot image as it is also being
+   verified in boot chain.
+
+     out/host/linux-x86/bin/mkbootimg  --kernel $ANDROID_PRODUCT_OUT/kernel --ramdisk $ANDROID_PRODUCT_OUT/ramdisk.img --cmdline "init=/init pci=noearly console=tty0 consoleblank=0 loglevel=5 androidboot.hardware=core_mesa androidboot.bcb_device=/dev/block/by-name/misc intel_iommu=igfx_off vga=current i915.modeset=1 drm.vblankoffdelay=1 acpi_backlight=vendor" --signsize 256  --signexec "openssl dgst -sha256 -sign <new shim key>" --output $ANDROID_PRODUCT_OUT/boot.img
+
+   Replace "<new shim key>" with the path to the actual certificate
+   that is used to sign gummiboot and boot images.
+
+4. To test binaries verification downwards of UEFI shim, you can mount the
+   ESP partition and push the new shim.efi and gummiboot.efi onto it. This
+   will only show you gummiboot menu but cannot boot into system (as the boot
+   image is not signed with new keys). Reinstall the system, and this time
+   pushes both efi files, and dd the boot image into the boot image partition
+   (e.g. /dev/block/sda3). You should be able to boot to GUI.
+
+   Since the verification is only turned on if secure boot is enabled,
+   you will need to trick both shim and gummiboot to force secure boot. Look
+   for secure_mode() in shim, and is_secure_boot_enabled() in gummiboot.
+   Force them to return true, and regenerate the prebuilts. Now build
+   the target files archive again and invoke sign_target_files_apks to re-sign
+   the binaries.
+
+5. To test the newly signed shim.efi, you need to regenerate LockDown.efi under
+   external/efitools. The new DB key/cert has to be generated beforehand into
+   device/intel/support/testkeys/bios. To actually test the system, you will
+   need to have the shim signed using something other than the new key. This
+   ensures the newly signed shim is actually being verified by BIOS.
+
+   a. Provision your device with live image containing binaries generated
+      using the test keys.
+
+   b. You need to turn your system into secure boot setup mode under BIOS.
+      Then you can boot with the live image, and choose the last option to
+      enable secure boot. What this does is to execute LockDown.efi and
+      pushes the necessary keys/certs into BIOS.
+
+   c. Secure boot is now enabled. If your shim.efi is signed with the test key,
+      you system will not be able to boot at this point. This verifies that
+      the keys/certs are correct in the BIOS.
+
+   d. Disable secure boot in BIOS so you can boot into GUI.
+
+   e. Repeat step 4 to push binaries onto the ESP partition. However, enable
+      secure boot in BIOS this time so that the shim.efi is also being
+      verified.
