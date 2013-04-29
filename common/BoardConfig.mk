@@ -30,8 +30,8 @@ TARGET_KERNEL_EXTRA_CFLAGS += -mfpmath=387
 TARGET_PREBUILT_KERNEL_DIR = $(TARGET_KERNEL_SOURCE)-prebuilt/$(TARGET_PREBUILT_TAG)/kernel/$(TARGET_PRODUCT)-$(TARGET_BUILD_VARIANT)
 
 # Test keys and keygen file to sign kernel modules
-TARGET_MODULE_PRIVATE_KEY := device/intel/support/testkeys/kernel/signing_key.priv
-TARGET_MODULE_CERTIFICATE := device/intel/support/testkeys/kernel/signing_key.x509
+TARGET_MODULE_PRIVATE_KEY := device/intel/support/testkeys/bios/DB.key
+TARGET_MODULE_CERTIFICATE := device/intel/support/testkeys/bios/DB.DER
 TARGET_MODULE_GENKEY := device/intel/support/testkeys/kernel/x509.genkey
 
 # Test key to sign boot image
