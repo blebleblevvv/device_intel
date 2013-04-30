@@ -1,0 +1,1301 @@
+Test Plan for the Android Secure Boot system
+
+
+OBJECTIVE:
+
+Test Secure Boot for Android:
+	Test that the system installs and boots as expected when Secure Boot is turned on and the system is set up correctly.
+	Test that the system will not boot if any part of the Secure Boot system is tampered with.
+	Test enabling and disabling of the Secure Boot system.
+	Test updating of certificates in the BIOS.
+	Test using OTA updates to modify images
+	Test booting to Windows on a dual-boot system
+	Test that images signed with test keys shouldn't work
+
+ASSUMPTIONS:
+	This test plan assumes that the Acceptance Criteria are valid and complete for the purposes of accurately testing Secure Boot.
+
+METHODOLOGY:
+	What will not be tested:
+
+	1. Standard Android System Tests
+		The full suite of Android OS tests should be run against a system that has booted using Secure Boot
+		Both the Android System and the Live Boot system should be tested this way
+		Covering this is beyond the scope of this test plan
+
+	2. Usage of Hashes in the BIOS for verification instead of Certificates
+		There is no reason to test this currently, but this may be added at some point in the future
+
+	3. Penetration Testing
+		Simulation of Attacks is outside of the scope of this test plan
+
+
+LIST OF TESTS:
+
+	PRIORITY 1:
+
+	1:
+
+	secure_boot.1  : Test Live Boot with an Authentic Image
+	secure_boot.2  : Test the Interactive Installer with an Authentic Image
+	secure_boot.3  : Test the Automated Installer with an Authentic Image
+	secure_boot.4  : Test booting to Android with an Authentic Image
+	secure_boot.5  : Test booting to Fastboot Mode with an Authentic Image
+	secure_boot.6  : Test booting to Recovery Mode with an Authentic Image
+
+	2:
+
+	secure_boot.7  : Non-Authentic Image -- Unsigned Image -- shim -- test using live boot from the installer
+	secure_boot.8  : Non-Authentic Image -- Unsigned Image -- shim -- test using interactive installer
+	secure_boot.9  : Non-Authentic Image -- Unsigned Image -- shim -- test using automated installer
+	secure_boot.10 : Non-Authentic Image -- Unsigned Image -- shim -- test booting to Android
+	secure_boot.11 : Non-Authentic Image -- Unsigned Image -- shim -- test booting to Fastboot Mode
+	secure_boot.12 : Non-Authentic Image -- Unsigned Image -- shim -- test booting to Recovery Mode
+
+	secure_boot.13 : Non-Authentic Image -- Unsigned Image -- gummiboot -- test using live boot from the installer
+	secure_boot.14 : Non-Authentic Image -- Unsigned Image -- gummiboot -- test using interactive installer
+	secure_boot.15 : Non-Authentic Image -- Unsigned Image -- gummiboot -- test using automated installer
+	secure_boot.16 : Non-Authentic Image -- Unsigned Image -- gummiboot -- test booting to Android
+	secure_boot.17 : Non-Authentic Image -- Unsigned Image -- gummiboot -- test booting to Fastboot Mode
+	secure_boot.18 : Non-Authentic Image -- Unsigned Image -- gummiboot -- test booting to Recovery Mode
+
+	secure_boot.19 : Non-Authentic Image -- Unsigned Image -- kernel -- test using live boot from the installer
+	secure_boot.20 : Non-Authentic Image -- Unsigned Image -- kernel -- test using interactive installer
+	secure_boot.21 : Non-Authentic Image -- Unsigned Image -- kernel -- test using automated installer
+	secure_boot.22 : Non-Authentic Image -- Unsigned Image -- kernel -- test booting to Android
+	secure_boot.23 : Non-Authentic Image -- Unsigned Image -- kernel -- test booting to Fastboot Mode
+	secure_boot.24 : Non-Authentic Image -- Unsigned Image -- kernel -- test booting to Recovery Mode
+
+	secure_boot.25 : Non-Authentic Image -- Unsigned Image -- module -- test using live boot from the installer
+	secure_boot.26 : Non-Authentic Image -- Unsigned Image -- module -- test booting to Android
+	secure_boot.27 : Non-Authentic Image -- Unsigned Image -- module -- test booting to Fastboot Mode
+	secure_boot.28 : Non-Authentic Image -- Unsigned Image -- module -- test booting to Recovery Mode
+
+	secure_boot.29 : Non-Authentic Image -- Hacked Payload Body -- shim -- test using live boot from the installer
+	secure_boot.30 : Non-Authentic Image -- Hacked Payload Body -- shim -- test using interactive installer
+	secure_boot.31 : Non-Authentic Image -- Hacked Payload Body -- shim -- test using automated installer
+	secure_boot.32 : Non-Authentic Image -- Hacked Payload Body -- shim -- test booting to Android
+	secure_boot.33 : Non-Authentic Image -- Hacked Payload Body -- shim -- test booting to Fastboot Mode
+	secure_boot.34 : Non-Authentic Image -- Hacked Payload Body -- shim -- test booting to Recovery Mode
+
+	secure_boot.35 : Non-Authentic Image -- Hacked Payload Body -- gummiboot -- test using live boot from the installer
+	secure_boot.36 : Non-Authentic Image -- Hacked Payload Body -- gummiboot -- test using interactive installer
+	secure_boot.37 : Non-Authentic Image -- Hacked Payload Body -- gummiboot -- test using automated installer
+	secure_boot.38 : Non-Authentic Image -- Hacked Payload Body -- gummiboot -- test booting to Android
+	secure_boot.39 : Non-Authentic Image -- Hacked Payload Body -- gummiboot -- test booting to Fastboot Mode
+	secure_boot.40 : Non-Authentic Image -- Hacked Payload Body -- gummiboot -- test booting to Recovery Mode
+
+	secure_boot.41 : Non-Authentic Image -- Hacked Payload Body -- kernel -- test using live boot from the installer
+	secure_boot.42 : Non-Authentic Image -- Hacked Payload Body -- kernel -- test using interactive installer
+	secure_boot.43 : Non-Authentic Image -- Hacked Payload Body -- kernel -- test using automated installer
+	secure_boot.44 : Non-Authentic Image -- Hacked Payload Body -- kernel -- test booting to Android
+	secure_boot.45 : Non-Authentic Image -- Hacked Payload Body -- kernel -- test booting to Fastboot Mode
+	secure_boot.46 : Non-Authentic Image -- Hacked Payload Body -- kernel -- test booting to Recovery Mode
+
+	secure_boot.47 : Non-Authentic Image -- Hacked Payload Body -- module -- test using live boot from the installer
+	secure_boot.48 : Non-Authentic Image -- Hacked Payload Body -- module -- test booting to Android
+	secure_boot.49 : Non-Authentic Image -- Hacked Payload Body -- module -- test booting to Fastboot Mode
+	secure_boot.50 : Non-Authentic Image -- Hacked Payload Body -- module -- test booting to Recovery Mode
+
+	secure_boot.51 : Non-Authentic Image -- Hacked Signature / Certificate Section -- shim -- test using live boot from the installer
+	secure_boot.52 : Non-Authentic Image -- Hacked Signature / Certificate Section -- shim -- test using interactive installer
+	secure_boot.53 : Non-Authentic Image -- Hacked Signature / Certificate Section -- shim -- test using automated installer
+	secure_boot.54 : Non-Authentic Image -- Hacked Signature / Certificate Section -- shim -- test booting to Android
+	secure_boot.55 : Non-Authentic Image -- Hacked Signature / Certificate Section -- shim -- test booting to Fastboot Mode
+	secure_boot.56 : Non-Authentic Image -- Hacked Signature / Certificate Section -- shim -- test booting to Recovery Mode
+
+	secure_boot.57 : Non-Authentic Image -- Hacked Signature / Certificate Section-- gummiboot -- test using live boot from the installer
+	secure_boot.58 : Non-Authentic Image -- Hacked Signature / Certificate Section-- gummiboot -- test using interactive installer
+	secure_boot.59 : Non-Authentic Image -- Hacked Signature / Certificate Section-- gummiboot -- test using automated installer
+	secure_boot.60 : Non-Authentic Image -- Hacked Signature / Certificate Section-- gummiboot -- test booting to Android
+	secure_boot.61 : Non-Authentic Image -- Hacked Signature / Certificate Section-- gummiboot -- test booting to Fastboot Mode
+	secure_boot.62 : Non-Authentic Image -- Hacked Signature / Certificate Section-- gummiboot -- test booting to Recovery Mode
+
+	secure_boot.63 : Non-Authentic Image -- Hacked Signature / Certificate Section-- kernel -- test using live boot from the installer
+	secure_boot.64 : Non-Authentic Image -- Hacked Signature / Certificate Section-- kernel -- test using interactive installer
+	secure_boot.65 : Non-Authentic Image -- Hacked Signature / Certificate Section-- kernel -- test using automated installer
+	secure_boot.66 : Non-Authentic Image -- Hacked Signature / Certificate Section-- kernel -- test booting to Android
+	secure_boot.67 : Non-Authentic Image -- Hacked Signature / Certificate Section-- kernel -- test booting to Fastboot Mode
+	secure_boot.68 : Non-Authentic Image -- Hacked Signature / Certificate Section-- kernel -- test booting to Recovery Mode
+
+	secure_boot.69 : Non-Authentic Image -- Hacked Signature / Certificate Section-- module -- test using live boot from the installer
+	secure_boot.70 : Non-Authentic Image -- Hacked Signature / Certificate Section-- module -- test booting to Android
+	secure_boot.71 : Non-Authentic Image -- Hacked Signature / Certificate Section-- module -- test booting to Fastboot Mode
+	secure_boot.72 : Non-Authentic Image -- Hacked Signature / Certificate Section-- module -- test booting to Recovery Mode
+
+	PRIORITY 2:
+
+	3:
+
+	secure_boot.73 : Authentic Image -- OTA Update -- changes shim, gummiboot, kernel and module images with one update -- test booting to Android
+	secure_boot.74 : Authentic Image -- OTA Update -- changes shim, gummiboot, kernel and module images with one update -- test booting to Fastboot Mode
+	secure_boot.75 : Authentic Image -- OTA Update -- changes shim, gummiboot, kernel and module images with one update -- test booting to Recovery Mode
+
+	4:
+
+	secure_boot.76 : Use the EFI application to enable secure boot on the installer
+	secure_boot.77 : Use a cracked EFI application to enable secure boot on the installer, it should not work -- need to ensure that secure boot is enabled in the bios
+
+	5:
+
+	secure_boot.78 : Test updating certificates in the BIOS while secure boot is enabled
+	secure_boot.79 : Test revoking certificates in the BIOS while secure boot is enabled
+
+	6:
+
+	secure_boot.80 : On a dual-boot system (Android/Windows), ensure that you can boot to Windows
+
+	7:
+
+	secure_boot.81 : Module signed with test keys should not pass
+	secure_boot.82 : Kernel image signed with test keys should not pass
+	secure_boot.83 : Fastboot should fail with boot.img signed with test keys
+	secure_boot.84 : Recovery should fail with boot.img signed with test keys
+	secure_boot.85 : Gummiboot should fail with gummiboot.efi signed with test keys
+	secure_boot.86 : Gummiboot should fail with shim.efi signed with test keys
+	secure_boot.87 : Gummiboot should fail with MokManager signed with test keys
+	secure_boot.88 : Secure boot lockdown should fail with a lockdown file signed with test keys
+
+----------
+
+TEST DEFINITIONS:
+
+Preperation:
+
+Have a device to test with that is capable of using Secure Boot
+
+
+SECTION 1:
+
+
+secure_boot.1:
+	Purpose:
+	Test Live Boot with an Authentic Image
+
+	Method:
+	1. Ensure that Secure Boot is enabled in the BIOS
+	2. Boot to Live Boot
+
+	Expected Outcome:
+	Live Boot should work as expected
+
+secure_boot.2:
+	Purpose:
+	Test the Interactive Installer with an Authentic Image
+
+	Method:
+	1. Ensure that Secure Boot is enabled in the BIOS
+	2. Boot to the Interactive Installer
+	3. Install the system
+	4. Boot to the system and ensure that it installed
+
+	Expected Outcome:
+	The Interactive Installer should work, and the system should be installed as expected
+
+secure_boot.3:
+	Purpose:
+	Test the Automated Installer with an Authentic Image
+
+	Method:
+	1. Ensure that Secure Boot is enabled in the BIOS
+	2. Boot to the Automated Installer
+	3. Wait for the installer to finish
+	4. Boot to the system and ensure that it installed
+
+	Expected Outcome:
+	The Automated Installer should work, and the system should be installed as expected
+
+secure_boot.4:
+	Purpose:
+	Test booting to Android with an Authentic Image
+
+	Method:
+	1. Ensure that Secure Boot is enabled in the BIOS
+	2. Boot the system to Android
+
+	Expected Outcome:
+	The Android OS should be up and running as expected
+
+secure_boot.5:
+	Purpose:
+	Test Booting to Fastboot Mode with an Authentic Image
+
+	Method:
+	1. Ensure that Secure Boot is enabled in the BIOS
+	2. Boot the system to Fastboot Mode
+
+	Expected Outcome:
+	Fastboot Mode should be up and running as expected
+
+secure_boot.6:
+	Purpose:
+	Test booting to Recovery Mode with an Authentic Image
+
+	Method:
+	1. Ensure that Secure Boot is enabled in the BIOS
+	2. Boot the system to Recovery Mode
+
+	Expected Outcome:
+	Recovery Mode should be up and running as expected
+
+
+SECTION 2:
+
+
+secure_boot.7  : Non-Authentic Image -- Unsigned Image -- shim -- test using live boot from the installer
+	Purpose:
+	Test live boot from the installer on a shim with an unsigned image
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "live Android" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.8  : Non-Authentic Image -- Unsigned Image -- shim -- test using interactive installer
+	Purpose:
+	Test the interactive installer on a shim with an unsigned image
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "Run Interactive Installer" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.9  : Non-Authentic Image -- Unsigned Image -- shim -- test using automated installer
+	Purpose:
+	Test the automated installer on a shim with an unsigned image
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "Run Automated Installer" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.10 : Non-Authentic Image -- Unsigned Image -- shim -- test booting to Android
+	Purpose:
+	Test booting to Android from a shim with an unsigned image
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot and press enter to load Android
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.11 : Non-Authentic Image -- Unsigned Image -- shim -- test booting to Fastboot Mode
+	Purpose:
+	Test booting to Fastboot Mode on the installer on a shim with an unsigned image
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Fastboot" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.12 : Non-Authentic Image -- Unsigned Image -- shim -- test booting to Recovery Mode
+	Purpose:
+	Test booting to Recovery Mode on the installer on a shim with an unsigned image
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Recovery" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.13 : Non-Authentic Image -- Unsigned Image -- gummiboot -- test using live boot from the installer
+	Purpose:
+	Test live boot from the installer on gummiboot with an unsigned image
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "live Android" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.14 : Non-Authentic Image -- Unsigned Image -- gummiboot -- test using interactive installer
+	Purpose:
+	Test the interactive installer on gummiboot with an unsigned image
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "Run Interactive Installer" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.15 : Non-Authentic Image -- Unsigned Image -- gummiboot -- test using automated installer
+	Purpose:
+	Test the automated installer on gummiboot with an unsigned image
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "Run Automated Installer" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.16 : Non-Authentic Image -- Unsigned Image -- gummiboot -- test booting to Android
+	Purpose:
+	Test booting to Android on gummiboot with an unsigned image
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot and press enter to load Android
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.17 : Non-Authentic Image -- Unsigned Image -- gummiboot -- test booting to Fastboot Mode
+	Purpose:
+	Test booting to Fastboot Mode on gummiboot with an unsigned image
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Fastboot" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.18 : Non-Authentic Image -- Unsigned Image -- gummiboot -- test booting to Recovery Mode
+	Purpose:
+	Test booting to Recovery Mode on gummiboot with an unsigned image
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Recovery" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.19 : Non-Authentic Image -- Unsigned Image -- kernel -- test using live boot from the installer
+	Purpose:
+	Test live boot from the installer on a kernel with an unsigned image
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "live Android" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.20 : Non-Authentic Image -- Unsigned Image -- kernel -- test using interactive installer
+	Purpose:
+	Test the interactive installer on a kernel with an unsigned image
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "Run Interactive Installer" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.21 : Non-Authentic Image -- Unsigned Image -- kernel -- test using automated installer
+	Purpose:
+	Test the automated installer on a kernel with an unsigned image
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "Run Automated Installer" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.22 : Non-Authentic Image -- Unsigned Image -- kernel -- test booting to Android
+	Purpose:
+	Test booting to Android on a kernel with an unsigned image
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot and press enter to load Android
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.23 : Non-Authentic Image -- Unsigned Image -- kernel -- test booting to Fastboot Mode
+	Purpose:
+	Test booting to Fastboot Mode on a kernel with an unsigned image
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Fastboot" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.24 : Non-Authentic Image -- Unsigned Image -- kernel -- test booting to Recovery Mode
+	Purpose:
+	Test booting to Recovery Mode on a kernel with an unsigned image
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Recovery" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.25 : Non-Authentic Image -- Unsigned Image -- module -- test using live boot from the installer
+	Purpose:
+	Test live boot using an unsigned image with a module
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "live Android" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.26 : Non-Authentic Image -- Unsigned Image -- module -- test booting to Android
+	Purpose:
+	Test booting to Android using an unsigned image with a module
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot and press enter to load Android
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.27 : Non-Authentic Image -- Unsigned Image -- module -- test booting to Fastboot Mode
+	Purpose:
+	Test booting to Fastboot Mode using an unsigned image with a module
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Fastboot" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.28 : Non-Authentic Image -- Unsigned Image -- module -- test booting to Recovery Mode
+	Purpose:
+	Test booting to Recovery Mode using an unsigned image with a module
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Recovery" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.29 : Non-Authentic Image -- Hacked Payload Body -- shim -- test using live boot from the installer
+	Purpose:
+	Test live boot on a shim with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "live Android" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.30 : Non-Authentic Image -- Hacked Payload Body -- shim -- test using interactive installer
+	Purpose:
+	Test the interactive installer on a shim with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "Run Interactive Installer" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.31 : Non-Authentic Image -- Hacked Payload Body -- shim -- test using automated installer
+	Purpose:
+	Test the automated installer on a shim with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "Run Automated Installer" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.32 : Non-Authentic Image -- Hacked Payload Body -- shim -- test booting to Android
+	Purpose:
+	Test booting to Android on a shim with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot and press enter to load Android
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.33 : Non-Authentic Image -- Hacked Payload Body -- shim -- test booting to Fastboot Mode
+	Purpose:
+	Test booting to Fastboot Mode on a shim with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Fastboot" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.34 : Non-Authentic Image -- Hacked Payload Body -- shim -- test booting to Recovery Mode
+	Purpose:
+	Test booting to Recovery Mode on a shim with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Recovery" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.35 : Non-Authentic Image -- Hacked Payload Body -- gummiboot -- test using live boot from the installer
+	Purpose:
+	Test live boot from gummiboot with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "live Android" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.36 : Non-Authentic Image -- Hacked Payload Body -- gummiboot -- test using interactive installer
+	Purpose:
+	Test the interactive installer from gummiboot with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "Run Interactive Installer" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.37 : Non-Authentic Image -- Hacked Payload Body -- gummiboot -- test using automated installer
+	Purpose:
+	Test the automated installer from gummiboot with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "Run Automated Installer" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.38 : Non-Authentic Image -- Hacked Payload Body -- gummiboot -- test booting to Android
+	Purpose:
+	Test booting to Android on gummiboot with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot and press enter to load Android
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.39 : Non-Authentic Image -- Hacked Payload Body -- gummiboot -- test booting to Fastboot Mode
+	Purpose:
+	Test booting to Fastboot Mode on gummiboot with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Fastboot" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.40 : Non-Authentic Image -- Hacked Payload Body -- gummiboot -- test booting to Recovery Mode
+	Purpose:
+	Test booting to Recovery Mode on gummiboot with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Recovery" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.41 : Non-Authentic Image -- Hacked Payload Body -- kernel -- test using live boot from the installer
+	Purpose:
+	Test live boot to a kernel with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "live Android" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.42 : Non-Authentic Image -- Hacked Payload Body -- kernel -- test using interactive installer
+	Purpose:
+	Test the interactive installer with a kernel with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "Run Interactive Installer" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.43 : Non-Authentic Image -- Hacked Payload Body -- kernel -- test using automated installer
+	Purpose:
+	Test the automated installer with a kernel with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "Run Automated Installer" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.44 : Non-Authentic Image -- Hacked Payload Body -- kernel -- test booting to Android
+	Purpose:
+	Test booting to Android with a kernel with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot and press enter to load Android
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.45 : Non-Authentic Image -- Hacked Payload Body -- kernel -- test booting to Fastboot Mode
+	Purpose:
+	Test booting to Fastboot Mode with a kernel with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Fastboot" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.46 : Non-Authentic Image -- Hacked Payload Body -- kernel -- test booting to Recovery Mode
+	Purpose:
+	Test booting to Recovery Mode with a kernel with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Recovery" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.47 : Non-Authentic Image -- Hacked Payload Body -- module -- test using live boot from the installer
+	Purpose:
+	Test live boot with a module with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "live Android" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.48 : Non-Authentic Image -- Hacked Payload Body -- module -- test booting to Android
+	Purpose:
+	Test booting to Android with a module with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot and press enter to load Android
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.49 : Non-Authentic Image -- Hacked Payload Body -- module -- test booting to Fastboot Mode
+	Purpose:
+	Test booting to Fastboot Mode with a module with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Fastboot" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.50 : Non-Authentic Image -- Hacked Payload Body -- module -- test booting to Recovery Mode
+	Purpose:
+	Test booting to Recovery Mode with a module with a hacked payload body
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Recovery" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.51 : Non-Authentic Image -- Hacked Signature / Certificate Section -- shim -- test using live boot from the installer
+	Purpose:
+	Test live boot from the installer with a shim with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "live Android" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.52 : Non-Authentic Image -- Hacked Signature / Certificate Section -- shim -- test using interactive installer
+	Purpose:
+	Test the interactive installer with a shim with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "Run Interactive Installer" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.53 : Non-Authentic Image -- Hacked Signature / Certificate Section -- shim -- test using automated installer
+	Purpose:
+	Test the automated installer with a shim with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "Run Automated Installer" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.54 : Non-Authentic Image -- Hacked Signature / Certificate Section -- shim -- test booting to Android
+	Purpose:
+	Test booting to Android with a shim with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot and press enter to load Android
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.55 : Non-Authentic Image -- Hacked Signature / Certificate Section -- shim -- test booting to Fastboot Mode
+	Purpose:
+	Test booting to Fastboot Mode with a shim with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Fastboot" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.56 : Non-Authentic Image -- Hacked Signature / Certificate Section -- shim -- test booting to Recovery Mode
+	Purpose:
+	Test booting to Recovery Mode with a shim with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Recovery" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.57 : Non-Authentic Image -- Hacked Signature / Certificate Section-- gummiboot -- test using live boot from the installer
+	Purpose:
+	Test live boot from the installer with gummiboot with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "live Android" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.58 : Non-Authentic Image -- Hacked Signature / Certificate Section-- gummiboot -- test using interactive installer
+	Purpose:
+	Test the interactive installer with gummiboot with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "Run Interactive Installer" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.59 : Non-Authentic Image -- Hacked Signature / Certificate Section-- gummiboot -- test using automated installer
+	Purpose:
+	Test the automated installer with gummiboot with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "Run Automated Installer" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.60 : Non-Authentic Image -- Hacked Signature / Certificate Section-- gummiboot -- test booting to Android
+	Purpose:
+	Test booting to Android on gummiboot with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot and press enter to load Android
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.61 : Non-Authentic Image -- Hacked Signature / Certificate Section-- gummiboot -- test booting to Fastboot Mode
+	Purpose:
+	Test booting to Fastboot Mode on gummiboot with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Fastboot" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.62 : Non-Authentic Image -- Hacked Signature / Certificate Section-- gummiboot -- test booting to Recovery Mode
+	Purpose:
+	Test booting to Recovery Mode on gummiboot with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Recovery" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.63 : Non-Authentic Image -- Hacked Signature / Certificate Section-- kernel -- test using live boot from the installer
+	Purpose:
+	Test live boot from the installer on a kernel with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "live Android" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.64 : Non-Authentic Image -- Hacked Signature / Certificate Section-- kernel -- test using interactive installer
+	Purpose:
+	Test the interactive installer on a kernel with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "Run Interactive Installer" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.65 : Non-Authentic Image -- Hacked Signature / Certificate Section-- kernel -- test using automated installer
+	Purpose:
+	Test the automated installer on a kernel with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "Run Automated Installer" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.66 : Non-Authentic Image -- Hacked Signature / Certificate Section-- kernel -- test booting to Android
+	Purpose:
+	Test booting to Android on a kernel with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot and press enter to load Android
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.67 : Non-Authentic Image -- Hacked Signature / Certificate Section-- kernel -- test booting to Fastboot Mode
+	Purpose:
+	Test booting to Fastboot Mode on a kernel with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Fastboot" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.68 : Non-Authentic Image -- Hacked Signature / Certificate Section-- kernel -- test booting to Recovery Mode
+	Purpose:
+	Test booting to Recovery Mode on a kernel with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Recovery" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.69 : Non-Authentic Image -- Hacked Signature / Certificate Section-- module -- test using live boot from the installer
+	Purpose:
+	Test live boot from the installer with a module with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to the Installer and select "live Android" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.70 : Non-Authentic Image -- Hacked Signature / Certificate Section-- module -- test booting to Android
+	Purpose:
+	Test boot to Android with a module with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot and press enter to load Android
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.71 : Non-Authentic Image -- Hacked Signature / Certificate Section-- module -- test booting to Fastboot Mode
+	Purpose:
+	Test Fastboot Mode with a module with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Setup and select "Fastboot" from the menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+secure_boot.72 : Non-Authentic Image -- Hacked Signature / Certificate Section-- module -- test booting to Recovery Mode
+	Purpose:
+	Test Recovery Mode with a module with a hacked signature/certificate section
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Reboot to Installer and select "Recovery" from the gummiboot menu
+
+	Expected Outcome:
+	Boot should fail with an access denied message
+
+
+SECTION 3:
+
+
+secure_boot.73 : Authentic Image -- OTA Update -- changes shim, gummiboot, kernel and module images with one update -- test booting to Android
+	Purpose:
+	Test OTA Update with an Authentic Image and boot to Android with changes to the shim, gummiboot, kernel and module images with one update
+
+	Method:
+	1. Load the live image ISO from the previous release
+	2. Boot to Android
+	[From the host machine, connect via ADB to the target]
+	3. From ADB: adb push <ota-update-archive.zip> /sdcard/ota.zip
+	4. From ADB: adb shell am StartService -a com.intel.ota.OtaUpdate
+	5. From ADB: adb reboot
+
+	Expected Outcome:
+	OTA Update should work as expected and boot to Android
+
+secure_boot.74 : Authentic Image -- OTA Update -- changes shim, gummiboot, kernel and module images with one update -- test booting to Fastboot Mode
+	Purpose:
+	Test OTA Update with an Authentic Image and boot to Fastboot Mode with changes to the shim, gummiboot, kernel and module images with one update
+
+	Method:
+	1. Load the live image ISO from the previous release
+	2. Boot to Android
+	[From the host machine, connect via ADB to the target]
+	3. From ADB: adb push <ota-update-archive.zip> /sdcard/ota.zip
+	4. From ADB: adb shell am StartService -a com.intel.ota.OtaUpdate
+	5. From ADB: adb reboot bootloader
+
+	Expected Outcome:
+	OTA Update should work as expected and boot to Fastboot Mode
+
+secure_boot.75 : Authentic Image -- OTA Update -- changes shim, gummiboot, kernel and module images with one update -- test booting to Recovery Mode
+	Purpose:
+	Test OTA Update with an Authentic Image and boot to Recovery Mode with changes to the shim, gummiboot, kernel and module images with one update
+
+	Method:
+	1. Load the live image ISO from the previous release
+	2. Boot to Android
+	[From the host machine, connect via ADB to the target]
+	3. From ADB: adb push <ota-update-archive.zip> /sdcard/ota.zip
+	4. From ADB: adb shell am StartService -a com.intel.ota.OtaUpdate
+	5. From ADB: adb reboot recovery
+
+	Expected Outcome:
+	OTA Update should work as expected and boot to Recovery Mode
+
+
+SECTION 4:
+
+
+secure_boot.76 : Use the EFI application to enable secure boot on the installer
+	Purpose:
+	Test the EFI application to enable secure boot on the installer
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Erase all keys
+	4. Reboot to the Installer and select "enable secure boot" from the gummiboot menu
+	5. Reboot to the gummiboot menu
+
+	Expected Outcome:
+	you should see "secure boot is on" from gummiboot menu in either installer or any existing installation on the target
+
+secure_boot.77 : Use a cracked EFI application to enable secure boot on the installer, it should not work -- need to ensure that secure boot is enabled in the bios
+	Purpose:
+	Test the EFI application to enable secure boot on the installer
+
+	Method:
+	1. Boot to the Setup menu
+	2. Enable secure boot
+	3. Erase all keys
+	4. Reboot to the cracked EFI Installer and select "enable secure boot" from the gummiboot menu
+
+	Expected Outcome:
+	you should see "secure boot is off" from the gummiboot menu in either the installer or receive a warning that access is denied (?)
+
+
+SECTION 5:
+
+
+secure_boot.78 : Test updating certificates in the BIOS while secure boot is enabled
+	Purpose:
+	Ensure that certificates in the BIOS can be updated while secure boot is enabled
+
+	Method:
+	1. Boot to the Setup menu
+	2. Ensure that Secure Boot is enabled
+	3. Ensure that the BIOS already has a certificate loaded
+	4. Use the tools to replace the existing certificate with a new one
+		(tbd: figure out what the correct tools are -- they are platform specific)
+		(also: how visible are these interfaces from an OEM BIOS?  The BIOS Setup Menu is also platform specific)
+	5. Verify that the old certificate has been replaced with the new one:
+		Booting an image that relies on the old certificate should fail
+		Booting an image that relies on the new certificate should succeed
+
+	Expected Outcome:
+	The new certificate should be in place of the old certificate
+
+secure_boot.79 : Test revoking certificates in the BIOS while secure boot is enabled
+	Purpose:
+	Ensure that certificates in the BIOS can be revoked while secure boot is enabled
+
+	Method:
+	1. Boot to the Setup menu
+	2. Ensure that Secure Boot is enabled
+	3. Ensure that the BIOS already has a certificate loaded
+	4. Use the tools to revoke the existing certificate
+		(tbd: figure out what the correct tools are -- they are platform specific)
+		(also: how visible are these interfaces from an OEM BIOS?  The BIOS Setup Menu is also platform specific)
+	5. Verify that the certificate has been revoked
+		Booting an image that relies upon the old certificate should fail
+
+	Expected Outcome:
+	The existing certificate should be revoked (i.e. added to the blacklist or removed from the whitelist)
+
+SECTION 6:
+
+
+secure_boot.80 : On a dual-boot system (Android/Windows), ensure that you can boot to Windows
+	Purpose:
+	Ensure that a dual-boot system with Secure Boot enabled can boot to Windows
+
+	Method:
+	1. Boot to the Setup menu
+	2. Ensure that Secure Boot is enabled
+	3. Reboot the system to Windows
+	4. Verify that the Windows Operating System loads and runs as expected
+
+	Expected Outcome:
+	The dual-boot system should be able to correctly run both Operating Systems
+
+
+SECTION 7:
+
+
+Purpose: Images signed with test keys should not be allowed to be installed on target devices
+Preparation Steps:
+	1. Build images
+	   a. Build an authentic release build image
+	   b. Build a test build image
+	2. Flash the device with the release build image
+	3. Boot to Setup
+	4. Enable secure boot
+
+secure_boot.81 : Module signed with test keys should not pass
+	Purpose:
+	Test to ensure that a module signed with test keys will fail
+
+	Method:
+	1. Boot to Android
+	[From the host machine]
+	2. Connect to Android via ADB
+	   a. Run: adb shell lsmod
+	   b. [outcome] The NAME of test module shall not be in the output of lsmod
+	3. Run: adb push <test_module>
+	4. Run: adb shell insmod <path/test_module.ko>
+	5. Run: adb shell lsmod
+
+	Expected Outcome:
+	The NAME of test module shall not be in the output of lsmod. ( Check error number also (-EPERM?))
+
+secure_boot.82 : Kernel image signed with test keys should not pass
+	Purpose:
+	Test to ensure that a kernel image signed with test keys will fail
+
+	Method:
+	1. On a USB stick, load release build image.
+	2. Replace release kernel image with a test kernel image on the USB stick
+	3. Install to device
+	4. Reboot
+
+	Expected Outcome:
+	Kernel verification should fail
+
+secure_boot.83 : Fastboot should fail with boot.img signed with test keys
+	Purpose:
+	Test to ensure that a boot image file signed with test keys will fail in Fastboot
+
+	Method:
+	1. On a USB stick, load release build image.
+	2. Replace release boot.img with a test boot.img file on the USB stick
+	3. Insert USB stick in device and install to device
+	4. Reboot to Fastboot on device
+
+	Expected Outcome:
+	Fastboot should fail
+
+secure_boot.84 : Recovery should fail with boot.img signed with test keys
+	Purpose:
+	Test to ensure that a boot image file signed with test keys will fail in Recovery
+
+	Method:
+	1. On a USB stick, load release build image.
+	2. Replace release boot.img with a test boot.img file on the USB stick
+	3. Insert USB stick in device and install to device
+	4. Reboot to Recovery on device
+
+	Expected Outcome:
+	Recovery should fail
+
+secure_boot.85 : Gummiboot should fail with gummiboot.efi signed with test keys
+	Purpose:
+	Test to ensure that a gummiboot file signed with test keys will fail on boot
+
+	Method:
+	1. On a USB stick, load release build image.
+	2. Replace release gummiboot.efi with a test gummiboot.efi file on the USB stick
+	3. Insert USB stick in device and install to device
+	4. Reboot to device
+
+	Expected Outcome:
+	Reboot should fail at gummiboot
+
+secure_boot.86 : Gummiboot should fail with shim.efi signed with test keys
+	Purpose:
+	Test to ensure that a shim file signed with test keys will fail on boot
+
+	Method:
+	1. On a USB stick, load release build image.
+	2. Replace release shim.efi with a test shim.efi file on the USB stick
+	3. Insert USB stick in device and install to device
+	4. Reboot to device
+
+	Expected Outcome:
+	Reboot should fail at gummiboot
+
+secure_boot.87 : Gummiboot should fail with MokManager signed with test keys
+	Purpose:
+	Test to ensure that a MokManager file signed with test keys will fail on boot
+
+	Method:
+	1. On a USB stick, load release build image.
+	2. Replace release mokmanager.efi with a test mokmanager.efi file on the USB stick
+	3. Insert USB stick in device and install to device
+	4. Reboot to device and select MokManager from the Setup menu
+
+	Expected Outcome:
+	MokManager should not work
+
+secure_boot.88 : Secure boot lockdown should fail with a lockdown file signed with test keys
+	Purpose:
+	Test to that a lockdown.efi file signed with test keys will fail to enable secure boot
+
+	Method:
+	1. On a USB stick, load release build image.
+	2. Replace release lockdown.efi with a test lockdown.efi file on the USB stick
+	3. Insert USB stick in device and reboot to the Setup menu
+	4. Select "Enable secure boot"
+
+	Expected Outcome:
+	Enable secure boot function should fail
+
+
+----------
+
+APPENDICES:
+
+1 -- Enabling Secure Boot
+	a. If the setup menu displays "secure boot is off", boot to gummiboot menu
+	b. Select "Enable Secure Boot"
+	c. Reboot and verify the Setup menu displays "secure boot is on"
