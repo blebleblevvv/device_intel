@@ -59,12 +59,6 @@ IDC_FILES := $(wildcard $(LOCAL_PATH)/idc/*.idc)
 OVERRIDE_COPIES += \
 	$(foreach Item, $(IDC_FILES), $(Item):system/usr/idc/$(notdir $(Item)))
 
-# Likewise add the machine-props files and the dmi-machine.conf
-MACH_PROP_FILES = $(wildcard $(LOCAL_PATH)/machine-props/*.prop)
-OVERRIDE_COPIES += \
-	$(LOCAL_PATH)/dmi-machine.conf:/system/etc/dmi-machine.conf \
-	$(foreach F, $(MACH_PROP_FILES), $F:system/etc/machine-props/$(notdir $F))
-
 PRODUCT_COPY_FILES := $(OVERRIDE_COPIES) $(PRODUCT_COPY_FILES)
 # for bugmailer
 PRODUCT_PACKAGES += send_bug
@@ -73,6 +67,8 @@ OVERRIDE_COPIES := \
 	system/extras/bugmailer/send_bug:system/bin/send_bug \
 
 PRODUCT_COPY_FILES := $(OVERRIDE_COPIES) $(PRODUCT_COPY_FILES)
+
+PRODUCT_PACKAGES += machine-props
 
 # audio support
 PRODUCT_PACKAGES += \

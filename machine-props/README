@@ -1,0 +1,14 @@
+The /system/etc/dmi-machine.conf file contains DMI matching
+information for recognized devices.  Format is one record per line,
+whitespace-separated tokens:
+
+ <name> [dmi-list...]
+
+If all the strings in the list exist as substrings of the kernel DMI
+modalias (/sys/devices/virtual/dmi/id/modalias) then the property
+file "/system/etc/machine-props/<name>.prop" will be read at boot.
+
+The list of known machines can be configured here, or in auxilliary
+Android.mk files by adjusting the contents of DMI_MATCH_SRCS (a list
+of files containing match specs as above) and MACH_PROP_FILES (a list
+of properties files to be loaded).
