@@ -10,3 +10,7 @@ ro.camera.1.facing = front
 ro.camera.1.orientation = 0
 ro.ignore_atkbd = 1
 ro.sf.lcd_density = 213
+ro.sys.pm.feature.exclude.0 = android.hardware.nfc
+ro.sys.pm.feature.exclude.1 = android.hardware.location.gps
+ro.sys.pm.feature.include.0 = android.hardware.camera.autofocus
+ro.sys.pm.feature.include.1 = android.hardware.camera.flash
