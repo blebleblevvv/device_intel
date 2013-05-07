@@ -91,7 +91,8 @@ on post-fs-data
     # for perf
     export PERF_PAGER cat
     export PERF_TMP_DIR /data/local/tmp
-    write /proc/sys/kernel/kptr_restrict 1
+    # this HAS to be 2 for CTS security tests
+    write /proc/sys/kernel/kptr_restrict 2
 
     # Offline log services: keep logs (/data/logs/*.old) of logcat and kernel
     # from the previous reboot cycle. To enable it, remove '#' at the head of
