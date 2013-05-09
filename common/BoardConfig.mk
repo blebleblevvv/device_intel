@@ -35,7 +35,7 @@ TARGET_MODULE_CERTIFICATE := device/intel/support/testkeys/bios/DB.DER
 TARGET_MODULE_GENKEY := device/intel/support/testkeys/kernel/x509.genkey
 
 # Test key to sign boot image
-TARGET_BOOT_IMAGE_KEY := device/intel/support/testkeys/shim/shim.key
+TARGET_BOOT_IMAGE_KEY := device/intel/support/testkeys/bios/DB.key
 
 # Command run by MKBOOTIMG to sign target's boot image. It is expected to:
 # () Take unsigned image from STDIN
