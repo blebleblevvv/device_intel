@@ -3,3 +3,6 @@
 # volume up while booting Android reboots into Recovery console
 # using implementation in frameworks/base
 ro.recoverymagic = true
+
+# Prefer the hardware-accelerated codec to software H.263
+ro.video.encoder.default = h264
