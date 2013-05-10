@@ -75,14 +75,13 @@ ifneq ($(TARGET_USE_MOKMANAGER),false)
 TARGET_EFI_APPS += $(PRODUCT_OUT)/efi/MokManager.efi
 endif
 
-INSTALLED_RADIOIMAGE_TARGET += $(TARGET_EFI_APPS)
+INSTALLED_EFI_BINARY_TARGET += $(TARGET_EFI_APPS)
 
 ifeq ($(TARGET_BUILD_VARIANT),user)
 TARGET_IAGO_INI += device/intel/bigcore/iago-production.ini
 endif
 
 ifeq ($(TARGET_STAGE_DROIDBOOT),true)
-INSTALLED_RADIOIMAGE_TARGET += $(PRODUCT_OUT)/droidboot.img
 TARGET_IAGO_PLUGINS += bootable/iago/plugins/droidboot
 endif
 

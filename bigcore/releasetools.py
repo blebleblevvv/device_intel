@@ -2,92 +2,18 @@ import common
 import fnmatch
 import os
 
-img = {}
-
-def get_image(archive, name):
-    try:
-        ret = common.File(name, archive.read(name))
-    except KeyError:
-        ret = None
-    return ret
-
-def update_raw_image_verify(info, in_img, out_img, node, inc):
-    if inc:
-        src = get_image(info.source_zip, in_img)
-        tgt = get_image(info.target_zip, in_img)
-    else:
-        src = None
-        tgt = get_image(info.input_zip, in_img)
-
-    if not tgt:
-        return
-
-    imgtype, imgdev = common.GetTypeAndDevice(node, info.info_dict)
-
-    if src:
-        if src.data == tgt.data:
-            print "%s images identical, not patching" % (in_img,)
-            return
-        else:
-            print "%s images differ, will patch" % (in_img,)
-        d = common.Difference(tgt, src)
-        _, _, d = d.ComputePatch()
-        print "%s      target: %d  source: %d  diff: %d" % (
-            out_img, tgt.size, src.size, len(d))
-        out_img = "patch/%s.p" % (out_img,)
-        common.ZipWriteStr(info.output_zip, out_img, d)
-        info.script.PatchCheck("%s:%s:%d:%s:%d:%s" %
-                      (imgtype, imgdev,
-                       src.size, src.sha1,
-                       tgt.size, tgt.sha1))
-        info.script.CacheFreeSpaceCheck(src.size)
-
-    img[node] = {}
-    img[node]["out_img"] = out_img
-    img[node]["src"] = src
-    img[node]["tgt"] = tgt
-    img[node]["type"] = imgtype
-    img[node]["dev"] = imgdev
-
-def update_raw_image_install(info, node):
-    if node not in img:
-        return
-
-    src = img[node]["src"]
-    tgt = img[node]["tgt"]
-    out_img = img[node]["out_img"]
-
-    if src:
-        imgtype = img[node]["type"]
-        imgdev = img[node]["dev"]
-
-        info.script.Print("Patching %s" % (node,))
-        info.script.ApplyPatch("%s:%s:%d:%s:%d:%s"
-                % (imgtype, imgdev,
-                   src.size, src.sha1,
-                   tgt.size, tgt.sha1),
-                "-",
-                tgt.size, tgt.sha1,
-                src.sha1, out_img)
-    else:
-        common.ZipWriteStr(info.output_zip, out_img, tgt.data)
-        info.script.Print("Writing %s to %s..." % (out_img, node))
-        info.script.WriteRawImage(node, out_img)
-
-
 verbatim_targets = []
 patch_list = []
 delete_files = None
 target_data = None
 source_data = None
+OPTIONS = common.OPTIONS
 
 def LoadBootloaderFiles(z):
     out = {}
     for info in z.infolist():
-        # XXX assumes only stuff that ends in .efi belongs in ESP
-        # reasonable in current design
-        if info.filename.startswith("RADIO/") and info.filename.endswith(".efi"):
-            basefilename = info.filename[6:]
+        if info.filename.startswith("EFI/"):
+            basefilename = info.filename[4:]
             fn = "bootloader/" + basefilename
             data = z.read(info.filename)
             out[fn] = common.File(fn, data)
@@ -128,7 +54,7 @@ def EspUpdateInit(info, incremental):
     for diff in diffs:
         tf, sf, d = diff.GetPatch()
         if d is None or len(d) > tf.size * 0.95:
-            tf.AddToZip(output_zip)
+            tf.AddToZip(info.output_zip)
             verbatim_targets.append(tf.name)
         else:
             common.ZipWriteStr(info.output_zip, "patch/" + tf.name + ".p", d)
@@ -150,14 +76,53 @@ def MountEsp(info):
     info.script.script.append('mount("vfat", "EMMC", "%s", "/bootloader");' % (fstab['/bootloader2'].device))
 
 
+fastboot = {}
+
 def IncrementalOTA_Assertions(info):
+    fastboot["source"] = common.GetBootableImage("/tmp/fastboot.img", "fastboot.img",
+            OPTIONS.source_tmp, "FASTBOOT", OPTIONS.source_info_dict)
+    fastboot["target"] = common.GetBootableImage("/tmp/fastboot.img", "fastboot.img",
+            OPTIONS.target_tmp, "FASTBOOT")
+    # Policy: if both exist, try to do a patch update
+    # if target but not source, write out the target verbatim
+    # if source but not target, or neither, do nothing
+    if fastboot["target"]:
+        if fastboot["source"]:
+            fastboot["updating"] = fastboot["source"].data != fastboot["target"].data
+            fastboot["verbatim"] = False
+        else:
+            fastboot["updating"] = False
+            fastboot["verbatim"] = True
+    else:
+        fastboot["updating"] = False
+        fastboot["verbatim"] = False
+
     EspUpdateInit(info, True)
     if delete_files or patch_list or verbatim_targets:
         MountEsp(info)
 
 
 def IncrementalOTA_VerifyEnd(info):
-    update_raw_image_verify(info, "RADIO/droidboot.img", "droidboot.img", "/fastboot", True)
+    # Check fastboot patch
+    if fastboot["updating"]:
+        target_boot = fastboot["target"]
+        source_boot = fastboot["source"]
+        d = common.Difference(target_boot, source_boot)
+        _, _, d = d.ComputePatch()
+        print "fastboot  target: %d  source: %d  diff: %d" % (
+            target_boot.size, source_boot.size, len(d))
+
+        common.ZipWriteStr(info.output_zip, "patch/fastboot.img.p", d)
+
+        boot_type, boot_device = common.GetTypeAndDevice("/fastboot", OPTIONS.info_dict)
+        info.script.PatchCheck("%s:%s:%d:%s:%d:%s" %
+                          (boot_type, boot_device,
+                           source_boot.size, source_boot.sha1,
+                           target_boot.size, target_boot.sha1))
+        fastboot["boot_type"] = boot_type
+        fastboot["boot_device"] = boot_device
+
+    # Check ESP component patches
     for fn, tf, sf, size, patch_sha in patch_list:
         info.script.PatchCheck("/"+fn, tf.sha1, sf.sha1)
 
@@ -168,7 +133,26 @@ def swap_entries(info):
             (fstab['/bootloader'].device,))
 
 def IncrementalOTA_InstallEnd(info):
-    update_raw_image_install(info, "/droidboot")
+    if fastboot["updating"]:
+        target_boot = fastboot["target"]
+        source_boot = fastboot["source"]
+        boot_type = fastboot["boot_type"]
+        boot_device = fastboot["boot_device"]
+        info.script.Print("Patching fastboot image...")
+        info.script.ApplyPatch("%s:%s:%d:%s:%d:%s"
+                          % (boot_type, boot_device,
+                             source_boot.size, source_boot.sha1,
+                             target_boot.size, target_boot.sha1),
+                          "-",
+                          target_boot.size, target_boot.sha1,
+                          source_boot.sha1, "patch/boot.img.p")
+        print "fastboot image changed; including."
+    elif fastboot["verbatim"]:
+        common.ZipWriteStr(info.output_zip, "fastboot.img", fastboot["target"].data)
+        info.script.WriteRawImage("/fastboot", "fastboot.img")
+        print "fastboot not present in source archive; including verbatim"
+    else:
+        print "skipping fastboot update"
 
     if not delete_files and not patch_list and not verbatim_targets:
         return
@@ -196,8 +180,13 @@ def FullOTA_Assertions(info):
 
 
 def FullOTA_InstallEnd(info):
-    update_raw_image_verify(info, "RADIO/droidboot.img", "droidboot.img", "/fastboot", False)
-    update_raw_image_install(info, "/droidboot")
+    fastboot_img = common.GetBootableImage("fastboot.img", "fastboot.img",
+                                     OPTIONS.input_tmp, "FASTBOOT")
+    if fastboot_img:
+        common.ZipWriteStr(info.output_zip, "fastboot.img", fastboot_img.data)
+        info.script.WriteRawImage("/fastboot", "fastboot.img")
+    else:
+        print "No fastboot data found, skipping"
 
     info.script.Print("Copying updated bootloader files...")
     info.script.UnpackPackageDir("bootloader", "/bootloader")
