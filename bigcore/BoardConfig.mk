@@ -65,10 +65,17 @@ BLUETOOTH_HCI_USE_USB := true
 TARGET_USE_IAGO := true
 TARGET_IAGO_PLUGINS := bootable/iago/plugins/gummiboot
 TARGET_IAGO_INI := device/intel/bigcore/iago.ini
-INSTALLED_RADIOIMAGE_TARGET += \
+TARGET_USE_MOKMANAGER := true
+
+TARGET_EFI_APPS := \
 	$(PRODUCT_OUT)/efi/gummiboot.efi \
 	$(PRODUCT_OUT)/efi/shim.efi \
 
+ifneq ($(TARGET_USE_MOKMANAGER),false)
+TARGET_EFI_APPS += $(PRODUCT_OUT)/efi/MokManager.efi
+endif
+
+INSTALLED_RADIOIMAGE_TARGET += $(TARGET_EFI_APPS)
 
 ifeq ($(TARGET_BUILD_VARIANT),user)
 TARGET_IAGO_INI += device/intel/bigcore/iago-production.ini
