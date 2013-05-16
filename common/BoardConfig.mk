@@ -124,12 +124,9 @@ endif
 
 # Choose the version of perf to build based on the relative path
 # in the android tree (external/linux-tools-perf or external/perf)
-# If it is not set, external/linux-tools-perf will be built.
-#
-# For now, AOSP's perf (linux-tools-perf) must be used because of a
-# bison 2.5 incompatability in external/perf/.
+# If it is not set, external/perf will be built.
 ifeq ($(BOARD_PERF),)
-  BOARD_PERF := external/linux-tools-perf
+  BOARD_PERF := external/perf
 endif
 
 # Common libraries for the OTA/recovery mechanism
