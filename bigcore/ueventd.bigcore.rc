@@ -11,3 +11,4 @@
 __uevent_add_VID_PID__ 4ca/3008 0660 bluetooth bluetooth
 __uevent_add_VID_PID__ 8086/189 0660 bluetooth bluetooth
 __uevent_add_VID_PID__ 8087/7da 0660 bluetooth bluetooth
+__uevent_add_VID_PID__ 8087/7dc 0660 bluetooth bluetooth
