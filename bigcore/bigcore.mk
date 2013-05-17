@@ -66,6 +66,9 @@ OVERRIDE_COPIES := \
 	system/extras/bugmailer/bugmailer.sh:system/bin/bugmailer.sh \
 	system/extras/bugmailer/send_bug:system/bin/send_bug \
 
+# pstore
+PRODUCT_PACKAGES += pstore-clean
+
 PRODUCT_COPY_FILES := $(OVERRIDE_COPIES) $(PRODUCT_COPY_FILES)
 
 PRODUCT_PACKAGES += machine-props

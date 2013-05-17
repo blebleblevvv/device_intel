@@ -261,6 +261,10 @@ service logcat-events /system/bin/logcat -f /data/logs/events.log -r 1024 -n 10 
     disabled
     oneshot
 
+#pstore, clean it up
+service pstore-clean /system/bin/pstore-clean
+    class main
+    oneshot
 
 on property:debug.offline.log=1
 
