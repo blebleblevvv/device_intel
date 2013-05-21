@@ -8,7 +8,11 @@
 #for bluedroid uhid support
 /dev/uhid             0660 bluetooth bluetooth
 
+# Known bluetooth devices.  Note: no leading zeros allowed, as these
+# get matched as strings (!) directly against the uevent PRODUCT field
+# which omits them.
 __uevent_add_VID_PID__ 4ca/3008 0660 bluetooth bluetooth
 __uevent_add_VID_PID__ 8086/189 0660 bluetooth bluetooth
 __uevent_add_VID_PID__ 8087/7da 0660 bluetooth bluetooth
 __uevent_add_VID_PID__ 8087/7dc 0660 bluetooth bluetooth
+__uevent_add_VID_PID__ a12/1 0660 bluetooth bluetooth
