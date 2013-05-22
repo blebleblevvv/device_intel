@@ -63,7 +63,10 @@ BLUETOOTH_HCI_USE_USB := true
 
 # Allow creation of iago live USB/CD images
 TARGET_USE_IAGO := true
-TARGET_IAGO_PLUGINS := bootable/iago/plugins/gummiboot
+TARGET_IAGO_PLUGINS := \
+	bootable/iago/plugins/gummiboot \
+	bootable/iago/plugins/syslinux \
+
 TARGET_IAGO_INI := device/intel/bigcore/iago.ini
 TARGET_USE_MOKMANAGER := true
 
