@@ -14,3 +14,6 @@ ro.sys.pm.feature.exclude.0 = android.hardware.nfc
 ro.sys.pm.feature.exclude.1 = android.hardware.location.gps
 ro.sys.pm.feature.include.0 = android.hardware.camera.autofocus
 ro.sys.pm.feature.include.1 = android.hardware.camera.flash
+# The interval of BatteryService polling
+# 0 or less than 0 disable, other values enable
+ro.sys.battery_poll_ms = 20000
