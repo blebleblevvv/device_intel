@@ -3,6 +3,8 @@ on early-init
     export MESA_EXTENSION_OVERRIDE "+GL_OES_EGL_image_external -GL_ARB_framebuffer_object"
     # Force on S3TC hardware decompression support in Mesa
     export force_s3tc_enable true
+    # Override Java property os.arch
+    export OS_ARCH_OVERRIDE i686
 
     # Mesa debugging options - see http://www.mesa3d.org/envvars.html for more details
     #export MESA_DEBUG 1
