@@ -34,6 +34,13 @@
 
 #define CHUNK 1024*1024
 
+
+struct Capsule {
+    char *path;
+    struct stat f_stat;
+    int existence;
+};
+
 static ssize_t robust_read(int fd, void *buf, size_t count)
 {
     unsigned char *pos = buf;
@@ -81,6 +88,60 @@ static ssize_t robust_write(int fd, const void *buf, size_t count)
     return total_written;
 }
 
+/* Caller needs to provide valid fd(s) and close them after call this function */
+static ssize_t read_write(State *state, int srcfd, int destfd) {
+    char *buf = NULL;
+    ssize_t to_write;
+    ssize_t written;
+    ssize_t ret = -1;
+
+    /* We need state to print messages... */
+    if (!state)
+        goto rw_done;
+
+    if (srcfd < 0 || destfd < 0) {
+        ErrorAbort(state, "%s: Invalid fd(s)", __FUNCTION__);
+        goto rw_done;
+    }
+
+    buf = malloc(CHUNK);
+    if (!buf) {
+        ErrorAbort(state, "%s: memory allocation error", __FUNCTION__);
+        goto rw_done;
+    }
+
+    ret = 0;
+
+    while (1) {
+
+        to_write = robust_read(srcfd, buf, CHUNK);
+        if (to_write < 0) {
+            ErrorAbort(state, "%s: failed to read source data: %s",
+                    __FUNCTION__, strerror(errno));
+            ret = -1;
+            goto rw_done;
+        }
+        if (!to_write)
+            break;
+
+        written = robust_write(destfd, buf, to_write);
+        if (written < 0) {
+            ErrorAbort(state, "%s: failed to write data: %s", __FUNCTION__,
+                    strerror(errno));
+            ret = -1;
+            goto rw_done;
+        }
+
+        if (!written)
+            break;
+
+        ret += written;
+    }
+
+rw_done:
+    free(buf);
+    return ret;
+}
 
 static int sysfs_read_int(int *ret, char *fmt, ...)
 {
@@ -339,10 +400,179 @@ done:
     return ret;
 }
 
+static int LoadCapsuleFn(State* state, const char* cmd)
+{
+    const char *capsule_load_node = "/sys/firmware/efi/capsule/loading";
+    int fd = -1;
+    int ret = -1;
+    ssize_t len;
+
+    if (!cmd || !strlen(cmd))
+        goto load_done;
+
+    len = strlen(cmd) + 1;
+
+    fd = open(capsule_load_node, O_WRONLY);
+
+    if (fd < 0) {
+        ErrorAbort(state, "%s: Unable to open %s for writing: %s", __FUNCTION__,
+                capsule_load_node, strerror(errno));
+        goto load_done;
+    }
+
+    if (robust_write(fd, cmd, len) != len) {
+        ErrorAbort(state, "%s: unable to write '%s' to '%s'", __FUNCTION__,
+                cmd, capsule_load_node);
+        ret = -1;
+    } else
+        ret = 0;
+
+load_done:
+
+    if (fd >= 0)
+        close(fd);
+
+    return ret;
+}
+
+static Value *UpdateCapsulesFn(const char* name, State* state, int argc, Expr* argv[])
+{
+    int result = -1;
+    char **capsule_paths = NULL;
+    const char *capsule_node = "/sys/firmware/efi/capsule/data";
+    int count;
+    int destfd = -1;
+    int valid_capsule_num = 0;
+    struct Capsule *capsule_list = NULL;
+
+    if (argc <= 0) {
+        ErrorAbort(state, "%s: No enough arguments", name);
+        goto capsule_done;
+    }
+
+    capsule_paths = ReadVarArgs(state, argc, argv);
+    if (!capsule_paths) {
+        ErrorAbort(state, "%s: Failed to parse arguments", name);
+        goto capsule_done;
+    }
+
+    capsule_list = calloc(argc, sizeof(*capsule_list));
+
+    if (!capsule_list) {
+        ErrorAbort(state, "%s: No enough mem for capsule list", name);
+        goto capsule_done;
+    }
+
+    /* initialize the list of required capsule files */
+    for (count = 0; count < argc; count++) {
+        struct Capsule *cap = &capsule_list[count];
+
+        cap->path = capsule_paths[count];
+        if (stat(cap->path, &cap->f_stat)) {
+            if (errno == ENOENT) {
+                cap->existence = 0;
+                continue;
+            }
+            else {
+                ErrorAbort(state, "%s: Unable to get status of %s: %s", name, cap->path,
+                        strerror(errno));
+                goto capsule_done;
+            }
+        }
+
+        cap->existence = 1;
+
+        valid_capsule_num++;
+    }
+
+    if (!valid_capsule_num) {
+        /* if none of required capsule exists, report success */
+        result = 0;
+        goto capsule_done;
+    }
+
+    /* Open write interface */
+    destfd = open(capsule_node, O_WRONLY);
+    if (destfd < 0) {
+        ErrorAbort(state, "%s: Unable to open %s for writing: %s",
+                __FUNCTION__, capsule_node, strerror(errno));
+        goto capsule_done;
+    }
+
+    /* Enable capsule write interface */
+    if (LoadCapsuleFn(state, "1")) {
+        ErrorAbort(state, "%s: Failed to parse arguments", name);
+        goto capsule_done;
+    }
+
+    /* start writing capsule files to kernel one by one */
+    for (count = 0; count < argc; count++) {
+        struct Capsule *cap = &capsule_list[count];
+        int srcfd = -1;
+        ssize_t written;
+
+        if (!cap->existence)
+            continue;
+
+        srcfd = open(cap->path, O_RDONLY);
+
+        if (srcfd < 0) {
+            ErrorAbort(state, "%s: Unable to open %s for reading: %s",
+                    __FUNCTION__, cap->path, strerror(errno));
+            goto capsule_done;
+        }
+
+        written = read_write(state, srcfd, destfd);
+
+        if (close(srcfd) < 0) {
+            ErrorAbort(state,
+                    "%s: Failed to close '%s': after writing",
+                    name, cap->path);
+
+            goto capsule_done;
+        }
+
+        if (written != cap->f_stat.st_size) {
+            ErrorAbort(state,
+                    "%s: Failed to write '%s': written %ld, expected %lld",
+                    name, cap->path, written, cap->f_stat.st_size);
+
+            goto capsule_done;
+        }
+    }
+
+    if (LoadCapsuleFn(state, "0")) {
+        ErrorAbort(state, "%s: Failed to turn off loading", name);
+        goto capsule_done;
+    }
+
+    result = 0;
+
+capsule_done:
+
+    if (capsule_paths) {
+        int i;
+        for (i = 0; i < argc; i++)
+            free(capsule_paths[i]);
+        free(capsule_paths);
+    }
+
+    if (destfd >= 0 && close(destfd) < 0) {
+        ErrorAbort(state, "%s: Unable to open %s for writing: %s",
+                __FUNCTION__, capsule_node, strerror(errno));
+        result = -1;
+    }
+
+    free(capsule_list);
+
+    return (result ? NULL : StringValue(strdup("")));
+}
 
 void Register_libbigcore_updater(void)
 {
     RegisterFunction("swap_entries", SwapEntriesFn);
     RegisterFunction("copy_partition", CopyPartFn);
+    RegisterFunction("update_capsules", UpdateCapsulesFn);
+
 }
 
