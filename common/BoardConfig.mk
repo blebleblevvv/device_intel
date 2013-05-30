@@ -50,6 +50,10 @@ TARGET_USERIMAGES_SPARSE_EXT_DISABLED := true
 # Explicitly required by build/core/config.mk:
 TARGET_CPU_ABI := x86
 
+# Turn on SMP (Symmetric MultiProcessing) optimization
+# in bionic and dalvik (if there is any)
+TARGET_CPU_SMP := true
+
 # Since I don't see a build/core/prelink-linux-x86.map file, I guess we
 # need to set TARGET_PRELINK_MODULE=false. I don't entirely understand
 # this prelink business yet.
