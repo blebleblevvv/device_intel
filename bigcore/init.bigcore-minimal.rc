@@ -1,12 +1,7 @@
-# for eth0
-service utilitynet-eth0 /system/bin/sh /system/etc/init.utilitynet.sh eth0
-    class core
-    oneshot
-    disabled
-
 on device-added-/dev/eth0
     setprop persist.sys.utility_iface eth0
     setprop net.utilitynet.ip 192.168.42.1
     setprop net.utilitynet.netmask 255.255.255.0
-    start utilitynet-eth0
+    ifconfig ${persist.sys.utility_iface} ${net.utilitynet.ip} ${net.utilitynet.netmask}
+    ifup ${persist.sys.utility_iface}
 

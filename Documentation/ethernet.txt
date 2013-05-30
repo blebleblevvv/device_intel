@@ -29,6 +29,9 @@ use hardcoded IP address 192.168.42.1. To foce droidboot to use DHCP,
 edit the file device/intel/bigcore/init.bigcore-minimal.rc and comment the
 setprop lines for net.utilitynet.* and then rebuilt your droidboot image.
 
+When an Android-IA system boots into the recovery mode, it will use
+hardcoded IP address 192.168.42.1.
+
 -----------------------------------------------------------------------------
 Connecting Ethernet when system_server is down or crashing
 -----------------------------------------------------------------------------
