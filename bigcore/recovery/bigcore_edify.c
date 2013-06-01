@@ -180,8 +180,7 @@ static Value *CopyPartFn(const char *name, State *state, int argc __attribute__(
     char *dest = NULL;
     int srcfd = -1;
     int destfd = -1;
-    char *buf = NULL;
-    Value *ret = NULL;
+    int result = -1;
 
     if (ReadArgs(state, argv, 2, &src, &dest))
         return NULL;
@@ -204,51 +203,25 @@ static Value *CopyPartFn(const char *name, State *state, int argc __attribute__(
         goto done;
     }
 
-    buf = malloc(CHUNK);
-    if (!buf) {
-        ErrorAbort(state, "%s: memory allocation error", name);
+    if (read_write(state, srcfd, destfd) < 0) {
+        ErrorAbort(state, "%s: failed to write to: %s",
+                name, dest);
         goto done;
     }
 
-    while (1) {
-        ssize_t to_write, written;
+    result = 0;
 
-        to_write = robust_read(srcfd, buf, CHUNK);
-        if (to_write < 0) {
-            ErrorAbort(state, "%s: failed to read source data: %s",
-                    name, strerror(errno));
-            goto done;
-        }
-        if (!to_write)
-            break;
-
-        written = robust_write(destfd, buf, to_write);
-        if (written < 0) {
-            ErrorAbort(state, "%s: failed to write data: %s",
-                    name, strerror(errno));
-            goto done;
-        }
-        if (!written)
-            break;
-    }
-    if (close(destfd) < 0) {
-        ErrorAbort(state, "%s: failed to close destination device: %s",
-                name, strerror(errno));
-        destfd = -1;
-        goto done;
-    }
-    destfd = -1;
-
-    ret = StringValue(strdup(""));
 done:
     if (srcfd >= 0)
         close(srcfd);
-    if (destfd >= 0)
-        close(destfd);
-    free(buf);
+    if (destfd >= 0 && close(destfd) < 0) {
+        ErrorAbort(state, "%s: failed to close destination device: %s",
+                name, strerror(errno));
+        result = -1;
+    }
     free(src);
     free(dest);
-    return ret;
+    return (result ? NULL : StringValue(strdup("")));
 }
 
 
