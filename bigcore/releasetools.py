@@ -174,6 +174,8 @@ def IncrementalOTA_InstallEnd(info):
     info.script.script.append('unmount("/bootloader");')
     swap_entries(info)
 
+    info.script.script.append('update_capsules("/system/etc/firmware/capsules");')
+
 def FullOTA_Assertions(info):
     EspUpdateInit(info, False)
     MountEsp(info)
@@ -192,5 +194,7 @@ def FullOTA_InstallEnd(info):
     info.script.UnpackPackageDir("bootloader", "/bootloader")
     info.script.script.append('unmount("/bootloader");')
     swap_entries(info)
+
+    info.script.script.append('update_capsules("/system/etc/firmware/capsules");')
 
 

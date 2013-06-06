@@ -27,13 +27,17 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <regex.h>
+#include <dirent.h>
 
 #include <edify/expr.h>
 #include <gpt/gpt.h>
-
+#include <cutils/properties.h>
 
 #define CHUNK 1024*1024
 
+#define CAP_LOADING     "/sys/firmware/efi/capsule/loading"
+#define CAP_DATA        "/sys/firmware/efi/capsule/data"
 
 struct Capsule {
     char *path;
@@ -89,56 +93,38 @@ static ssize_t robust_write(int fd, const void *buf, size_t count)
 }
 
 /* Caller needs to provide valid fd(s) and close them after call this function */
-static ssize_t read_write(State *state, int srcfd, int destfd) {
+static int read_write(int srcfd, int destfd) {
     char *buf = NULL;
     ssize_t to_write;
     ssize_t written;
-    ssize_t ret = -1;
-
-    /* We need state to print messages... */
-    if (!state)
-        goto rw_done;
-
-    if (srcfd < 0 || destfd < 0) {
-        ErrorAbort(state, "%s: Invalid fd(s)", __FUNCTION__);
-        goto rw_done;
-    }
+    int ret = -1;
 
     buf = malloc(CHUNK);
     if (!buf) {
-        ErrorAbort(state, "%s: memory allocation error", __FUNCTION__);
-        goto rw_done;
+        printf("%s: memory allocation error", __FUNCTION__);
+        return -1;
     }
 
-    ret = 0;
-
     while (1) {
-
         to_write = robust_read(srcfd, buf, CHUNK);
         if (to_write < 0) {
-            ErrorAbort(state, "%s: failed to read source data: %s",
+            printf("%s: failed to read source data: %s",
                     __FUNCTION__, strerror(errno));
-            ret = -1;
-            goto rw_done;
+            goto out;
         }
         if (!to_write)
             break;
 
         written = robust_write(destfd, buf, to_write);
-        if (written < 0) {
-            ErrorAbort(state, "%s: failed to write data: %s", __FUNCTION__,
+        if (written != to_write) {
+            printf("%s: failed to write data: %s", __FUNCTION__,
                     strerror(errno));
-            ret = -1;
-            goto rw_done;
+            goto out;
         }
-
-        if (!written)
-            break;
-
-        ret += written;
     }
 
-rw_done:
+    ret = 0;
+out:
     free(buf);
     return ret;
 }
@@ -203,7 +189,7 @@ static Value *CopyPartFn(const char *name, State *state, int argc __attribute__(
         goto done;
     }
 
-    if (read_write(state, srcfd, destfd) < 0) {
+    if (read_write(srcfd, destfd)) {
         ErrorAbort(state, "%s: failed to write to: %s",
                 name, dest);
         goto done;
@@ -373,9 +359,68 @@ done:
     return ret;
 }
 
-static int LoadCapsuleFn(State* state, const char* cmd)
+
+/* Similar functionality in init, but /system isn't available and up-to-date
+ * until now. */
+static char *dmi_detect_machine(void)
 {
-    const char *capsule_load_node = "/sys/firmware/efi/capsule/loading";
+    char dmi[256], buf[256], *hash, *tag, *name, *toksav, allmatched;
+    char dmi_detect[PROPERTY_VALUE_MAX];
+    FILE *dmif, *cfg;
+    char *ret = NULL;
+
+    /* Skip if disabled */
+    property_get("ro.boot.dmi_detect", dmi_detect, "1");
+    if (!strcmp(dmi_detect, "0")) {
+        printf("DMI machine detection disabled\n");
+        return NULL;
+    }
+
+    /* Fail silently (no error) on devices without DMI */
+    dmif = fopen("/sys/devices/virtual/dmi/id/modalias", "r");
+    if (!dmif || !fgets(dmi, sizeof(dmi), dmif)) {
+        printf("Couldn't open DMI modalias\n");
+        return NULL;
+    }
+    fclose(dmif);
+
+    /* ...or if the system filesystem lacks configuration */
+    if (!(cfg = fopen("/system/etc/dmi-machine.conf", "r"))) {
+        printf("DMI machine configuration not present\n");
+        return NULL;
+    }
+
+    while (fgets(buf, sizeof(buf), cfg)) {
+        /* snip comments */
+        if ((hash = strchr(buf, '#')))
+            *hash = 0;
+
+        /* parse line: cfg name, then a list of tags to test.  If they
+         * all match then load the config file and return (note that
+         * "no tags" means "everything matched" and can be used to
+         * load a default if needed, though that is probably best done
+         * with build.props) */
+        allmatched = 1;
+        if ((name = strtok_r(buf, " \t\v\r\n", &toksav))) {
+            while ((tag = strtok_r(NULL, " \t\v\r\n", &toksav)))
+                if (!strstr(dmi, tag))
+                    allmatched = 0;
+
+            if (allmatched) {
+                ret = strdup(name);
+                break;
+            }
+        }
+    }
+
+    fclose(cfg);
+    return ret;
+}
+
+
+static int LoadCapsuleFn(const char* cmd)
+{
+    static const char *capsule_load_node = CAP_LOADING;
     int fd = -1;
     int ret = -1;
     ssize_t len;
@@ -383,162 +428,174 @@ static int LoadCapsuleFn(State* state, const char* cmd)
     if (!cmd || !strlen(cmd))
         goto load_done;
 
-    len = strlen(cmd) + 1;
+    len = strlen(cmd);
 
     fd = open(capsule_load_node, O_WRONLY);
 
     if (fd < 0) {
-        ErrorAbort(state, "%s: Unable to open %s for writing: %s", __FUNCTION__,
+        printf("%s: Unable to open %s for writing: %s\n", __FUNCTION__,
                 capsule_load_node, strerror(errno));
         goto load_done;
     }
 
     if (robust_write(fd, cmd, len) != len) {
-        ErrorAbort(state, "%s: unable to write '%s' to '%s'", __FUNCTION__,
+        printf("%s: unable to write '%s' to '%s'\n", __FUNCTION__,
                 cmd, capsule_load_node);
-        ret = -1;
     } else
         ret = 0;
 
 load_done:
 
-    if (fd >= 0)
-        close(fd);
+    if (fd >= 0) {
+        if (close(fd)) {
+            printf("%s: couldn't close %s: %s\n", __FUNCTION__,
+                    capsule_load_node, strerror(errno));
+            ret = -1;
+        }
+    }
 
     return ret;
 }
 
-static Value *UpdateCapsulesFn(const char* name, State* state, int argc, Expr* argv[])
+
+static int push_capsule(const char *filename)
 {
-    int result = -1;
-    char **capsule_paths = NULL;
-    const char *capsule_node = "/sys/firmware/efi/capsule/data";
-    int count;
+    static const char *capsule_node = CAP_DATA;
+    int srcfd = -1;
     int destfd = -1;
-    int valid_capsule_num = 0;
-    struct Capsule *capsule_list = NULL;
+    int ret;
 
-    if (argc <= 0) {
-        ErrorAbort(state, "%s: No enough arguments", name);
-        goto capsule_done;
-    }
-
-    capsule_paths = ReadVarArgs(state, argc, argv);
-    if (!capsule_paths) {
-        ErrorAbort(state, "%s: Failed to parse arguments", name);
-        goto capsule_done;
-    }
-
-    capsule_list = calloc(argc, sizeof(*capsule_list));
-
-    if (!capsule_list) {
-        ErrorAbort(state, "%s: No enough mem for capsule list", name);
-        goto capsule_done;
-    }
-
-    /* initialize the list of required capsule files */
-    for (count = 0; count < argc; count++) {
-        struct Capsule *cap = &capsule_list[count];
-
-        cap->path = capsule_paths[count];
-        if (stat(cap->path, &cap->f_stat)) {
-            if (errno == ENOENT) {
-                cap->existence = 0;
-                continue;
-            }
-            else {
-                ErrorAbort(state, "%s: Unable to get status of %s: %s", name, cap->path,
-                        strerror(errno));
-                goto capsule_done;
-            }
-        }
-
-        cap->existence = 1;
-
-        valid_capsule_num++;
-    }
-
-    if (!valid_capsule_num) {
-        /* if none of required capsule exists, report success */
-        result = 0;
-        goto capsule_done;
+    /* Enable capsule write interface */
+    if (LoadCapsuleFn("1")) {
+        printf("%s: couldn't enable cpasule loading\n", __FUNCTION__);
+        return -1;
     }
 
     /* Open write interface */
     destfd = open(capsule_node, O_WRONLY);
     if (destfd < 0) {
-        ErrorAbort(state, "%s: Unable to open %s for writing: %s",
+        printf("%s: Unable to open %s for writing: %s\n",
                 __FUNCTION__, capsule_node, strerror(errno));
-        goto capsule_done;
+        goto abort;
     }
 
-    /* Enable capsule write interface */
-    if (LoadCapsuleFn(state, "1")) {
-        ErrorAbort(state, "%s: Failed to parse arguments", name);
-        goto capsule_done;
+    srcfd = open(filename, O_RDONLY);
+    if (srcfd < 0) {
+        printf("%s: Unable to open %s for reading: %s\n",
+                __FUNCTION__, filename, strerror(errno));
+        goto abort;
     }
 
-    /* start writing capsule files to kernel one by one */
-    for (count = 0; count < argc; count++) {
-        struct Capsule *cap = &capsule_list[count];
-        int srcfd = -1;
-        ssize_t written;
+    if (read_write(srcfd, destfd)) {
+        printf("%s: couldn't push %s capsule data\n", __FUNCTION__,
+                filename);
+        goto abort;
+    }
 
-        if (!cap->existence)
+    /* Close all fds; blow up if there is a problem closing the write end */
+    close(srcfd);
+    srcfd = -1;
+    ret = close(destfd);
+    destfd = -1;
+    if (ret) {
+        printf("%s: close %s: %s\n", __FUNCTION__, capsule_node,
+                strerror(errno));
+        goto abort;
+    }
+
+    /* All done, close the write interface */
+    if (LoadCapsuleFn("0")) {
+        printf("%s: Failed to turn off loading\n", __FUNCTION__);
+        goto abort;
+    }
+
+    return 0;
+abort:
+    if (LoadCapsuleFn("-1")) {
+        printf("Unable to abort capsule loading\n");
+    }
+
+    /* At this point we don't care if it fails */
+    if (srcfd >= 0)
+        close(srcfd);
+    if (destfd >= 0)
+        close(destfd);
+    return -1;
+}
+
+
+static Value *UpdateCapsulesFn(const char* name, State* state, int argc, Expr* argv[])
+{
+    char *basedir;
+    char *detected_machine;
+    char cap_base_path[PATH_MAX];
+    struct stat sb;
+    DIR *dir = NULL;
+    struct dirent *dp;
+    regex_t capreg;
+
+    /* 1 argument: base directory for capsule files.
+     * policy: apply *.cap under <base>/<detected_machine>/
+     * If machine isn't detected, just look for .cap files in
+     * the base dir. We do not dive into any subdirectories */
+    if (argc != 1) {
+        ErrorAbort(state, "%s: expected 1 argument", name);
+        goto done;
+    }
+
+    if (ReadArgs(state, argv, 1, &basedir))
+        return NULL;
+
+    if (strlen(basedir) == 0) {
+        ErrorAbort(state, "%s: Missing required argument", name);
+        goto done;
+    }
+
+    detected_machine = dmi_detect_machine();
+    if (detected_machine) {
+        printf("Detected %s machine type\n", detected_machine);
+        snprintf(cap_base_path, sizeof(cap_base_path), "%s/%s/", basedir, detected_machine);
+        free(detected_machine);
+    } else {
+        printf("Machine type not specified\n");
+        snprintf(cap_base_path, sizeof(cap_base_path), "%s/", basedir);
+    }
+    if (stat(cap_base_path, &sb) || !S_ISDIR(sb.st_mode)) {
+        printf("Capsule update directory %s doesn't exist.", cap_base_path);
+        goto done; /* Not fatal, just nothing to do */
+    }
+
+    dir = opendir(cap_base_path);
+    if (!dir) {
+        ErrorAbort(state, "%s: couldn't examine capsule directory %s: %s",
+                name, cap_base_path, strerror(errno));
+        goto done;
+    }
+
+    if (regcomp(&capreg, ".*[.]cap$", REG_EXTENDED | REG_NOSUB)) {
+        ErrorAbort(state, "%s: regcomp: %s", name, strerror(errno));
+        goto done;
+    }
+
+    while ( (dp = readdir(dir)) ) {
+        name = dp->d_name;
+        char capfile[PATH_MAX];
+
+        if (regexec(&capreg, name, 0, NULL, 0))
             continue;
 
-        srcfd = open(cap->path, O_RDONLY);
-
-        if (srcfd < 0) {
-            ErrorAbort(state, "%s: Unable to open %s for reading: %s",
-                    __FUNCTION__, cap->path, strerror(errno));
-            goto capsule_done;
-        }
-
-        written = read_write(state, srcfd, destfd);
-
-        if (close(srcfd) < 0) {
-            ErrorAbort(state,
-                    "%s: Failed to close '%s': after writing",
-                    name, cap->path);
-
-            goto capsule_done;
-        }
-
-        if (written != cap->f_stat.st_size) {
-            ErrorAbort(state,
-                    "%s: Failed to write '%s': written %ld, expected %lld",
-                    name, cap->path, written, cap->f_stat.st_size);
-
-            goto capsule_done;
+        snprintf(capfile, sizeof(capfile), "%s/%s", cap_base_path, name);
+        printf("Sending %s to the kernel\n", capfile);
+        if (push_capsule(capfile)) {
+            ErrorAbort(state, "%s: Failed to push capsule file %s", name, capfile);
+            goto done;
         }
     }
 
-    if (LoadCapsuleFn(state, "0")) {
-        ErrorAbort(state, "%s: Failed to turn off loading", name);
-        goto capsule_done;
-    }
-
-    result = 0;
-
-capsule_done:
-
-    if (capsule_paths) {
-        int i;
-        for (i = 0; i < argc; i++)
-            free(capsule_paths[i]);
-        free(capsule_paths);
-    }
-
-    if (destfd >= 0 && close(destfd) < 0) {
-        ErrorAbort(state, "%s: Unable to open %s for writing: %s",
-                __FUNCTION__, capsule_node, strerror(errno));
-        result = -1;
-    }
-
-    free(capsule_list);
-
-    return (result ? NULL : StringValue(strdup("")));
+done:
+    if (dir)
+        closedir(dir);
+    return StringValue(strdup(""));
 }
 
 void Register_libbigcore_updater(void)
