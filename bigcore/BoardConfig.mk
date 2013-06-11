@@ -135,7 +135,7 @@ TARGET_RECOVERY_UPDATER_EXTRA_LIBS := libgpt_static
 # Highlight up: UP or Vol+
 # Highlight downL DOWN or Vol-
 # Select: ENTER or Power
-TARGET_RECOVERY_UI_LIB := libbigcore_recovery_ui
+TARGET_RECOVERY_UI_LIB := libbigcore_recovery_ui libcharger
 
 # For recovery console minui
 TARGET_RECOVERY_PIXEL_FORMAT := "BGRA_8888"
@@ -164,5 +164,7 @@ ADDITIONAL_BUILD_PROPERTIES += \
                                ro.camera.0.orientation=0 \
 
 endif # BOARD_USE_DEFAULT_CAMERA_CONFIG != false
+
+RECOVERY_MIN_BATT_CAP := 30
 
 # end of file

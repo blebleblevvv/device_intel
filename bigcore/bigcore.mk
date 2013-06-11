@@ -132,6 +132,9 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_PACKAGES += efibootmgr
 
+# include charger images
+PRODUCT_PACKAGES += charger_res_images
+
 # AndroidTerm and its shared library.  These are in the debug_tools
 # manifest, and may not be present at build time.  That's fine, the
 # missing packages will be silently ignored.
