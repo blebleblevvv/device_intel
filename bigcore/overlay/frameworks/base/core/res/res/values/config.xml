@@ -100,4 +100,7 @@
          The default is false. -->
     <bool name="config_lidControlsSleep">true</bool>
 
+    <!-- Name of the HDMI switch device to look for to detect HDMI audio presence -->
+    <string translatable="false" name="config_hdmiName">hdmi_c</string>
+
 </resources>
