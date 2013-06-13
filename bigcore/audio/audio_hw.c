@@ -46,12 +46,25 @@
 #include "audio_route.h"
 
 #define CARD_CTRL_PATH "/dev/snd/controlC%u"
-#define PCH_STR "PCH"
-#define MAX_CARDS 2
+#define MAX_CARDS 4
+#define MAX_INTERNAL_CARDS 2
+
+#define PCH_ID_STR "PCH"
+#define PCH_DEVICE 0
+#define PCH_DEVICE_SCO 2
+
+#define HDMI_ID_STR "MID"
+#define HDMI_DEVICE 7
+
+#define INTERNAL_DRIVER_STR "HDA-Intel"
+
+#define USB_DRIVER_STR "USB-Audio"
+#define USB_DEVICE 0
+
+#define OTHER_DEVICE 0
+
 #define MAX_RETRIES 100
 
-#define PCM_DEVICE 0
-#define PCM_DEVICE_SCO 2
 #define CARD_SLOT_NOT_FOUND -1
 
 #define OUT_PERIOD_SIZE 512
@@ -76,6 +89,14 @@ enum {
     OUT_BUFFER_TYPE_UNKNOWN,
     OUT_BUFFER_TYPE_SHORT,
     OUT_BUFFER_TYPE_LONG,
+};
+
+/* Enumeration of all MAX_CARDS possible cards */
+enum {
+    AUDIO_CARD_PCH = 0,
+    AUDIO_CARD_HDMI = 1,
+    AUDIO_CARD_USB = 2,
+    AUDIO_CARD_OTHER = 3,
 };
 
 struct pcm_config pcm_config_out = {
@@ -105,6 +126,11 @@ struct pcm_config pcm_config_sco = {
     .format = PCM_FORMAT_S16_LE,
 };
 
+struct audio_card {
+    int card_slot;
+    int device;
+};
+
 struct audio_device {
     struct audio_hw_device hw_device;
 
@@ -117,7 +143,9 @@ struct audio_device {
     int orientation;
     bool screen_off;
 
-    int card_slot;
+    struct audio_card card[MAX_CARDS];
+    int card_out_index;
+    int card_in_index;
 
     struct stream_out *active_out;
     struct stream_in *active_in;
@@ -187,64 +215,161 @@ static void release_buffer(struct resampler_buffer_provider *buffer_provider,
 
 /* Helper functions */
 
-static int find_card_slot()
+static void find_card_slot(struct audio_device *adev)
 {
     int slot_num;
+    int internal_cards_found;
     int retval, retry_cnt, fd;
     char control_path[PATH_MAX];
     char error_str[255];
     struct snd_ctl_card_info card_info;
 
+    adev->card[AUDIO_CARD_HDMI].card_slot = CARD_SLOT_NOT_FOUND;
+    adev->card[AUDIO_CARD_PCH].card_slot = CARD_SLOT_NOT_FOUND;
+    adev->card[AUDIO_CARD_USB].card_slot = CARD_SLOT_NOT_FOUND;
+    adev->card[AUDIO_CARD_OTHER].card_slot = CARD_SLOT_NOT_FOUND;
+
+    internal_cards_found = 0;
 
     for (retry_cnt = 0; retry_cnt < MAX_RETRIES; retry_cnt++) {
-        for(slot_num = 0; slot_num < MAX_CARDS; slot_num++) {
+        for (slot_num = 0; slot_num < MAX_CARDS; slot_num++) {
+            if (internal_cards_found == MAX_INTERNAL_CARDS)
+                return;
 
-            snprintf(control_path, sizeof(control_path), CARD_CTRL_PATH, slot_num);
+            snprintf(control_path, sizeof(control_path), CARD_CTRL_PATH, 
+                     slot_num);
 
             fd = open(control_path, O_RDWR);
-            ALOGV("[%d]find_card_slot: open %s fd=%d", retry_cnt, control_path, fd);
+            ALOGV("[%d][%d][%d]find_card_slot: open %s fd=%d", retry_cnt, 
+                  slot_num, internal_cards_found, control_path, fd);
             if (fd == -1) {
                 strerror_r(errno, error_str, sizeof(error_str));
-                ALOGV("%s", error_str);
-            } else {
-                if ((retval = ioctl(fd, SNDRV_CTL_IOCTL_CARD_INFO, &card_info)) < 0) {
-                    ALOGV("[%d]find_card_slot: ioctl() failed. retval=%d", retry_cnt, retval);
+                ALOGE("%s", error_str);
+            }
+            else {
+                if ((retval = ioctl(fd, SNDRV_CTL_IOCTL_CARD_INFO,
+                                    &card_info)) < 0) {
+                    ALOGE("[%d]find_card_slot: ioctl() failed. retval=%d", 
+                          retry_cnt, retval);
                     close(fd);
                     continue;
                 }
                 close(fd);
-                ALOGV("find_card_slot: id=%s slot_num=%d", card_info.id, slot_num);
-                if (strncmp(PCH_STR, &card_info.id[0], strlen(PCH_STR)) == 0)
-                    return slot_num;
+                if (strncmp(INTERNAL_DRIVER_STR, (char *) &card_info.driver[0],
+                            strlen(INTERNAL_DRIVER_STR)) == 0) {
+                    if (strncmp(HDMI_ID_STR, (char *) card_info.id,
+                                strlen(HDMI_ID_STR)) == 0) {
+                        if (adev->card[AUDIO_CARD_HDMI].card_slot ==
+                          CARD_SLOT_NOT_FOUND) {
+                            adev->card[AUDIO_CARD_HDMI].card_slot
+                              = slot_num;
+                            adev->card[AUDIO_CARD_HDMI].device
+                              = HDMI_DEVICE;
+                            internal_cards_found++;
+                            ALOGV("Set HDMI slot %d", slot_num);
+                        }
+                    }
+                    else if (strncmp(PCH_ID_STR, (char *) card_info.id,
+                             strlen(PCH_ID_STR)) == 0) {
+                        if (adev->card[AUDIO_CARD_PCH].card_slot ==
+                          CARD_SLOT_NOT_FOUND) {
+                            adev->card[AUDIO_CARD_PCH].card_slot
+                              = slot_num;
+                            adev->card[AUDIO_CARD_PCH].device
+                              = PCH_DEVICE;
+                            internal_cards_found++;
+                            ALOGV("Set PCH slot %d", slot_num);
+                        }
+                    }
+                }
             }
         }
         usleep(60000);
     }
-
-    return CARD_SLOT_NOT_FOUND;
 }
 
-static void select_devices(struct audio_device *adev)
+static bool find_usb_card_slot(struct audio_device *adev)
 {
+    int slot_num;
+    int retval, fd;
+    char control_path[PATH_MAX];
+    char error_str[255];
+    struct snd_ctl_card_info card_info;
+
+    adev->card[AUDIO_CARD_USB].card_slot = CARD_SLOT_NOT_FOUND;
+
+    for (slot_num = 0; (slot_num < MAX_CARDS); slot_num++) {
+        if (adev->card[AUDIO_CARD_PCH].card_slot == slot_num)
+            continue;
+        if (adev->card[AUDIO_CARD_HDMI].card_slot == slot_num)
+            continue;
+
+        snprintf(control_path, sizeof(control_path), CARD_CTRL_PATH, slot_num);
+        fd = open(control_path, O_RDWR);
+        ALOGV("find_usb_card_slot: open %s fd=%d", control_path, fd);
+        if (fd == -1) {
+            strerror_r(errno, error_str, sizeof(error_str));
+            ALOGE("%s", error_str);
+        }
+        else {
+            if ((retval = ioctl(fd, SNDRV_CTL_IOCTL_CARD_INFO,
+                                &card_info)) < 0) {
+                ALOGE("find_usb_card_slot: ioctl() failed. retval=%d", retval);
+                close(fd);
+                continue;
+            }
+            close(fd);
+            if (strncmp(USB_DRIVER_STR, (char *) card_info.driver,
+                        strlen(USB_DRIVER_STR)) == 0) {
+                adev->card[AUDIO_CARD_USB].card_slot = slot_num;
+                adev->card[AUDIO_CARD_USB].device = USB_DEVICE;
+                return(true);
+            }
+        }
+    }
+
+    return(false);
+}
+
+static void select_devices(struct audio_device *adev) {
     int headphone_on;
     int speaker_on;
     int docked;
     int main_mic_on;
+    int hdmi_on;
+    int usb_on;
 
     headphone_on = adev->out_device & (AUDIO_DEVICE_OUT_WIRED_HEADSET |
                                     AUDIO_DEVICE_OUT_WIRED_HEADPHONE);
     speaker_on = adev->out_device & AUDIO_DEVICE_OUT_SPEAKER;
     docked = adev->out_device & AUDIO_DEVICE_OUT_ANLG_DOCK_HEADSET;
+    hdmi_on = adev->out_device & AUDIO_DEVICE_OUT_AUX_DIGITAL;
+    usb_on = adev->out_device & AUDIO_DEVICE_OUT_USB_DEVICE;
     main_mic_on = adev->in_device & AUDIO_DEVICE_IN_BUILTIN_MIC;
 
     reset_mixer_state(adev->ar);
 
-    if (headphone_on)
+    if (headphone_on) {
         audio_route_apply_path(adev->ar, "headphone");
-    if (speaker_on)
+        adev->card_out_index = AUDIO_CARD_PCH;
+    }
+    if (speaker_on) {
         audio_route_apply_path(adev->ar, "speaker");
-    if (docked)
+        adev->card_out_index = AUDIO_CARD_PCH;
+    }
+    if (docked) {
         audio_route_apply_path(adev->ar, "dock");
+        adev->card_out_index = AUDIO_CARD_PCH;
+    }
+    if (hdmi_on) {
+        audio_route_apply_path(adev->ar, "hdmi");
+        adev->card_out_index = AUDIO_CARD_HDMI;
+    }
+    if (usb_on) {
+        audio_route_apply_path(adev->ar, "usb");
+        find_usb_card_slot(adev);
+        adev->card_out_index = AUDIO_CARD_USB;
+    }
     if (main_mic_on) {
         if (adev->orientation == ORIENTATION_LANDSCAPE)
             audio_route_apply_path(adev->ar, "main-mic-left");
@@ -254,8 +379,10 @@ static void select_devices(struct audio_device *adev)
 
     update_mixer_state(adev->ar);
 
-    ALOGV("hp=%c speaker=%c dock=%c main-mic=%c", headphone_on ? 'y' : 'n',
-          speaker_on ? 'y' : 'n', docked ? 'y' : 'n', main_mic_on ? 'y' : 'n');
+    ALOGV("hp=%c speaker=%c dock=%c hdmi=%c usb=%c main-mic=%c",
+      headphone_on ? 'y' : 'n', speaker_on ? 'y' : 'n',
+      docked ? 'y' : 'n', hdmi_on ? 'y' : 'n',
+      usb_on ? 'y' : 'n', main_mic_on ? 'y' : 'n');
 }
 
 /* must be called with hw device and output stream mutexes locked */
@@ -277,6 +404,26 @@ static void do_out_standby(struct stream_out *out)
         }
         out->standby = true;
     }
+}
+
+static int select_card(int card, unsigned int device, int d)
+{
+    int i;
+    char dname[32];
+
+    if (card == CARD_SLOT_NOT_FOUND) {
+        ALOGE("no pcm card found!");
+        return(-1);
+    }
+
+    sprintf(dname, "/dev/snd/pcmC%dD%d%c", card, device,
+      (d == PCM_IN) ? 'c' : 'p');
+    if (!access(dname, R_OK | W_OK)) {
+        ALOGD("found %s %s", (d == PCM_IN) ? "in" : "out", dname);
+        return(card);
+    }
+    ALOGE("no pcm card found!");
+    return(-1);
 }
 
 /* must be called with hw device and input stream mutexes locked */
@@ -304,6 +451,7 @@ static void do_in_standby(struct stream_in *in)
 static int start_output_stream(struct stream_out *out)
 {
     struct audio_device *adev = out->dev;
+    int card;
     unsigned int device;
     int ret;
 
@@ -314,10 +462,12 @@ static int start_output_stream(struct stream_out *out)
      * the same time.
      */
     if (adev->out_device & AUDIO_DEVICE_OUT_ALL_SCO) {
-        device = PCM_DEVICE_SCO;
+        card = adev->card[AUDIO_CARD_PCH].card_slot;
+        device = PCH_DEVICE_SCO;
         out->pcm_config = &pcm_config_sco;
     } else {
-        device = PCM_DEVICE;
+        card = adev->card[adev->card_out_index].card_slot;
+        device = adev->card[adev->card_out_index].device;
         out->pcm_config = &pcm_config_out;
         out->buffer_type = OUT_BUFFER_TYPE_UNKNOWN;
     }
@@ -340,7 +490,11 @@ static int start_output_stream(struct stream_out *out)
         pthread_mutex_unlock(&in->lock);
     }
 
-    out->pcm = pcm_open((unsigned int)adev->card_slot, device, PCM_OUT | PCM_NORESTART, out->pcm_config);
+    ret = select_card(card, device, PCM_OUT);
+    if (ret < 0) {
+        return -ENODEV;
+    }
+    out->pcm = pcm_open(card, device, PCM_OUT | PCM_NORESTART, out->pcm_config);
 
     if (out->pcm && !pcm_is_ready(out->pcm)) {
         ALOGE("pcm_open(out) failed: %s", pcm_get_error(out->pcm));
@@ -374,6 +528,7 @@ static int start_output_stream(struct stream_out *out)
 static int start_input_stream(struct stream_in *in)
 {
     struct audio_device *adev = in->dev;
+    int card;
     unsigned int device;
     int ret;
 
@@ -383,10 +538,12 @@ static int start_input_stream(struct stream_in *in)
      * mic PCM or the BC SCO PCM open at the same time.
      */
     if (adev->in_device & AUDIO_DEVICE_IN_ALL_SCO) {
-        device = PCM_DEVICE_SCO;
+        card = AUDIO_CARD_PCH;
+        device = PCH_DEVICE_SCO;
         in->pcm_config = &pcm_config_sco;
     } else {
-        device = PCM_DEVICE;
+        card = adev->card[adev->card_in_index].card_slot;
+        device = adev->card[adev->card_in_index].device;
         in->pcm_config = &pcm_config_in;
     }
 
@@ -408,7 +565,11 @@ static int start_input_stream(struct stream_in *in)
         pthread_mutex_unlock(&out->lock);
     }
 
-    in->pcm = pcm_open((unsigned int)adev->card_slot, device, PCM_IN, in->pcm_config);
+    ret = select_card(card, device, PCM_IN);
+    if (ret < 0) {
+        return -ENODEV;
+    }
+    in->pcm = pcm_open(card, device, PCM_IN, in->pcm_config);
 
     if (in->pcm && !pcm_is_ready(in->pcm)) {
         ALOGE("pcm_open(in) failed: %s", pcm_get_error(in->pcm));
@@ -606,17 +767,16 @@ static int out_set_parameters(struct audio_stream *stream, const char *kvpairs)
     pthread_mutex_lock(&adev->lock);
     if (ret >= 0) {
         val = atoi(value);
-        if ((adev->out_device != val) && (val != 0)) {
+        if (((adev->out_device != val) && (val != 0))
+            || (val & AUDIO_DEVICE_OUT_USB_DEVICE)) {
             /*
-             * If SCO is turned on/off, we need to put audio into standby
-             * because SCO uses a different PCM.
+             * Always go into standby when a device changes, or if the
+             *   device is USB, which may have been removed, inserted,
+             *   or re-inserted.
              */
-            if ((val & AUDIO_DEVICE_OUT_ALL_SCO) ^
-                    (adev->out_device & AUDIO_DEVICE_OUT_ALL_SCO)) {
-                pthread_mutex_lock(&out->lock);
-                do_out_standby(out);
-                pthread_mutex_unlock(&out->lock);
-            }
+            pthread_mutex_lock(&out->lock);
+            do_out_standby(out);
+            pthread_mutex_unlock(&out->lock);
 
             adev->out_device = val;
             select_devices(adev);
@@ -1269,7 +1429,7 @@ static int adev_open(const hw_module_t* module, const char* name,
                      hw_device_t** device)
 {
     struct audio_device *adev;
-    int ret;
+    int index, ret;
 
     if (strcmp(name, AUDIO_HARDWARE_INTERFACE) != 0)
         return -EINVAL;
@@ -1298,21 +1458,40 @@ static int adev_open(const hw_module_t* module, const char* name,
     adev->hw_device.close_input_stream = adev_close_input_stream;
     adev->hw_device.dump = adev_dump;
 
-    adev->card_slot = find_card_slot();
-    ALOGV("Card Slot: 0x%x", adev->card_slot);
-    if (adev->card_slot == CARD_SLOT_NOT_FOUND)
-    {
+    find_card_slot(adev);
+
+   /*
+    * Hard-coded to the internal codec device for now, an xml file
+    *   is needed to continue.
+    */
+    adev->card_out_index = AUDIO_CARD_PCH;
+
+    if (adev->card[adev->card_out_index].card_slot == CARD_SLOT_NOT_FOUND) {
         free(adev);
         return -EINVAL;
     }
 
-    adev->ar = audio_route_init((unsigned int)adev->card_slot);
+    adev->ar = audio_route_init((unsigned int)
+             adev->card[adev->card_out_index].card_slot);
     if (adev->ar == NULL) {
        free(adev);
        return -EINVAL;
     }
+    switch (adev->card_out_index) {
+        case AUDIO_CARD_HDMI:
+            adev->out_device = AUDIO_DEVICE_OUT_AUX_DIGITAL;
+            break;
+        case AUDIO_CARD_USB:
+            adev->out_device = AUDIO_DEVICE_OUT_USB_DEVICE;
+            break;
+        case AUDIO_CARD_PCH:
+        default:
+            adev->out_device = AUDIO_DEVICE_OUT_SPEAKER;
+            break;
+    }
+
+    adev->card_in_index = AUDIO_CARD_PCH;
     adev->orientation = ORIENTATION_UNDEFINED;
-    adev->out_device = AUDIO_DEVICE_OUT_SPEAKER;
     adev->in_device = AUDIO_DEVICE_IN_BUILTIN_MIC & ~AUDIO_DEVICE_BIT_IN;
 
     *device = &adev->hw_device.common;
