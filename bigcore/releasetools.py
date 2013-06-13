@@ -8,6 +8,12 @@ delete_files = None
 target_data = None
 source_data = None
 OPTIONS = common.OPTIONS
+bcb_device = None
+
+def SetBcbDevice(info):
+    global bcb_device
+    fstab = info.script.info.get("fstab", None)
+    bcb_device = fstab["/misc"].device
 
 def LoadBootloaderFiles(z):
     out = {}
@@ -64,8 +70,6 @@ def EspUpdateInit(info, incremental):
                      ["/"+i for i in sorted(source_data) if i not in target_data])
 
 
-
-
 def MountEsp(info):
     # AOSP edify generator in build/ does not support vfat.
     # So we need to generate the full command to mount here.
@@ -79,6 +83,7 @@ def MountEsp(info):
 fastboot = {}
 
 def IncrementalOTA_Assertions(info):
+    SetBcbDevice(info)
     fastboot["source"] = common.GetBootableImage("/tmp/fastboot.img", "fastboot.img",
             OPTIONS.source_tmp, "FASTBOOT", OPTIONS.source_info_dict)
     fastboot["target"] = common.GetBootableImage("/tmp/fastboot.img", "fastboot.img",
@@ -98,8 +103,7 @@ def IncrementalOTA_Assertions(info):
         fastboot["verbatim"] = False
 
     EspUpdateInit(info, True)
-    if delete_files or patch_list or verbatim_targets:
-        MountEsp(info)
+    MountEsp(info)
 
 
 def IncrementalOTA_VerifyEnd(info):
@@ -126,11 +130,30 @@ def IncrementalOTA_VerifyEnd(info):
     for fn, tf, sf, size, patch_sha in patch_list:
         info.script.PatchCheck("/"+fn, tf.sha1, sf.sha1)
 
+def IncrementalOTA_InstallBegin(info):
+    info.script.script.append('if get_bcb_status("%s") == "" then' % (bcb_device,))
 
 def swap_entries(info):
     fstab = info.script.info.get("fstab", None)
     info.script.script.append('swap_entries("%s", "bootloader", "bootloader2");' %
             (fstab['/bootloader'].device,))
+
+def finish_update(info):
+    info.script.script.append('copy_capsules("/system/etc/firmware/capsules");')
+    info.script.script.append('unmount("/bootloader");')
+    info.script.script.append('unmount("/system");')
+    swap_entries(info)
+
+    info.script.script.append('set_bcb_command("%s", "recovery-firmware");' % (bcb_device,))
+    info.script.script.append('abort("BCB update / reboot failed!");')
+    info.script.script.append('endif;')
+    info.script.script.append('if is_substring("FAILED", get_bcb_status("%s")) then' % (bcb_device,))
+    info.script.script.append('    abort("Firmware update failed!");')
+    info.script.script.append('endif;')
+    info.script.script.append('if get_bcb_status("%s") == "OK" then' % (bcb_device,))
+    info.script.script.append('    ui_print("Firmware update successful\n");')
+    info.script.script.append('endif;')
+
 
 def IncrementalOTA_InstallEnd(info):
     if fastboot["updating"]:
@@ -154,9 +177,6 @@ def IncrementalOTA_InstallEnd(info):
     else:
         print "skipping fastboot update"
 
-    if not delete_files and not patch_list and not verbatim_targets:
-        return
-
     if delete_files:
         info.script.Print("Removing unnecessary bootloader files...")
         info.script.DeleteFiles(delete_files)
@@ -171,14 +191,18 @@ def IncrementalOTA_InstallEnd(info):
         info.script.Print("Adding new bootloader files...")
         info.script.UnpackPackageDir("bootloader", "/bootloader")
 
-    info.script.script.append('unmount("/bootloader");')
-    swap_entries(info)
+    finish_update(info)
 
-    info.script.script.append('update_capsules("/system/etc/firmware/capsules");')
 
 def FullOTA_Assertions(info):
+    SetBcbDevice(info)
     EspUpdateInit(info, False)
     MountEsp(info)
+
+
+def FullOTA_InstallBegin(info):
+    # Open up a block if the status field is empty; normal update phase
+    info.script.script.append('if get_bcb_status("%s") == "" then' % (bcb_device,))
 
 
 def FullOTA_InstallEnd(info):
@@ -192,9 +216,5 @@ def FullOTA_InstallEnd(info):
 
     info.script.Print("Copying updated bootloader files...")
     info.script.UnpackPackageDir("bootloader", "/bootloader")
-    info.script.script.append('unmount("/bootloader");')
-    swap_entries(info)
-
-    info.script.script.append('update_capsules("/system/etc/firmware/capsules");')
-
+    finish_update(info)
 

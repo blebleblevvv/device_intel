@@ -19,6 +19,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <ftw.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -29,10 +30,13 @@
 #include <unistd.h>
 #include <regex.h>
 #include <dirent.h>
+#include <sys/mount.h>
 
 #include <edify/expr.h>
 #include <gpt/gpt.h>
 #include <cutils/properties.h>
+#include <bootloader.h>
+#include <cutils/android_reboot.h>
 
 #define CHUNK 1024*1024
 
@@ -101,14 +105,14 @@ static int read_write(int srcfd, int destfd) {
 
     buf = malloc(CHUNK);
     if (!buf) {
-        printf("%s: memory allocation error", __FUNCTION__);
+        printf("%s: memory allocation error\n", __FUNCTION__);
         return -1;
     }
 
     while (1) {
         to_write = robust_read(srcfd, buf, CHUNK);
         if (to_write < 0) {
-            printf("%s: failed to read source data: %s",
+            printf("%s: failed to read source data: %s\n",
                     __FUNCTION__, strerror(errno));
             goto out;
         }
@@ -117,7 +121,7 @@ static int read_write(int srcfd, int destfd) {
 
         written = robust_write(destfd, buf, to_write);
         if (written != to_write) {
-            printf("%s: failed to write data: %s", __FUNCTION__,
+            printf("%s: failed to write data: %s\n", __FUNCTION__,
                     strerror(errno));
             goto out;
         }
@@ -128,6 +132,43 @@ out:
     free(buf);
     return ret;
 }
+
+
+static int copy_file(const char *src, const char *dest)
+{
+    int srcfd = -1;
+    int destfd = -1;
+
+    srcfd = open(src, O_RDONLY);
+    if (srcfd < 0) {
+        printf("%s: %s couldn't be opened for reading\n", __func__, src);
+        return -1;
+    }
+    destfd = open(dest, O_TRUNC | O_CREAT | O_WRONLY, 0700);
+    if (destfd < 0) {
+        printf("%s: %s couldn't be opened for reading\n", __func__, dest);
+        goto out;
+    }
+
+    if (read_write(srcfd, destfd)) {
+        printf("%s: file copy operation failed\n", __func__);
+        goto out;
+    }
+
+    if (close(destfd)) {
+        printf("%s: couldn't close output file\n", __func__);
+        goto out;
+    }
+    close(srcfd);
+    return 0;
+out:
+    if (srcfd >= 0)
+        close(srcfd);
+    if (destfd >= 0)
+        close(destfd);
+    return -1;
+}
+
 
 static int sysfs_read_int(int *ret, char *fmt, ...)
 {
@@ -156,6 +197,164 @@ static int sysfs_read_int(int *ret, char *fmt, ...)
 out:
     close(fd);
     return rv;
+}
+
+
+static int read_bcb(const char *device, struct bootloader_message *bcb)
+{
+    int fd;
+    int ret = 0;
+
+    fd = open(device, O_RDONLY);
+
+    if (fd < 0) {
+        printf("Coudln't open BCB device for reading %s: %s\n", device, strerror(errno));
+        return -1;
+    }
+
+    if (robust_read(fd, bcb, sizeof(*bcb)) < 0) {
+        printf("Couldn't read BCB data\n");
+        ret = -1;
+    }
+
+    if (close(fd)) {
+        printf("Couldn't close BCB device: %s\n", strerror(errno));
+        ret = -1;
+    }
+
+    return ret;
+}
+
+
+static int write_bcb(const char *device, const struct bootloader_message *bcb)
+{
+    int fd;
+    int ret = 0;
+
+    fd = open(device, O_WRONLY);
+
+    if (fd < 0) {
+        printf("Coudln't open BCB device for writing %s: %s\n", device, strerror(errno));
+        return -1;
+    }
+
+    if (robust_write(fd, bcb, sizeof(*bcb)) < 0) {
+        printf("Couldn't write BCB data\n");
+        ret = -1;
+    }
+
+    if (close(fd)) {
+        printf("Couldn't close BCB device: %s\n", strerror(errno));
+        ret = -1;
+    }
+
+    return ret;
+}
+
+
+static Value *GetBCBStatus(const char *name, State *state, int __unused argc, Expr *argv[])
+{
+    char *device;
+    char *status;
+    struct bootloader_message bcb;
+
+    if (ReadArgs(state, argv, 1, &device))
+        return NULL;
+
+    if (strlen(device) == 0) {
+        ErrorAbort(state, "%s: Missing required argument", name);
+        return NULL;
+    }
+
+    if (read_bcb(device, &bcb)) {
+        ErrorAbort(state, "%s: Failed to read Bootloader Control Block", name);
+        return NULL;
+    }
+
+    status = strdup(bcb.status);
+    printf("Read status '%s' from Bootloader Control Block\n", status);
+
+    return StringValue(status);
+}
+
+/* Hackery: Recovery Console no longer really supports controlled reboots
+ * during the update process; if we get to finish_recovery() in recovery.cpp,
+ * everything is reset. Since we want to continue doing recovery operations
+ * we need to save the log file and reboot here */
+static const char *TEMPORARY_LOG_FILE = "/tmp/recovery.log";
+static const char *LOG_FILE = "/cache/recovery/log";
+
+/* Android BootReceiver eats the /cache/recovery/log file and the
+ * last_log file is overwritten on each boot into recovery console.
+ * so save this under a different name so the logs from the first
+ * phase can be inspected manually */
+static const char *LAST_LOG_FILE = "/cache/recovery/last_log_phase1";
+
+static void copy_log_file(const char* source, const char* destination, int append) {
+    FILE *log = fopen(destination, append ? "a" : "w");
+    if (log == NULL) {
+        printf("Can't open %s: %s\n", destination, strerror(errno));
+        return;
+    }
+
+    FILE *tmplog = fopen(source, "r");
+    if (tmplog != NULL) {
+        if (append)
+            fseek(tmplog, 0, SEEK_END);  // Since last write
+        char buf[4096];
+        while (fgets(buf, sizeof(buf), tmplog))
+            fputs(buf, log);
+        fclose(tmplog);
+    }
+    fclose(log);
+}
+
+
+static Value *SetBCBCommand(const char *name, State *state, int __unused argc, Expr *argv[])
+{
+    char *device, *command;
+    struct bootloader_message bcb;
+
+    if (ReadArgs(state, argv, 2, &device, &command))
+        return NULL;
+
+    if (strlen(device) == 0 || strlen(command) == 0) {
+        ErrorAbort(state, "%s: Missing required argument", name);
+        return NULL;
+    }
+
+    if (strlen(command) > (sizeof(bcb.command) - 1)) {
+        ErrorAbort(state, "%s: command string '%s' too long", name, command);
+        return NULL;
+    }
+
+    if (read_bcb(device, &bcb)) {
+        ErrorAbort(state, "%s: Failed to read Bootloader Control Block", name);
+        return NULL;
+    }
+    strncpy(bcb.command, command, 31);
+    bcb.command[31] = '\0';
+    printf("BCB command set to '%s'\n", bcb.command);
+    if (write_bcb(device, &bcb)) {
+        ErrorAbort(state, "%s: Failed to update Bootloader Control Block", name);
+        return NULL;
+    }
+
+    printf("Stash log files and reboot\n");
+    copy_log_file(TEMPORARY_LOG_FILE, LOG_FILE, 1);
+    copy_log_file(TEMPORARY_LOG_FILE, LAST_LOG_FILE, 0);
+
+    chmod(LOG_FILE, 0600);
+    chown(LOG_FILE, 1000, 1000);   // system user
+    chmod(LAST_LOG_FILE, 0640);
+
+    umount("/cache");
+
+    sync();
+    android_reboot(ANDROID_RB_RESTART, 0, 0);
+
+    /* Shouldn't get here */
+    return StringValue(strdup(""));
 }
 
 
@@ -418,113 +617,16 @@ static char *dmi_detect_machine(void)
 }
 
 
-static int LoadCapsuleFn(const char* cmd)
+int delete_cb(const char *fpath, const struct stat *sb __unused,
+		int typeflag __unused, struct FTW *ftwbuf __unused)
 {
-    static const char *capsule_load_node = CAP_LOADING;
-    int fd = -1;
-    int ret = -1;
-    ssize_t len;
-
-    if (!cmd || !strlen(cmd))
-        goto load_done;
-
-    len = strlen(cmd);
-
-    fd = open(capsule_load_node, O_WRONLY);
-
-    if (fd < 0) {
-        printf("%s: Unable to open %s for writing: %s\n", __FUNCTION__,
-                capsule_load_node, strerror(errno));
-        goto load_done;
-    }
-
-    if (robust_write(fd, cmd, len) != len) {
-        printf("%s: unable to write '%s' to '%s'\n", __FUNCTION__,
-                cmd, capsule_load_node);
-    } else
-        ret = 0;
-
-load_done:
-
-    if (fd >= 0) {
-        if (close(fd)) {
-            printf("%s: couldn't close %s: %s\n", __FUNCTION__,
-                    capsule_load_node, strerror(errno));
-            ret = -1;
-        }
-    }
-
-    return ret;
+	remove(fpath);
+	return 0;
 }
 
+static const char *CAP_DEST = "/bootloader/fwupdate";
 
-static int push_capsule(const char *filename)
-{
-    static const char *capsule_node = CAP_DATA;
-    int srcfd = -1;
-    int destfd = -1;
-    int ret;
-
-    /* Enable capsule write interface */
-    if (LoadCapsuleFn("1")) {
-        printf("%s: couldn't enable cpasule loading\n", __FUNCTION__);
-        return -1;
-    }
-
-    /* Open write interface */
-    destfd = open(capsule_node, O_WRONLY);
-    if (destfd < 0) {
-        printf("%s: Unable to open %s for writing: %s\n",
-                __FUNCTION__, capsule_node, strerror(errno));
-        goto abort;
-    }
-
-    srcfd = open(filename, O_RDONLY);
-    if (srcfd < 0) {
-        printf("%s: Unable to open %s for reading: %s\n",
-                __FUNCTION__, filename, strerror(errno));
-        goto abort;
-    }
-
-    if (read_write(srcfd, destfd)) {
-        printf("%s: couldn't push %s capsule data\n", __FUNCTION__,
-                filename);
-        goto abort;
-    }
-
-    /* Close all fds; blow up if there is a problem closing the write end */
-    close(srcfd);
-    srcfd = -1;
-    ret = close(destfd);
-    destfd = -1;
-    if (ret) {
-        printf("%s: close %s: %s\n", __FUNCTION__, capsule_node,
-                strerror(errno));
-        goto abort;
-    }
-
-    /* All done, close the write interface */
-    if (LoadCapsuleFn("0")) {
-        printf("%s: Failed to turn off loading\n", __FUNCTION__);
-        goto abort;
-    }
-
-    return 0;
-abort:
-    if (LoadCapsuleFn("-1")) {
-        printf("Unable to abort capsule loading\n");
-    }
-
-    /* At this point we don't care if it fails */
-    if (srcfd >= 0)
-        close(srcfd);
-    if (destfd >= 0)
-        close(destfd);
-    return -1;
-}
-
-
-static Value *UpdateCapsulesFn(const char* name, State* state, int argc, Expr* argv[])
+static Value *CopyCapsulesFn(const char* name, State* state, int argc, Expr* argv[])
 {
     char *basedir;
     char *detected_machine;
@@ -534,12 +636,12 @@ static Value *UpdateCapsulesFn(const char* name, State* state, int argc, Expr* a
     struct dirent *dp;
     regex_t capreg;
 
-    /* 1 argument: base directory for capsule files.
-     * policy: apply *.cap under <base>/<detected_machine>/
+    /* 1 argument: base directory for capsule files and destination directory
+     * policy: copy *.cap under <base>/<detected_machine>/
      * If machine isn't detected, just look for .cap files in
      * the base dir. We do not dive into any subdirectories */
     if (argc != 1) {
-        ErrorAbort(state, "%s: expected 1 argument", name);
+        ErrorAbort(state, "%s: expected 2 arguments", name);
         goto done;
     }
 
@@ -554,14 +656,15 @@ static Value *UpdateCapsulesFn(const char* name, State* state, int argc, Expr* a
     detected_machine = dmi_detect_machine();
     if (detected_machine) {
         printf("Detected %s machine type\n", detected_machine);
-        snprintf(cap_base_path, sizeof(cap_base_path), "%s/%s/", basedir, detected_machine);
+        snprintf(cap_base_path, sizeof(cap_base_path), "%s/%s/", basedir,
+                detected_machine);
         free(detected_machine);
     } else {
         printf("Machine type not specified\n");
         snprintf(cap_base_path, sizeof(cap_base_path), "%s/", basedir);
     }
     if (stat(cap_base_path, &sb) || !S_ISDIR(sb.st_mode)) {
-        printf("Capsule update directory %s doesn't exist.", cap_base_path);
+        printf("Capsule update directory %s doesn't exist.\n", cap_base_path);
         goto done; /* Not fatal, just nothing to do */
     }
 
@@ -577,17 +680,27 @@ static Value *UpdateCapsulesFn(const char* name, State* state, int argc, Expr* a
         goto done;
     }
 
+    nftw(CAP_DEST, delete_cb, 64, FTW_DEPTH | FTW_PHYS);
+    if (mkdir(CAP_DEST, 0755)) {
+        ErrorAbort(state, "%s: Couldn't create capsule directory in ESP: %s",
+                name, strerror(errno));
+        goto done;
+    }
+
     while ( (dp = readdir(dir)) ) {
         name = dp->d_name;
         char capfile[PATH_MAX];
+        char dest[PATH_MAX];
 
         if (regexec(&capreg, name, 0, NULL, 0))
             continue;
 
         snprintf(capfile, sizeof(capfile), "%s/%s", cap_base_path, name);
-        printf("Sending %s to the kernel\n", capfile);
-        if (push_capsule(capfile)) {
-            ErrorAbort(state, "%s: Failed to push capsule file %s", name, capfile);
+        snprintf(dest, sizeof(dest), "%s/%s", CAP_DEST, name);
+        printf("Copy %s to %s\n", capfile, dest);
+        if (copy_file(capfile, dest)) {
+            ErrorAbort(state, "%s: Failed to copy capsule file %s to %s",
+                    name, capfile, dest);
             goto done;
         }
     }
@@ -598,11 +711,15 @@ done:
     return StringValue(strdup(""));
 }
 
+
 void Register_libbigcore_updater(void)
 {
+    printf("Registering edify commands for Intel bigcore\n");
+
     RegisterFunction("swap_entries", SwapEntriesFn);
     RegisterFunction("copy_partition", CopyPartFn);
-    RegisterFunction("update_capsules", UpdateCapsulesFn);
-
+    RegisterFunction("copy_capsules", CopyCapsulesFn);
+    RegisterFunction("set_bcb_command", SetBCBCommand);
+    RegisterFunction("get_bcb_status", GetBCBStatus);
 }
 
