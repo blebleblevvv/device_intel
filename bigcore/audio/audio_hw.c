@@ -473,6 +473,21 @@ static int start_output_stream(struct stream_out *out)
     }
 
     /*
+     * Temporary code to support USB audio:
+     *   If a USB audio device is detected, ignore the specified
+     *   output device and use it.
+     * This code needs to be eliminated as soon as USB audio
+     * input / output requests are sent to out_set_parameters(),
+     * or sooner if necessary.
+     */
+     if (find_usb_card_slot(adev)) {
+         card = adev->card[AUDIO_CARD_USB].card_slot;
+         device = adev->card[AUDIO_CARD_USB].device;
+         out->pcm_config = &pcm_config_out;
+         out->buffer_type = OUT_BUFFER_TYPE_UNKNOWN;
+     }
+
+    /*
      * All open PCMs can only use a single group of rates at once:
      * Group 1: 11.025, 22.05, 44.1
      * Group 2: 8, 16, 32, 48
