@@ -167,4 +167,7 @@ endif # BOARD_USE_DEFAULT_CAMERA_CONFIG != false
 
 RECOVERY_MIN_BATT_CAP := 30
 
+# Use 3 buffers in SurfaceFlinger
+NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
+
 # end of file
