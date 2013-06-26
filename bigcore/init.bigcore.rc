@@ -98,6 +98,9 @@ on post-fs-data
     # this HAS to be 2 for CTS security tests
     write /proc/sys/kernel/kptr_restrict 2
 
+    mkdir /data/kpanic 0770 system system
+    mkdir /data/kpanic/pstore 0770 system system
+
     # Offline log services: keep logs (/data/logs/*.old) of logcat and kernel
     # from the previous reboot cycle. To enable it, remove '#' at the head of
     # this line:
@@ -264,6 +267,8 @@ service logcat-events /system/bin/logcat -f /data/logs/events.log -r 1024 -n 10 
 
 #pstore, clean it up
 service pstore-clean /system/bin/pstore-clean
+    user root
+    group system
     class main
     oneshot
 

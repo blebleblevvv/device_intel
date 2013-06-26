@@ -14,7 +14,7 @@
 #define LOG_TAG "pstore-clean"
 #include <cutils/log.h>
 #define MNT "/dev/pstore"
-#define DST "/data/local/log/pstore-dumps"
+#define DST "/data/kpanic/pstore"
 #define BUFFER_SIZE 4096
 #define MAX_DIR_COUNT 1024
 #define MAX_COUNT 1024
@@ -35,7 +35,7 @@ int filecopy(const char *srcfile, const char *dstfile)
         return -1;
     }
 
-    dstfd = open(dstfile, O_WRONLY|O_CREAT);
+    dstfd = open(dstfile, O_WRONLY|O_CREAT, 0640);
     if (dstfd == -1) {
         close(srcfd);
         ALOGE("Open %s error: %s\n", dstfile, strerror(errno));
@@ -95,6 +95,7 @@ int main()
     char dstfile[256];
     DIR* dir;
 
+    umask(0027);
     mkdir(MNT, 0755);
 
     if (system("/system/bin/mkdir -p '"DST"'") != 0) {
