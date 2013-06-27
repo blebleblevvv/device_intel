@@ -47,10 +47,6 @@ on init
     # make mount point for usb thumb drives
     mkdir /storage/usbcard 0000 system system
 
-    # device information
-    setprop ro.product.manufacturer $[/sys/class/dmi/id/sys_vendor]
-    setprop ro.product.model $[/sys/class/dmi/id/product_name]
-
 on fs
     mount_all /fstab.common
     setprop ro.crypto.fuse_sdcard true
@@ -60,6 +56,10 @@ on fs
     chmod 660 ${ro.boot.bcb_device}
 
 on early-fs
+    # device information.  Do after dmi properties to allow overrides
+    setprop ro.product.manufacturer $[/sys/class/dmi/id/sys_vendor]
+    setprop ro.product.model $[/sys/class/dmi/id/product_name]
+
     # Houdini requires /system/lib/arm.  Must do this after "on init"
     # because the core init.rc sets this variable too.
     export LD_LIBRARY_PATH /vendor/lib:/system/lib:/system/lib/arm:/system/lib/egl
